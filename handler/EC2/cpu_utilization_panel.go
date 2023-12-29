@@ -70,18 +70,18 @@ var CpuUtilizationPanelCmd = &cobra.Command{
 				endTime = &defaultEndTime
 			}
 
-			currentUsage, err := getCpuUtilizationMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "SampleCount")
+			currentUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "SampleCount")
 			if err != nil {
 				log.Fatal(err)
 			}
 			// Get average usage
-			averageUsage, err := getCpuUtilizationMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "Average")
+			averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "Average")
 			if err != nil {
 				log.Fatal(err)
 			}
 
 			// Get max usage
-			maxUsage, err := getCpuUtilizationMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "Maximum")
+			maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "Maximum")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -104,7 +104,7 @@ var CpuUtilizationPanelCmd = &cobra.Command{
 	},
 }
 
-func getCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, metricName, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, metricName, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
