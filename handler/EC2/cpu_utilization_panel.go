@@ -34,10 +34,12 @@ var CpuUtilizationPanelCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			instanceID := "i-5456-646g"
-			metricName := "CPUUtilization"
-			namespace := "AWS/EC2"
-
+			//instanceID := "i-5456-646g"
+			//metricName := "CPUUtilization"
+			//namespace := "AWS/EC2"
+			instanceID, _ := cmd.PersistentFlags().GetString("instanceID")
+			metricName, _ := cmd.PersistentFlags().GetString("query")
+			namespace, _ := cmd.PersistentFlags().GetString("elementType")
 			startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 			endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -105,6 +107,9 @@ var CpuUtilizationPanelCmd = &cobra.Command{
 }
 
 func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, metricName, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
+	//fmt.Println("instanceID::::::::::::::::::::", instanceID)
+	//fmt.Println("metricName::::::::::::::::::::", metricName)
+	//fmt.Println("namespace::::::::::::::::::::", namespace)
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -116,7 +121,7 @@ func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, metricName,
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("InstanceId"),
-								Value: aws.String("i-05e4e6757f13da657"),
+								Value: aws.String(instanceID),
 							},
 						},
 						MetricName: aws.String(metricName),
