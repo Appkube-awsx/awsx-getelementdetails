@@ -34,9 +34,6 @@ var CpuUtilizationPanelCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			//instanceID := "i-5456-646g"
-			//metricName := "CPUUtilization"
-			//namespace := "AWS/EC2"
 			instanceID, _ := cmd.PersistentFlags().GetString("instanceID")
 			metricName, _ := cmd.PersistentFlags().GetString("query")
 			namespace, _ := cmd.PersistentFlags().GetString("elementType")
@@ -107,9 +104,6 @@ var CpuUtilizationPanelCmd = &cobra.Command{
 }
 
 func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, metricName, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
-	//fmt.Println("instanceID::::::::::::::::::::", instanceID)
-	//fmt.Println("metricName::::::::::::::::::::", metricName)
-	//fmt.Println("namespace::::::::::::::::::::", namespace)
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -162,5 +156,5 @@ func init() {
 	CpuUtilizationPanelCmd.PersistentFlags().String("elementType", "", "element type")
 	CpuUtilizationPanelCmd.PersistentFlags().String("instanceID", "", "instance id")
 	CpuUtilizationPanelCmd.PersistentFlags().String("query", "", "query")
-	CpuUtilizationPanelCmd.PersistentFlags().String("timeRange", "", "timeRange")
+	CpuUtilizationPanelCmd.PersistentFlags().String("startTime", "", "start time")
 }
