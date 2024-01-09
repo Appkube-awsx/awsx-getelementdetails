@@ -5,6 +5,9 @@
   - [storage\_utilization\_panel](#storage_utiization_panel)
   - [network\_utilization\_panel](#network_utiization_panel)
   - [cpu\_requests\_panel](#cpu_requests_panel)
+  - [allocatable\cpu\_panel](#allocatable_cpu_panel)
+  - [cpu\limits\_panel](#cpu_limits_panel)
+  - [cpu\_utilization\_graph\_panel](#cpu_utilization_graph_panel)
 
 - [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
 
@@ -32,7 +35,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 
 **Desired Output in json / graph format:**
-1. CPU utilization
+- CPU utilization
 {
 	CurrentUsage:25%,
 	AverageUsage:30%,
@@ -49,7 +52,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 
 
-# ui-analysys-and listing-methods
+
 ![Alt text](eks-screen-1.png)
 2. memory_utilization_panel 
 
@@ -130,7 +133,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-1.png)
-- network_utilization_panel 
+4. network_utilization_panel 
 
 ## network_utiization_panel
 
@@ -169,7 +172,9 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 - [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-1.png)
+![Alt text](eks-screen-2.png)
+
+
 5. cpu_requests_panel 
 
 ## cpu_requests_panel
@@ -199,7 +204,97 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
  **Pseudo Code:**
 
+
+6. allocatable_cpu_panel 
+
+## allocatable_cpu_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="allocatable_cpu_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="allocatable_cpu_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=allocatable_cpu_panel, --timeRange={}
+
+
+**Desired Output in  graph format:**
+- allocatable_cpu 
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- allocatable cpu panel - Fire a cloudwatch query for allocatable cpu, using metric namespace as allocatable_cpu_panel. 
+
+ **Pseudo Code:**
 # list of subcommands and options for EKS
+
+
+7. cpu_limits_panel 
+
+## cpu_limits_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="cpu_limits_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_limits_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_limits_panel, --timeRange={}
+
+
+**Desired Output in  graph format:**
+- cpu_limits_panel
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- cpu_limits_panel - Fire a cloudwatch query for allocatable cpu, using metric namespace as allocatable_cpu_panel. 
+
+ **Pseudo Code:**
+
+
+8. cpu_utilization_graph_panel 
+
+## cpu_utilization_graph_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="cpu_utilization_graph_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_utilization_graph_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_utilization_graph_panel, --timeRange={}
+
+
+**Desired Output in  graph format:**
+- cpu_utilization_graph_panel
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- cpu_utilization_graph_panel - Fire a cloudwatch query for cpu_utilization_graph_panel, using metric namespace as cpu_utilization_panel. Note - The service name shall be EKS.
+
+ **Pseudo Code:**
+
 
 | S.No | CLI Spec|  Description                           
 |------|----------------|----------------------|
