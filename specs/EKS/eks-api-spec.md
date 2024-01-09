@@ -359,7 +359,8 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
  **Pseudo Code:**
 
-
+# ui-analysys-and listing-methods
+![Alt text](eks-screen-3.png)
 11. allocatable_memory_panel 
 
 ## allocatable_memory_panel
@@ -390,7 +391,8 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
  **Pseudo Code:**
 # list of subcommands and options for EKS
 
-
+# ui-analysys-and listing-methods
+![Alt text](eks-screen-3.png)
 12. memory_utilization_panel 
 
 ## memory_utilization_panel 
