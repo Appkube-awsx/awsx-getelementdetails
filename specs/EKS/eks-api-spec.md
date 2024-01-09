@@ -8,6 +8,11 @@
   - [allocatable\cpu\_panel](#allocatable_cpu_panel)
   - [cpu\limits\_panel](#cpu_limits_panel)
   - [cpu\_utilization\_graph\_panel](#cpu_utilization_graph_panel)
+  - [memory\_requests\_panel](#memory_requests_panel)
+  - [memory\_limits\_panel](#memory_limits_panel)
+  - [allocatable\memory\_panel](#allocatable_memory_panel)
+  - [memory\_utilization\panel](#memory_utilization_panel)
+
 
 - [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
 
@@ -265,7 +270,8 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
  **Pseudo Code:**
 
-
+# ui-analysys-and listing-methods
+![Alt text](eks-screen-2.png)
 8. cpu_utilization_graph_panel 
 
 ## cpu_utilization_graph_panel
