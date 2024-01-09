@@ -296,6 +296,152 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
  **Pseudo Code:**
 
 
+ # ui-analysys-and listing-methods
+![Alt text](eks-screen-3.png)
+9. memory_requests_panel 
+
+## memory_requests_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="memory_requests_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_requests_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=memory_requests_panel, --timeRange={}
+
+
+**Desired Output in  graph format:**
+- memory_requests_panel
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- memory_requests_panel - Write a cloudwatch query for memory_requests_panel, where we shall retrieve in graph format.
+
+ **Pseudo Code:**
+
+# ui-analysys-and listing-methods
+![Alt text](eks-screen-3.png)
+
+10. memory_limits_panel 
+
+## memory_limits_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="memory_limits_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_limits_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=memory_limits_panel, --timeRange={}
+
+
+**Desired Output in  graph format:**
+- Memory Limits 
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- Memory Limits panel - Fire a cloudwatch query for Memory Limits, using metric namespace as memory_limits. 
+
+ **Pseudo Code:**
+
+
+11. allocatable_memory_panel 
+
+## allocatable_memory_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="allocatable_memory_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="allocatable_memory_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=allocatable_memory_panel, --timeRange={}
+
+
+**Desired Output in  graph format:**
+- allocatable_memory_panel 
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- allocatable memory panel - Fire a cloudwatch query for allocatable memory, using metric namespace as allocatable_memory. 
+
+ **Pseudo Code:**
+# list of subcommands and options for EKS
+
+
+12. memory_utilization_panel 
+
+## memory_utilization_panel 
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="memory_utilization_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_utilization_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=memory_utilization_panel, --timeRange={}
+
+
+**Desired Output in  graph format:**
+- memory_utilization_panel 
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- memory_utilization_panel - Fire a cloudwatch query for memory_utilization_panel, using metric namespace as memory_utilization. NOTE - The service should be EKS only. 
+
+ **Pseudo Code:**
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_utilization_graph_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_utilization_graph_panel, --timeRange={}
+
+
+**Desired Output in  graph format:**
+- cpu_utilization_graph_panel
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- cpu_utilization_graph_panel - Fire a cloudwatch query for cpu_utilization_graph_panel, using metric namespace as cpu_utilization_panel. Note - The service name shall be EKS.
+
+ **Pseudo Code:**
+
+
 | S.No | CLI Spec|  Description                           
 |------|----------------|----------------------|
 | 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_utilization_panel"  | This will get the specific EKS Cluster cpu utilization panel data in hybrid structure |
