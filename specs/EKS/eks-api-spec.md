@@ -1,6 +1,11 @@
 - [awsx-getelementdetails](#awsx-getelementdetails)
 - [ui-analysys-and listing-methods](#ui-analysys-and-listing-methods)
-  - [cpu\_utilization\_panel](#cpu_utilization_panel)
+  - [cpu\_utilization\_panel](#cpu_utiization_panel)
+  - [memory\_utilization\_panel](#memory_utiization_panel)
+  - [storage\_utilization\_panel](#storage_utiization_panel)
+  - [network\_utilization\_panel](#network_utiization_panel)
+  - [cpu\_requests\_panel](#cpu_requests_panel)
+
 - [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
 
 # awsx-getelementdetails
@@ -9,15 +14,13 @@ It implements the awsx plugin getElementDetails
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-1.png)
 1. cpu_utilization_panel 
-2. storage_utilization_panel
-3. network_utilization_panel
-4. memory_utilization_panel
+
+## cpu_utiization_panel
 
 **called from subcommand**
 
 awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="cpu_utilization_panel" --timeRange={}
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="storage_utilization_panel" --timeRange={}
 
 **called from maincommand**
 
@@ -27,10 +30,8 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 /awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_utilization_panel, --timeRange={}
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=storage_utilization_panel, --timeRange={}
 
-
-**Desired Output in json format:**
+**Desired Output in json / graph format:**
 1. CPU utilization
 {
 	CurrentUsage:25%,
@@ -38,35 +39,165 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 	MaxUsage:40%
 }
 
-2. Memory utilization
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- CPU utilization panel - Write a custom metric for cpu utilization, where we shall write a program for current, avg and max.
+
+ **Pseudo Code:**   
+
+
+
+# ui-analysys-and listing-methods
+![Alt text](eks-screen-1.png)
+2. memory_utilization_panel 
+
+## memory_utiization_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="memory_utilization_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_utilization_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=memory_utilization_panel, --timeRange={}
+
+
+**Desired Output in json format:**
+- Memory utilization
 {
     CurrentUsage:25GB,
     AverageUsage:30GB,
 	MaxUsage:40GB
 }
 
-3. Storage utilization
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- Memory Utilization panel - Write a custom metric for memory utilization, where we shall write a program for current, avg and max.
+
+**Pseudo Code:**  
+
+
+
+# ui-analysys-and listing-methods
+![Alt text](eks-screen-1.png)
+3. storage_utilization_panel 
+
+## storage_utiization_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="storage_utilization_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="storage_utilization_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=storage_utilization_panel, --timeRange={}
+
+
+**Desired Output in json / graph format:**
+- Storage utilization
 {
     RootVolumeUsage:25GB,
     EBSVolume1Usage:30GB,
 	EBSVolume2Usage:40GB
 }
 
-4. Network utilization
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- Storage Utilization panel - Write a custom metric for storage utilization, where we shall write a program for root volume usage and ebs disks usage.
+    Pseudo Code -
+
+ **Pseudo Code:**
+
+ - [ui-analysys-and listing-methods](#ui-analysys-and-listing-methods)
+  - [storage\_utilization\_panel](#network_utilization_panel)
+- [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
+
+# ui-analysys-and listing-methods
+![Alt text](eks-screen-1.png)
+- network_utilization_panel 
+
+## network_utiization_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="network_utilization_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="network_utilization_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=network_utilization_panel, --timeRange={}
+
+
+**Desired Output in json / graph format:**
+- Network utilization
 {
     Inbound traffic:500Mbps,
     Outbound traffic:200Mbps,
 	Data Transferred:10GB
 }
 
+
 **Algorithm/ Pseudo Code**
 
+**Algorithm:** 
+- Network utilization panel - Write a custom metric for Network utilization, where we shall write a program for root volume usage and ebs disks usage.
+
+ **Pseudo Code:**
+
+ - [ui-analysys-and listing-methods](#ui-analysys-and-listing-methods)
+  - [cpu\_requests\_panel](#cpu_requests_panel)
+- [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
+
+# ui-analysys-and listing-methods
+![Alt text](eks-screen-1.png)
+5. cpu_requests_panel 
+
+## cpu_requests_panel
+
+**called from subcommand**
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="cpu_requests_panel" --timeRange={}
+
+
+**called from maincommand**
+
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_requests_panel" --timeRange={}
+
+**Called from API**
+
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_requests_panel, --timeRange={}
+
+
+**Desired Output in  graph format:**
+- CPU Requests 
+
+
+**Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-1. CPU utilization - Write a custom metric for cpu utilization, where we shall write a program for current, avg and max.
-2. Memory Utilization - Write a custom metric for memory utilization, for current,avg and max.
-3. Storage Utilization - Write a custom metric for storage utiization, for root Volume, and other attached volumes in EBS
-4. Network Utilization - write a custom metric for network utilization, for inbound & outbound and then total them both and get value for data transferred.
+- CPU requests panel - Fire a cloudwatch query for CPU requests, using metric namespace as CPU_Requests. 
+
+ **Pseudo Code:**
 
 # list of subcommands and options for EKS
 
