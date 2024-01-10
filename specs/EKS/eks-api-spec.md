@@ -12,6 +12,16 @@
   - [memory\_limits\_panel](#memory_limits_panel)
   - [allocatable\memory\_panel](#allocatable_memory_panel)
   - [memory\_utilization\panel](#memory_utilization_panel)
+  - [disk\_utilization\panel](#disk_utiization_panel)
+  - [network\_in\_out\_panel](#network_in_out_panel)
+  - [CPU\_utilization\_panel](#cpu_utiization_panel)
+  - [memory\_usage\_panel](#memory_usage-panel)
+  - [alerts\_warnings\_panel]
+  - [network\_throughput\_panel](#network_throughput_panel-1)
+  - [node\_capacity\_panel](#node_capacity)
+  - [node\_condition\_panel](#node_condition)
+  - [disk\_io\_performance\_panel](#disk_io_performance_panel)
+  - [node\_event\_logs\_panel](#node_event_logs_panel)
 
 
 - [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
@@ -432,7 +442,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-4.png)
 13. Disk_utilization_panel
-
+## Disk_utiization_panel
 Disk_utilization_panel
 called from subcommand
 
@@ -456,6 +466,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-5.png)
 14. Network_in_out_panel
+## Network_in_out_panel
 
 Network_in_out_panel
 called from subcommand
@@ -481,7 +492,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-6.png)
 15. CPU utilization panel
-
+## Cpu_utilization_panel
 CPU_Utilization_panel
 called from subcommand
 
@@ -510,7 +521,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-6.png)
 16. memory usage panel
-
+## memory_usage panel
 memory_Usage_panel
 called from subcommand
 
@@ -535,7 +546,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-6.png)
 17. network throughput panel
-
+## network_throughput_panel
 network_throughput_panel
 called from subcommand
 
@@ -559,7 +570,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-6.png)
 18. node capacity
-
+## node_capacity
 node_capacity_panel
 called from subcommand
 
@@ -583,7 +594,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-6.png)
 19. node condition
-
+## node_condition
 node_condition_panel
 called from subcommand
 
@@ -607,7 +618,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-6.png)
 20. Disk I/O performance
-
+## disk_io_performance_panel
 disk_io_performance_panel
 called from subcommand
 
@@ -631,7 +642,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-6.png)
 21. Node Event Logs
-
+## node_event_logs_panel
 node_event_logs_panel
 called from subcommand
 
@@ -653,12 +664,12 @@ node_event_logs_panel - NA metric namespace - EKS
 Pseudo Code:
 
 22. Alerts and warnings - 
-
+## alerts and warning
 
  # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
 23. Node Uptime
-
+## node_uptime_panel
 node_uptime_panel
 called from subcommand
 
@@ -682,7 +693,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
 24. Node Downtime
-
+## node_downtime_panel
 node_downtime_panel
 called from subcommand
 
@@ -707,7 +718,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
 25. Network Availability
-
+## network availability_panel
 network_availability_panel
 called from subcommand
 
@@ -731,7 +742,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
 26. Service Availability
-
+## service_availability_panel
 service_availability_panel
 called from subcommand
 
@@ -755,7 +766,7 @@ Pseudo Code:
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
 27. Network Throughput
-
+## network_throughput_panel
 network_throughput_panel
 called from subcommand
 
