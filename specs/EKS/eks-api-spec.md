@@ -641,6 +641,7 @@ Pseudo Code:
 
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-6.png)
+
 21. Node Event Logs
 ## node_event_logs_panel
 node_event_logs_panel
@@ -668,6 +669,7 @@ Pseudo Code:
 
  # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
+
 23. Node Uptime
 ## node_uptime_panel
 node_uptime_panel
@@ -692,6 +694,7 @@ Pseudo Code:
 
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
+
 24. Node Downtime
 ## node_downtime_panel
 node_downtime_panel
@@ -717,6 +720,7 @@ Pseudo Code:
 
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
+
 25. Network Availability
 ## network availability_panel
 network_availability_panel
@@ -741,6 +745,7 @@ Pseudo Code:
 
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
+
 26. Service Availability
 ## service_availability_panel
 service_availability_panel
@@ -765,6 +770,7 @@ Pseudo Code:
 
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-7.png)
+
 27. Network Throughput
 ## network_throughput_panel
 network_throughput_panel
