@@ -17,26 +17,28 @@ It implements the awsx plugin getElementDetails
 3. storage_utilization_panel
 4. network_utilization_panel
 
-![Alt text](image-1.png)
 
 5. hosted_business_services
 
-![Alt text](image-2.png)
+![Alt text](image-1.png)
 
 6. ec2_config_data
 
-![Alt text](image-3.png)
+![Alt text](image-2.png)
 
 7. ec2_sla_data
 
-![Alt text](image-4.png)
+![Alt text](image-3.png)
 
 8. ec2_cost_and_spike
 
+![Alt text](image-4.png)
+
 
 # ui-analysys-and listing-methods
-![Alt text](image.png)
+
 1. cpu_utilization_panel
+![Alt text](image.png)
 
 ## cpu_utiization_panel
 
@@ -74,8 +76,9 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
  
 
 # ui-analysys-and listing-methods
-![Alt text](image.png)
+
 2. memory_utilization_panel 
+![Alt text](image.png)
 
 ## memory_utiization_panel
 
@@ -113,8 +116,9 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
  
  
  # ui-analysys-and listing-methods
-![Alt text](image.png)
-3. storage_utilization_panel 
+
+3. storage_utilization_panel
+![Alt text](image.png) 
 
 ## storage_utiization_panel
 
@@ -152,8 +156,9 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
  
 
  # ui-analysys-and listing-methods
-![Alt text](image.png)
+
 4. network_utilization_panel 
+![Alt text](image.png)
 
 ## network_utiization_panel
 
@@ -202,7 +207,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 
 
-##cpu performance graph panel gettimg data by CWagent
+##cpu performance graph panel getting data by CWagent
 
 
 
