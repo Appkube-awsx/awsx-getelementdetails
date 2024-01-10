@@ -33,7 +33,7 @@ It implements the awsx plugin getElementDetails
 ![Alt text](eks-screen-1.png)
 1. cpu_utilization_panel 
 
-## cpu_utiization_panel
+## cpu_utilization_panel
 
 **called from subcommand**
 
@@ -49,7 +49,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 /awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_utilization_panel, --timeRange={}
 
 
-**Desired Output in json / graph format:**
+**Desired Output in json format:**
 - CPU utilization
 {
 	CurrentUsage:25%,
@@ -61,7 +61,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- CPU utilization panel - Write a custom metric for cpu utilization, where we shall write a program for current, avg and max.
+- CPU utilization panel - Write a custom metric for cpu utilization, where we shall write a program for current, avg and max, using cloudwatch API
 
  **Pseudo Code:**   
 
@@ -178,7 +178,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Network utilization panel - Write a custom metric for Network utilization, where we shall write a program for root volume usage and ebs disks usage.
+- Network utilization panel - Write a custom metric for Network utilization, where we shall write a program for root volume usage and ebs disks usage, using cloudwatch API(GetMetrics)
 
  **Pseudo Code:**
 
@@ -188,7 +188,6 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 # ui-analysys-and listing-methods
 ![Alt text](eks-screen-2.png)
-
 
 5. cpu_requests_panel 
 
@@ -215,7 +214,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- CPU requests panel - Fire a cloudwatch query for CPU requests, using metric namespace as CPU_Requests. 
+- CPU requests panel - metric name - node_cpu_request, Metric Namespace - EKS, node_cpu_request is not reported directly as a metric, but is a field in performance log events.
 
  **Pseudo Code:**
 
@@ -245,7 +244,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- allocatable cpu panel - Fire a cloudwatch query for allocatable cpu, using metric namespace as allocatable_cpu_panel. 
+- allocatable cpu panel - - Metric name - node_cpu_limit, metric namespace - EKS, dimmensions to add - ClusterName, InstanceId, NodeName
 
  **Pseudo Code:**
 # list of subcommands and options for EKS
@@ -276,7 +275,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- cpu_limits_panel - Fire a cloudwatch query for allocatable cpu, using metric namespace as allocatable_cpu_panel. 
+- cpu_limits_panel - Fire a cloudwatch query for  Metric name - node_cpu_limit, metric namespace - EKS, dimmensions to add - ClusterName, InstanceId, NodeName.
 
  **Pseudo Code:**
 
@@ -307,7 +306,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- cpu_utilization_graph_panel - Fire a cloudwatch query for cpu_utilization_graph_panel, using metric namespace as cpu_utilization_panel. Note - The service name shall be EKS.
+- cpu_utilization_graph_panel - Fire a cloudwatch query for cpu_utilization_graph_panel, using metric node_cpu_utilization. Note - The metric namespace should be EKS.
 
  **Pseudo Code:**
 
@@ -339,7 +338,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- memory_requests_panel - Write a cloudwatch query for memory_requests_panel, where we shall retrieve in graph format.
+- memory_requests_panel - Write a cloudwatch query for memory_requests_panel, where we shall retrieve in graph format. metric name - node_memory_reserved_capacity, formula - node_memory_request,NOTE - node_memory_request is not reported directly as a metric, but is a field in performance log events. For more information, see Relevant fields in performance log events for Amazon EKS and Kubernetes.
 
  **Pseudo Code:**
 
@@ -371,7 +370,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Memory Limits panel - Fire a cloudwatch query for Memory Limits, using metric namespace as memory_limits. 
+- Memory Limits panel - Fire a cloudwatch query for Memory Limits, using metric name as node_memory_reserved_capacity, Formula - node_memory_limit. This is a container insight metric. 
 
  **Pseudo Code:**
 
@@ -434,7 +433,9 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- memory_utilization_panel - Fire a cloudwatch query for memory_utilization_panel, using metric namespace as memory_utilization. NOTE - The service should be EKS only. 
+- memory_utilization_panel - Fire a cloudwatch query for memory_utilization_panel, using metric name as node_memory_utilization. NOTE - The percentage of memory currently being used by the node or nodes. It is the percentage of node memory usage divided by the node memory limitation.
+
+Formula: node_memory_working_set / node_memory_limit. 
 
  **Pseudo Code:**
 
@@ -443,7 +444,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 ![Alt text](eks-screen-4.png)
 13. Disk_utilization_panel
 ## Disk_utiization_panel
-Disk_utilization_panel
+Disk_utilization_panel (incomplete)
 called from subcommand
 
 awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="Disk_utilization_panel" --timeRange={}
@@ -485,7 +486,7 @@ Network_in_out_panel
 Algorithm/ Pseudo Code
 Algorithm:
 Network_in_out_panel - Write a cloudwatch query for Network_in_out_panel, where we shall retrieve the data in graph format, metrics used -- pod_network_rx_bytes, pod_network_tx_bytes
-  NOTE - These are container insights metrics which is a custom namespace in cloudwatch.
+  NOTE - These are container insights metrics which is a custom namespace in cloudwatch when enabled.
 
 Pseudo Code:
 
@@ -513,8 +514,8 @@ CPU_Utilization_panel
 
 Algorithm/ Pseudo Code
 Algorithm:
-Network_in_out_panel - Write a cloudwatch query for CPU_Utilization_panel
-, where we shall retrieve the data in graph format, metrics used -- CPU utilization, metric namespace - EKS
+CPU_Utilization_panel - Write a cloudwatch query for CPU_Utilization_panel
+, where we shall retrieve the data in graph format, metrics used -- node_cpu_utilization, metric namespace - container Insights
 
 Pseudo Code:
 
@@ -539,7 +540,7 @@ memory_Usage_panel
 
 Algorithm/ Pseudo Code
 Algorithm:
-memory_Usage_panel - NA metric namespace - EKS
+memory_Usage_panel -  metric namespace - container insights. metric name - node_memory_reserved_capacity, Formula - node_memory_request / node_memory_limit
 
 Pseudo Code:
 
@@ -563,7 +564,8 @@ network_throughput_panel
 
 Algorithm/ Pseudo Code
 Algorithm:
-network_throughput_panel - NA metric namespace - EKS
+Write a cloudwatch query for Network_in_out_panel, where we shall retrieve the data in graph format, metrics used -- pod_network_rx_bytes, pod_network_tx_bytes
+  NOTE - These are container insights metrics which is a custom namespace in cloudwatch when enabled. Metric NameSpace - Container Insights.
 
 Pseudo Code:
 
@@ -582,12 +584,12 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 Called from API
 /awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=node_capacity_panel, --timeRange={}
 
-Desired Output in graph format:
+Desired Output in pie chart format:
 node_capacity_panel
 
 Algorithm/ Pseudo Code
 Algorithm:
-node_capacity_panel - NA metric namespace - EKS
+node_capacity_panel - metric namespace - Container Insights, metric name - node_status_capacity_pods.
 
 Pseudo Code:
 
@@ -606,12 +608,12 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 Called from API
 /awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=node_condition_panel, --timeRange={}
 
-Desired Output in graph format:
+Desired Output in pie cahrt format:
 node_condition_panel
 
 Algorithm/ Pseudo Code
 Algorithm:
-node_condition_panel - NA metric namespace - EKS
+node_condition_panel - metric name - node_status_condition_ready,node_status_condition_memory_pressure, node_status_condition_pid_pressure, node_status_condition_disk_pressure, node_status_condition_unknown. Metric Namespace - Container Insights. Use all given metrics to specify a condition of a node.
 
 Pseudo Code:
 
