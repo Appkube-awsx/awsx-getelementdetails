@@ -97,6 +97,7 @@ func GetMetricData(clientAuth *model.Auth, cloudWatchQueries string) (*cloudwatc
 	return result, nil
 }
 
+// Below method is being used in awsx-api end point.
 func GetMetricDataWithSingleQuery(clientAuth *model.Auth, cloudWatchQueries string) (*cloudwatch.GetMetricDataOutput, error) {
 	var outerQuery OuterQuery
 	err := json.Unmarshal([]byte(cloudWatchQueries), &outerQuery)

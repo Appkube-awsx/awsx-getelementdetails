@@ -35,7 +35,7 @@ var CpuUtilizationPanelCmd = &cobra.Command{
 		}
 		if authFlag {
 			instanceID, _ := cmd.PersistentFlags().GetString("instanceID")
-			metricName, _ := cmd.PersistentFlags().GetString("query")
+			queryName, _ := cmd.PersistentFlags().GetString("query")
 			namespace, _ := cmd.PersistentFlags().GetString("elementType")
 			startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 			endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -68,42 +68,46 @@ var CpuUtilizationPanelCmd = &cobra.Command{
 				defaultEndTime := time.Now()
 				endTime = &defaultEndTime
 			}
+			if queryName == "cpu_utilization_panel" {
+				currentUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "SampleCount")
+				if err != nil {
+					log.Fatal(err)
+				}
+				// Get average usage
+				averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "Average")
+				if err != nil {
+					log.Fatal(err)
+				}
 
-			currentUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "SampleCount")
-			if err != nil {
-				log.Fatal(err)
-			}
-			// Get average usage
-			averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "Average")
-			if err != nil {
-				log.Fatal(err)
+				// Get max usage
+				maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "Maximum")
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				jsonOutput := map[string]float64{
+					"CurrentUsage": *currentUsage.MetricDataResults[0].Values[0],
+					"AverageUsage": *averageUsage.MetricDataResults[0].Values[0],
+					"MaxUsage":     *maxUsage.MetricDataResults[0].Values[0],
+				}
+
+				jsonString, err := json.Marshal(jsonOutput)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				// Print the JSON string
+				fmt.Println(string(jsonString))
+			} else {
+				fmt.Println("query name not matched")
 			}
 
-			// Get max usage
-			maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "Maximum")
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			jsonOutput := map[string]float64{
-				"CurrentUsage": *currentUsage.MetricDataResults[0].Values[0],
-				"AverageUsage": *averageUsage.MetricDataResults[0].Values[0],
-				"MaxUsage":     *maxUsage.MetricDataResults[0].Values[0],
-			}
-
-			jsonString, err := json.Marshal(jsonOutput)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			// Print the JSON string
-			fmt.Println(string(jsonString))
 		}
 
 	},
 }
 
-func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, metricName, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -118,7 +122,7 @@ func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, metricName,
 								Value: aws.String(instanceID),
 							},
 						},
-						MetricName: aws.String(metricName),
+						MetricName: aws.String("CPUUtilization"),
 						Namespace:  aws.String(namespace),
 					},
 					Period: aws.Int64(300),
