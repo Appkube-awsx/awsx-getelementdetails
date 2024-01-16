@@ -1,8 +1,8 @@
 package command
 
 import (
+	"fmt"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-getelementdetails/controller"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EC2"
 	"github.com/spf13/cobra"
 	"log"
@@ -17,45 +17,48 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
 		if err != nil {
-			log.Println("Error during authentication: %v", err)
-			cmd.Help()
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
 			return
 		}
 		if authFlag {
 			// Retrieve JSON input from command-line flag
+			queryName, _ := cmd.PersistentFlags().GetString("query")
+			elementType, _ := cmd.PersistentFlags().GetString("elementType")
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			if queryName == "cpu_utilization_panel" {
+				if elementType == "AWS/EC2" {
+					jsonResp, cloudwatchMetricResp, err := EC2.GetCpuUtilizationPanel(cmd, clientAuth)
+					if err != nil {
+						log.Println("Error getting cpu utilization: ", err)
+						return
+					}
+					if responseType == "frame" {
+						fmt.Println(cloudwatchMetricResp)
+					} else {
+						// default case. it prints json
+						fmt.Println(jsonResp)
+					}
 
-			cloudWatchQueries, err := cmd.PersistentFlags().GetString("cloudWatchQueries")
-			if err != nil {
-				log.Println("Error retrieving JSON input: %v", err)
-				cmd.Help()
-				return
+				}
+			} else {
+				fmt.Println("query not found")
 			}
-			if cloudWatchQueries == "" {
-				log.Println("cloud-watch query not provided. program exit")
-				cmd.Help()
-				return
-			}
-			// Call GetMetricData with clientAuth, JSON input, and dimensions
-			res, err := controller.GetMetricData(clientAuth, cloudWatchQueries)
 
-			if err != nil {
-				log.Println("Error getting metric data: %v", err)
-				return
-			}
-			log.Println(res)
 		}
 	},
 }
 
 func Execute() {
 	if err := AwsxCloudWatchMetricsCmd.Execute(); err != nil {
-		log.Println("error executing command: %v", err)
+		log.Printf("error executing command: %v\n", err)
 	}
 }
 
 func init() {
-	AwsxCloudWatchMetricsCmd.AddCommand(EC2.CpuUtilizationPanelCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EC2.MemoryUtilizationPanelCmd)
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cloudElementId", "", "cloud element id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cloudElementApiUrl", "", "cloud element api")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
@@ -68,4 +71,10 @@ func init() {
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("externalId", "", "aws external id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
 
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("instanceID", "", "instance id")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("query", "", "query")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
