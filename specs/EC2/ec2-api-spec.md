@@ -16,6 +16,10 @@
   - [disk\_write\_panel](#disk_write_panel)
   - [disk\_used\_panel](#disk_used_panel)
   - [disk\_available\_panel](#disk_available_panel)
+  - [net\_inPackets\_panel](#net_inPackets_panel)
+  - [net\_outPackets\_panel](#net_outPackets_panel)
+  - [net\_inBytes\_panel](#net_inBytes_panel)
+  - [net\_outBytes\_panel](#net_outBytes_panel)
   
  
 - [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-ec2)
@@ -33,15 +37,20 @@ It implements the awsx plugin getElementDetails
 6. cpu_usage_idle_panel
 7. cpu_usage_sys_panel
 8. cpu_usage_nice_panel
-9. mem_Total
-10.mem_Free
-11.mem_used
-12.mem_PhysicalRam
-13.Disk_Reads
-14.Disk_Writes
-15.Disk_Used
-16.Disk_available
+9.  mem_total_panel
+10. mem_free_panel
+11. mem_used_panel
+12. mem_physicalRam_panel
+13. disk_reads_panel
+14. disk_writes_panel
+15. disk_used_panel
+16. disk_available_panel
+17. net_inpackets_panel
+18. net_outpacket_panel
+19. net_inBytes_panel
+20. net_outBytes_panel
 
+_
 # ui-analysys-and listing-methods
 ![Alt text](ec2_screen.png)
 1. cpu_utilization_panel
@@ -501,6 +510,298 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
 **Algorithm:** 
 - Mem physicalRAM panel  -Fire a cloudwatch query for mem_physicalRAM_panel, using metric mem_physicalRAM_panel.
+
+ **Pseudo Code:**  
+ 
+ 
+ 
+ # ui-analysys-and listing-methods
+![Alt text](ec2_screen3.png)
+13. disk_read_panel
+
+
+##  disk_read_panel
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_read)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+ 
+
+**called from maincommand**
+
+awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_read)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=disk_read_panel
+
+
+**Desired Output in json / graph format:**
+13. disk_read panel
+
+	-disk_read_panel
+
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- disk read panel  -Fire a cloudwatch query for disk_read_panel, using metric disk_read_panel.
+
+ **Pseudo Code:**  
+ 
+
+ # ui-analysys-and listing-methods
+![Alt text](ec2_screen3.png)
+14. disk_write_panel
+
+
+##  disk_write_panel
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_write)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+ 
+
+**called from maincommand**
+
+awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_write)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=disk_write_panel
+
+
+**Desired Output in json / graph format:**
+14. disk_write panel
+
+	-disk_write_panel
+
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- disk write panel  -Fire a cloudwatch query for disk_write_panel, using metric disk_write_panel.
+
+ **Pseudo Code:**  
+ 
+ 
+ # ui-analysys-and listing-methods
+![Alt text](ec2_screen3.png)
+15. disk_used_panel
+
+
+##  disk_used_panel
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_used)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+ 
+
+**called from maincommand**
+
+awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_used)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=disk_used_panel
+
+
+**Desired Output in json / graph format:**
+15. disk_used panel
+
+	-disk_used_panel
+	
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- disk used panel  -Fire a cloudwatch query for disk_used_panel, using metric disk_used_panel.
+
+ **Pseudo Code:**  
+ 
+ # ui-analysys-and listing-methods
+![Alt text](ec2_screen3.png)
+16. disk_available_panel
+
+
+##  disk_available_panel
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_available)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+ 
+
+**called from maincommand**
+
+awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_available)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=disk_available_panel
+
+
+**Desired Output in json / graph format:**
+16. disk_available panel
+
+	-disk_available_panel
+	  
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- disk available panel  -Fire a cloudwatch query for disk_available_panel, using metric disk_available_panel.
+
+ **Pseudo Code:**  
+ 
+ 
+  # ui-analysys-and listing-methods
+![Alt text](ec2_screen4.png)
+17. net\_inPackets\_panel
+
+
+##  net\_inPackets\_panel
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(network_in)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+ 
+
+**called from maincommand**
+awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(network_in)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=network_in_panel
+
+
+**Desired Output in json / graph format:**
+17. network_in_packets_panel
+
+	-network_in_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- network_inpackets panel  -Fire a cloudwatch query for network_inpackets_panel, using metric network_in_panel.
+
+ **Pseudo Code:**  
+ 
+  # ui-analysys-and listing-methods
+![Alt text](ec2_screen4.png)
+18. net\_outPackets\_panel
+
+
+##  net\_outPackets\_panel
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(network_out)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+ 
+
+**called from maincommand**
+awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(network_out)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=network_out_panel
+
+
+**Desired Output in json / graph format:**
+18. network_out_packets_panel
+
+	-network_out_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- network_outpackets panel  -Fire a cloudwatch query for network_outpackets_panel, using metric network_out_panel.
+
+ **Pseudo Code:**  
+ 
+ # ui-analysys-and listing-methods
+![Alt text](ec2_screen4.png)
+19. net\_inBytes\_panel
+
+
+##  net\_inBytes\_panel
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(network_in)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+ 
+
+**called from maincommand**
+awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(network_in)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=network_in_panel
+
+
+**Desired Output in json / graph format:**
+19. network_in_packets_panel
+
+	-network_in_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- network_inBytes panel  -Fire a cloudwatch query for network_inBytes_panel, using metric network_in_panel.
+
+ **Pseudo Code:**  
+ 
+ # ui-analysys-and listing-methods
+![Alt text](ec2_screen4.png)
+20. net\_outBytes\_panel
+
+
+##  net\_outBytes\_panel
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(network_out)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+ 
+
+**called from maincommand**
+awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(network_out)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=network_out_panel
+
+
+**Desired Output in json / graph format:**
+20. network_out_bytes_panel
+
+	-network_outBytes_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- network_outBytes panel  -Fire a cloudwatch query for network_outBytes_panel, using metric network_out_panel.
 
  **Pseudo Code:**  
 
