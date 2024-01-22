@@ -637,7 +637,7 @@ disk_io_performance_panel
 
 Algorithm/ Pseudo Code
 Algorithm:
-disk_io_performance_panel - NA metric namespace - EKS
+disk_io_performance_panel -  metric namespace - EKS, metric name - node_diskio_io_serviced_total, This metric is related to Container Insights metrics.
 
 Pseudo Code:
 
