@@ -29,6 +29,10 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			queryName, _ := cmd.PersistentFlags().GetString("query")
 			elementType, _ := cmd.PersistentFlags().GetString("elementType")
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			//if elementType == "AWS/EC2" && queryName == "cpu_utilization_panel" {
+			//
+			//
+			//}
 			if queryName == "cpu_utilization_panel" {
 				if elementType == "AWS/EC2" {
 					jsonResp, cloudwatchMetricResp, err := EC2.GetCpuUtilizationPanel(cmd, clientAuth)
@@ -59,6 +63,7 @@ func Execute() {
 }
 
 func init() {
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cloudElementId", "", "cloud element id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cloudElementApiUrl", "", "cloud element api")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
