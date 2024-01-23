@@ -178,8 +178,7 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Network utilization panel - Write a custom metric for Network utilization, where we shall write a program for root volume usage and ebs disks usage, using cloudwatch API(GetMetrics)
-
+- Network utilization panel - Write a custom metric for Network utilization, where we shall write a program for metric name of node_network_total_bytes. Metric Namespace - ContainerInsights
  **Pseudo Code:**
 
  - [ui-analysys-and listing-methods](#ui-analysys-and-listing-methods)
