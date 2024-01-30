@@ -99,40 +99,6 @@ func GetContainerPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[
 
 }
 
-// func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
-// 	input := &cloudwatch.GetMetricDataInput{
-// 		EndTime:   endTime,
-// 		StartTime: startTime,
-// 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-// 			{
-// 				Id: aws.String("m1"),
-// 				MetricStat: &cloudwatch.MetricStat{
-// 					Metric: &cloudwatch.Metric{
-// 						Dimensions: []*cloudwatch.Dimension{
-// 							{
-// 								Name:  aws.String("InstanceId"),
-// 								Value: aws.String(instanceID),
-// 							},
-// 						},
-// 						MetricName: aws.String("CPUUtilization"),
-// 						Namespace:  aws.String(namespace),
-// 					},
-// 					Period: aws.Int64(300),
-// 					Stat:   aws.String(statistic),
-// 				},
-// 			},
-// 		},
-// 	}
-// 	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-// 	result, err := cloudWatchClient.GetMetricData(input)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return result, nil
-// }
-// var containerName string
-
 func GetContainerMetricData(clientAuth *model.Auth, clusterName, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
