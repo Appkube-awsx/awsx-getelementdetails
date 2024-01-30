@@ -2,10 +2,12 @@ package command
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EC2"
+	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EKS"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var AwsxCloudWatchMetricsCmd = &cobra.Command{
@@ -29,29 +31,56 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			queryName, _ := cmd.PersistentFlags().GetString("query")
 			elementType, _ := cmd.PersistentFlags().GetString("elementType")
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			//if elementType == "AWS/EC2" && queryName == "cpu_utilization_panel" {
-			//
-			//
-			//}
-			if queryName == "cpu_utilization_panel" {
-				if elementType == "AWS/EC2" {
-					jsonResp, cloudwatchMetricResp, err := EC2.GetCpuUtilizationPanel(cmd, clientAuth)
-					if err != nil {
-						log.Println("Error getting cpu utilization: ", err)
-						return
-					}
-					if responseType == "frame" {
-						fmt.Println(cloudwatchMetricResp)
-					} else {
-						// default case. it prints json
-						fmt.Println(jsonResp)
-					}
 
+			if queryName == "cpu_utilization_panel" && elementType == "AWS/EC2" {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetCpuUtilizationPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting cpu utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					// default case. it prints json
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "Ekscpu_utilization_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetContainerPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					// default case. it prints json
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "EksMemoryUtilizationPanel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GeteksMemoryUtilizationPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "EksNetworkUtilizationPanel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkUtilizationPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
 				}
 			} else {
 				fmt.Println("query not found")
 			}
-
 		}
 	},
 }
@@ -78,6 +107,7 @@ func init() {
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("elementType", "", "element type")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("instanceID", "", "instance id")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("clusterName", "", "cluster name")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("query", "", "query")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("endTime", "", "endcl time")
