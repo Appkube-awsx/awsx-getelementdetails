@@ -44,6 +44,30 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					// default case. it prints json
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "network_utilization_panel" && elementType == "AWS/EC2" {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkUtilizationPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					// default case. it prints json
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "storage_utilization_panel" && elementType == "AWS/EC2" {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetVolumeMetricsPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					// default case. it prints json
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "Ekscpu_utilization_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetContainerPanel(cmd, clientAuth)
 				if err != nil {
