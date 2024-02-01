@@ -92,7 +92,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					// default case. it prints json
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "EksMemoryUtilizationPanel" && elementType == "ContainerInsights" {
+			} else if queryName == "memory_utilization_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GeteksMemoryUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory utilization: ", err)
@@ -103,7 +103,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "EksNetworkUtilizationPanel" && elementType == "ContainerInsights" {
+			} else if queryName == "network_utilization_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory utilization: ", err)
