@@ -10,8 +10,38 @@ This subcommand will need to take care for all the cloud elements and for every 
 
 | S.No | CLI Spec|  Description                           
 |------|----------------|----------------------|
-| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="ec2-config-data"  | This will get the specific EC2 instance config data |
-| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="cpu_utilization_panel"  | This will get the specific EC2 instance cpu utilization panel data in hybrid structure |
-| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="storage_utilization_panel" | This will get the specific EC2 instance storage utilization panel data in hybrid structure|
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="AWS/EC2" --query="ec2-config-data"  | This will get the specific EC2 instance config data |
+
+| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="AWS/EC2" --query="cpu_utilization_panel" --instanceID="i-05e4e6757f13da657" --responseType=json --startTime="" --endTime="" | This will get the specific EC2 instance cpu utilization panel data in hybrid structure |
+
+| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="AWS/EC2" --query="memory_utilization_panel" --instanceID="i-05e4e6757f13da657" --responseType=json --startTime="" --endTime="" | This will get the specific EC2 instance memory utilization panel data in hybrid structure |
+
+| 4   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="AWS/EC2" --query="storage_utilization_panel" --instanceID="i-05e4e6757f13da657" --responseType=json --startTime="" --endTime="" | This will get the specific EC2 instance storage utilization panel data in hybrid structure|
+
+| 5   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="AWS/EC2" --query="network_utilization_panel" --instanceID="i-05e4e6757f13da657" --responseType=json --startTime="" --endTime="" | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+
+| 6   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="ContainerInsights" --query="cpu_utilization_panel" --clusterName="myclustTT" --responseType=json   --startTime="" --endTime="" | This will get the specific EKS cluster cpu utilization panel data in hybrid structure |
+
+| 7   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="ContainerInsights" --query="memory_utilization_panel" --clusterName="myclustTT" --responseType=json   --startTime="" --endTime="" | This will get the specific EKS cluster memory utilization panel data in hybrid structure |
+
+| 8  | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="ContainerInsights" --query="storage_utilization_panel" --clusterName="myclustTT" --responseType=json   --startTime="" --endTime="" | This will get the specific EKS cluster storage utilization panel data in hybrid structure |
+
+| 9  | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="ContainerInsights" --query="network_utilization_panel" --clusterName="myclustTT" --responseType=json   --startTime="" --endTime=""  | This will get the specific EKS cluster network utilization panel data in hybrid structure |
+
+| 10   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="ContainerInsights" --query="cpu_requests_panel"  --clusterName="myclustTT" --responseType=json   --startTime="2024-02-01T00:00:00Z" --endTime="2024-02-01T23:59:59Z"   | This will get the specific EKS cpu requests panel data in hybrid structure |
+
+| 11   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="ContainerInsights" --query="allocatable_cpu_panel"  --clusterName="myclustTT" --responseType=json   --startTime="2024-02-01T00:00:00Z" --endTime="2024-02-01T23:59:59Z"    | This will get the specific EKS allocatable cpu requests panel data in hybrid structure |
+
+| 12    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="ContainerInsights" --query="cpu_utilization_panel" --clusterName="myclustTT" --responseType=json   --startTime="" --endTime=""  | This will get the specific ECS cluster cpu utilization panel data in hybrid structure |
+
+| 13   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="ContainerInsights" --query="memory_utilization_panel"  --clusterName="myclustTT" --responseType=json   --startTime="" --endTime="" | This will get the specific ECS memory utilization panel data in hybrid structure |
+
+| 14  | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType="ContainerInsights  --query="network_utilization_panel" --clusterName="myclustTT" --responseType=json   --startTime="" --endTime=""  | This will get the specific ECS cluster network utilization panel data in hybrid structure |
+
+
+
+
+
+
+
 
