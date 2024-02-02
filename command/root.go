@@ -6,6 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EC2"
+	"github.com/Appkube-awsx/awsx-getelementdetails/handler/ECS"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EKS"
 	"github.com/spf13/cobra"
 )
@@ -129,6 +130,52 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPULimitsData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_utilization_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetContainerPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					// default case. it prints json
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "memory_utilization_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetecsMemoryUtilizationPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_utilization_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetNetworkUtilizationPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+
+			} else if queryName == "storage_utilization_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetStorageUtilizationPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting storage utilization: ", err)
 					return
 				}
 				if responseType == "frame" {
