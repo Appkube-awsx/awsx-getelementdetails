@@ -5,26 +5,28 @@
   - [storage\_utilization\_panel](#storage_utiization_panel)
   - [network\_utilization\_panel](#network_utiization_panel)
   - [cpu\_utilization\_panel](#cpu_utilizaion_panel)
-  - [cpu\_reservation\_panel](#cpu_reservationpanel)   
+  - [cpu\_reservation\_panel](#cpu_reservation_panel)   
   - [cpu\_usage\_sys\_panel](#cpu_usage_sys_panel)
   - [cpu\_usage\_nice\_panel](#cpu_usage_nice_panel)
-  - [memory\_utilization\_panel](#mem_utilization_panel)
+  - [memory\_utilization\_panel](#memory_utilization_panel)
   - [memory\_reservation\_panel](#memory_reservation_panel)
   - [memory\_usage\_panel](#memory_usage_panel)
   - [memory\_overtime\_panel](#memory_overtime_panel)
-  - [volume\_readBytes\_panel](#volume_readBytes_panel)
-  - [volume\_writeBytes\_panel](#disk_writeBytes_panel)
-  - [I/O\_bytes\_panel](#I/O_bytes_panel)
+  - [volume\_readBytes\_panel](#volume_readbytes_panel)
+  - [volume\_writeBytes\_panel](#volume_writebytes_panel)
+  - [I/O\_bytes\_panel](#input_output_bytes_panel)
   - [disk\_available\_panel](#disk_available_panel) 
-  - [net\_inBytes\_panel](#net_inBytes_panel)
-  - [net\_outBytes\_panel](#net_outBytes_panel)
-  - [net\_ReceiveInBytes\_panel](#net_ReceiveInBytes_panel)
-  - [net\_TransmitInbytes\_panel](#net_TransmitInBytes_panel)
-  - [net\_RxInBytes\_panel](#net_RxInBytes_panel) 
-  - [net\_TxInBytes\_panel](#net_TxInBytes_panel)
+  - [net\_inBytes\_panel](#net_inbytes_panel)
+  - [net\_outBytes\_panel](#net_outbytes_panel)
+  - [net\_ReceiveInBytes\_panel](#net_receiveinbytes_panel)
+  - [net\_TransmitInbytes\_panel](#net_transmitinbytes_panel)
+  - [net\_RxInBytes\_panel](#net_rxinbytes_panel) 
+  - [net\_TxInBytes\_panel](#net_txinbytes_panel)
   
  
 - [list of subcommands and options for ECS](#list-of-subcommands-and-options-for-ecs)
+
+list of subcommands and options for EC2
  
 # awsx-getelementdetails
 It implements the awsx plugin getElementDetails
@@ -97,7 +99,7 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 # ui-analysys-and listing-methods
 
 2. memory_utilization_panel
-![Alt text](ecs_screen1_screen.png) 
+![Alt text](ecs_screen1.png)
 
 ## memory_utiization_panel
 
@@ -222,7 +224,7 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 ![Alt text](ecs_screen2.png)
 
 
-## cpu_utilization_panel
+## cpu_utilizaion_panel
 
 **called from subcommand**
 
@@ -260,7 +262,7 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 ![Alt text](ecs_screen2.png)
 
 
-## cpu_resevation_panel
+## cpu_reservation_panel
 
 **called from subcommand**
 
@@ -297,7 +299,7 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 ![Alt text](ecs_screen2.png)
 
  
-## cpu_usage_system_panel
+## cpu_usage_sys_panel
 
 **called from subcommand**
 
@@ -332,7 +334,7 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  # ui-analysys-and listing-methods
 
 8. cpu_usage_nice_panel
-![Alt text](ecs_scree2.png)
+![Alt text](ecs_screen2.png)
 
 
 ## cpu_usage_nice_panel
@@ -568,7 +570,7 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 ![Alt text](ecs_screen4.png)
 
 
-##  volume_writeBytes_panel
+##  volume_writebytes_panel
 
 **called from subcommand**
 
@@ -607,7 +609,7 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 ![Alt text](ecs_screen4.png)
 
 
-##  I/O_Bytes_panel
+##  input_output_bytes_panel
 
 **called from subcommand**
 
@@ -899,7 +901,7 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
 
  
-# list of subcommands and options for EC2
+# list of subcommands and options for ECS
  
 | S.No | CLI Spec|  Description                          
 |------|----------------|----------------------|

@@ -1,39 +1,39 @@
 - [awsx-getelementdetails](#awsx-getelementdetails)
-- [ui-analysys-and listing-methods](#ui-analysys-and-listing-methods)
-  - [cpu\_utilization\_panel](#cpu_utiization_panel)
-  - [memory\_utilization\_panel](#memory_utiization_panel)
+- [ui-analysys and listing methods](#ui-analysys-and-listing-methods)
+  - [cpu\_utilization\_panel](#cpu_utilization_panel)
+  - [memory\_utilization\_panel](#memory_utilization_panel)
   - [storage\_utilization\_panel](#storage_utiization_panel)
   - [network\_utilization\_panel](#network_utiization_panel)
   - [cpu\_requests\_panel](#cpu_requests_panel)
-  - [allocatable\cpu\_panel](#allocatable_cpu_panel)
-  - [cpu\limits\_panel](#cpu_limits_panel)
+  - [allocatable\_cpu\_panel](#allocatable_cpu_panel)
+  - [cpu\_limits\_panel](#cpu_limits_panel)
   - [cpu\_utilization\_graph\_panel](#cpu_utilization_graph_panel)
   - [memory\_requests\_panel](#memory_requests_panel)
   - [memory\_limits\_panel](#memory_limits_panel)
-  - [allocatable\memory\_panel](#allocatable_memory_panel)
-  - [memory\_utilization\panel](#memory_utilization_panel)
-  - [disk\_utilization\panel](#disk_utiization_panel)
+  - [allocatable\_memory\_panel](#allocatable_memory_panel)
+  - [memory\_utilization\_panel](#memory_utilization_panel)
+  - [disk\_utilization\_panel](#disk_utiization_panel)
   - [network\_in\_out\_panel](#network_in_out_panel)
-  - [CPU\_utilization\_panel](#cpu_utiization_panel)
+  - [CPU\_utilization\_panel](#cpu_utilization_panel)
   - [memory\_usage\_panel](#memory_usage-panel)
-  - [alerts\_warnings\_panel]
+  - [alerts\_warnings\_panel](#alerts-and-warning)
   - [network\_throughput\_panel](#network_throughput_panel-1)
   - [node\_capacity\_panel](#node_capacity)
   - [node\_condition\_panel](#node_condition)
   - [disk\_io\_performance\_panel](#disk_io_performance_panel)
   - [node\_event\_logs\_panel](#node_event_logs_panel)
 
-
-- [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
+- [List of subcommands and options for EKS](#list-of-subcommands-and-options-for-eks)
 
 # awsx-getelementdetails
 It implements the awsx plugin getElementDetails 
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-1.png)
-1. cpu_utilization_panel 
-
 ## cpu_utilization_panel
+ 
+![Alt text](eks-screen-1.png)
+1. cpu_utilization_panel
+
 
 **called from subcommand**
 
@@ -66,12 +66,12 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
  **Pseudo Code:**   
 
 
-
+## memory_utilization_panel
 
 ![Alt text](eks-screen-1.png)
 2. memory_utilization_panel 
 
-## memory_utiization_panel
+
 
 **called from subcommand**
 
@@ -106,10 +106,12 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 
 # ui-analysys-and listing-methods
+## storage_utiization_panel
+
 ![Alt text](eks-screen-1.png)
 3. storage_utilization_panel 
 
-## storage_utiization_panel
+
 
 **called from subcommand**
 
@@ -142,15 +144,15 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
  **Pseudo Code:**
 
- - [ui-analysys-and listing-methods](#ui-analysys-and-listing-methods)
-  - [storage\_utilization\_panel](#network_utilization_panel)
-- [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
 
 # ui-analysys-and listing-methods
+
+## network_utiization_panel
+
 ![Alt text](eks-screen-1.png)
 4. network_utilization_panel 
 
-## network_utiization_panel
+
 
 **called from subcommand**
 
@@ -181,16 +183,14 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 - Network utilization panel - Write a custom metric for Network utilization, where we shall write a program for metric name of node_network_total_bytes. Metric Namespace - ContainerInsights
  **Pseudo Code:**
 
- - [ui-analysys-and listing-methods](#ui-analysys-and-listing-methods)
-  - [cpu\_requests\_panel](#cpu_requests_panel)
-- [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-eks)
 
 # ui-analysys-and listing-methods
+
+## cpu_requests_panel
 ![Alt text](eks-screen-2.png)
 
 5. cpu_requests_panel 
 
-## cpu_requests_panel
 
 **called from subcommand**
 
@@ -217,10 +217,15 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
  **Pseudo Code:**
 
+# ui-analysys-and listing-methods
+
+## cpu_requests_panel
+## allocatable_cpu_panel
+![Alt text](eks-screen-2.png)
 
 6. allocatable_cpu_panel 
 
-## allocatable_cpu_panel
+
 
 **called from subcommand**
 
@@ -246,12 +251,13 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 - allocatable cpu panel - - Metric name - node_cpu_limit, metric namespace - EKS, dimmensions to add - ClusterName, InstanceId, NodeName
 
  **Pseudo Code:**
-# list of subcommands and options for EKS
 
+# ui-analysys-and listing-methods
+## cpu_limits_panel
+![Alt text](eks-screen-2.png)
 
 7. cpu_limits_panel 
 
-## cpu_limits_panel
 
 **called from subcommand**
 
@@ -279,10 +285,12 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
  **Pseudo Code:**
 
 # ui-analysys-and listing-methods
+## cpu_utilization_graph_panel
 ![Alt text](eks-screen-2.png)
+
 8. cpu_utilization_graph_panel 
 
-## cpu_utilization_graph_panel
+
 
 **called from subcommand**
 
@@ -311,10 +319,11 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 
  # ui-analysys-and listing-methods
+ ## memory_requests_panel
 ![Alt text](eks-screen-3.png)
 9. memory_requests_panel 
 
-## memory_requests_panel
+
 
 **called from subcommand**
 
@@ -374,10 +383,12 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
  **Pseudo Code:**
 
 # ui-analysys-and listing-methods
+## allocatable_memory_panel
+
 ![Alt text](eks-screen-3.png)
 11. allocatable_memory_panel 
 
-## allocatable_memory_panel
+
 
 **called from subcommand**
 
@@ -403,13 +414,13 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 - allocatable memory panel - Fire a cloudwatch query for allocatable memory, using metric namespace as allocatable_memory. 
 
  **Pseudo Code:**
-# list of subcommands and options for EKS
 
 # ui-analysys-and listing-methods
+## memory_utilization_panel 
 ![Alt text](eks-screen-3.png)
 12. memory_utilization_panel 
 
-## memory_utilization_panel 
+
 
 **called from subcommand**
 
@@ -440,9 +451,11 @@ Formula: node_memory_working_set / node_memory_limit.
 
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-4.png)
-13. Disk_utilization_panel
 ## Disk_utiization_panel
+![Alt text](eks-screen-4.png)
+
+13. Disk_utilization_panel
+
 Disk_utilization_panel (incomplete)
 called from subcommand
 
@@ -464,9 +477,11 @@ Disk_utilization_panel - Write a cloudwatch query for Disk_utilization_panel, wh
 Pseudo Code:
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-5.png)
-14. Network_in_out_panel
 ## Network_in_out_panel
+![Alt text](eks-screen-5.png)
+
+14. Network_in_out_panel
+
 
 Network_in_out_panel
 called from subcommand
@@ -490,9 +505,11 @@ Network_in_out_panel - Write a cloudwatch query for Network_in_out_panel, where 
 Pseudo Code:
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-6.png)
-15. CPU utilization panel
 ## Cpu_utilization_panel
+![Alt text](eks-screen-6.png)
+
+15. CPU utilization panel
+
 CPU_Utilization_panel
 called from subcommand
 
@@ -519,9 +536,11 @@ CPU_Utilization_panel - Write a cloudwatch query for CPU_Utilization_panel
 Pseudo Code:
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-6.png)
-16. memory usage panel
 ## memory_usage panel
+![Alt text](eks-screen-6.png)
+
+16. memory usage panel
+
 memory_Usage_panel
 called from subcommand
 
@@ -544,9 +563,11 @@ memory_Usage_panel -  metric namespace - container insights. metric name - node_
 Pseudo Code:
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-6.png)
-17. network throughput panel
 ## network_throughput_panel
+![Alt text](eks-screen-6.png)
+
+17. network throughput panel
+
 network_throughput_panel
 called from subcommand
 
@@ -569,9 +590,11 @@ Write a cloudwatch query for Network_in_out_panel, where we shall retrieve the d
 Pseudo Code:
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-6.png)
-18. node capacity
 ## node_capacity
+![Alt text](eks-screen-6.png)
+
+18. node capacity
+
 node_capacity_panel
 called from subcommand
 
@@ -593,9 +616,11 @@ node_capacity_panel - metric namespace - Container Insights, metric name - node_
 Pseudo Code:
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-6.png)
-19. node condition
 ## node_condition
+![Alt text](eks-screen-6.png)
+
+19. node condition
+
 node_condition_panel
 called from subcommand
 
@@ -617,9 +642,11 @@ node_condition_panel - metric name - node_status_condition_ready,node_status_con
 Pseudo Code:
 
 # ui-analysys-and listing-methods
-![Alt text](eks-screen-6.png)
-20. Disk I/O performance
 ## disk_io_performance_panel
+![Alt text](eks-screen-6.png)
+
+20. Disk I/O performance
+
 disk_io_performance_panel
 called from subcommand
 
@@ -641,10 +668,12 @@ disk_io_performance_panel -  metric namespace - EKS, metric name - node_diskio_i
 Pseudo Code:
 
 # ui-analysys-and listing-methods
+
+## node_event_logs_panel
 ![Alt text](eks-screen-6.png)
 
 21. Node Event Logs
-## node_event_logs_panel
+
 node_event_logs_panel
 called from subcommand
 
@@ -665,14 +694,41 @@ node_event_logs_panel - NA metric namespace - EKS
 
 Pseudo Code:
 
-22. Alerts and warnings - 
+
+# ui-analysys-and listing-methods
 ## alerts and warning
+![Alt text](eks-screen-6.png)
+
+22. Alerts and warnings - 
+
+alerts and warning panel
+called from subcommand
+
+awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="alert_warning_panel" --timRange={}
+
+called from maincommand
+awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="alert_warning_panel"" --timeRange={}
+
+Called from API
+/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=alert_warning_panel"l, --timeRange={}
+
+Desired Output in graph format:
+node_event_logs_panel
+
+Algorithm/ Pseudo Code
+Algorithm:
+node_event_logs_panel - NA metric namespace - EKS
+
+Pseudo Code:
+
+
 
  # ui-analysys-and listing-methods
+ ## node_uptime_panel
 ![Alt text](eks-screen-7.png)
 
 23. Node Uptime
-## node_uptime_panel
+
 node_uptime_panel
 called from subcommand
 
@@ -694,10 +750,11 @@ node_uptime_panel - NA metric namespace - EKS
 Pseudo Code:
 
 # ui-analysys-and listing-methods
+## node_downtime_panel
 ![Alt text](eks-screen-7.png)
 
 24. Node Downtime
-## node_downtime_panel
+
 node_downtime_panel
 called from subcommand
 
@@ -720,10 +777,11 @@ Pseudo Code:
 
 
 # ui-analysys-and listing-methods
+## network availability_panel
 ![Alt text](eks-screen-7.png)
 
 25. Network Availability
-## network availability_panel
+
 network_availability_panel
 called from subcommand
 
@@ -745,10 +803,11 @@ network_availability_panel - NA metric namespace - EKS
 Pseudo Code:
 
 # ui-analysys-and listing-methods
+## service_availability_panel
 ![Alt text](eks-screen-7.png)
 
 26. Service Availability
-## service_availability_panel
+
 service_availability_panel
 called from subcommand
 
@@ -770,10 +829,12 @@ service_availability_panel - NA metric namespace - EKS
 Pseudo Code:
 
 # ui-analysys-and listing-methods
+
+## network_throughput_panel
 ![Alt text](eks-screen-7.png)
 
 27. Network Throughput
-## network_throughput_panel
+
 network_throughput_panel
 called from subcommand
 
@@ -793,6 +854,10 @@ Algorithm:
 network_throughput_panel - NA metric namespace - EKS
 
 Pseudo Code:
+
+
+
+##  List of subcommands and options for eks
 
 | S.No | CLI Spec|  Description                           
 |------|----------------|----------------------|
