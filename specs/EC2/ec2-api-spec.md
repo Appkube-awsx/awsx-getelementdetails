@@ -1,25 +1,28 @@
+# Table of Contents
+
 - [awsx-getelementdetails](#awsx-getelementdetails)
-- [ui-analysys-and listing-methods](#ui-analysys-and-listing-methods)
-  - [cpu\_utilization\_panel](#cpu_utilization_panel)
-  - [memory\_utilization\_panel](#memory_utiization_panel)
-  - [storage\_utilization\_panel](#storage_utiization_panel)
-  - [network\_utilization\_panel](#network_utiization_panel)
-  - [cpu\_usage\_user\_panel](#cpu_usage_user_panel)
-  - [cpu\_usage\_idle\_panel](#cpu_usage_idle_panel)   
-  - [cpu\_usage\_sys\_panel](#cpu_usage_sys_panel)
-  - [cpu\_usage\_nice\_panel](#cpu_usage_nice_panel)
-  - [mem\_total\_panel](#mem_total_panel)
-  - [mem\_free\_panel](#mem_free_panel)
-  - [mem\_used\_panel](#mem_used_panel)
-  - [mem\_physicalRam\_panel](#mem_physicalRam_panel)
-  - [disk\_read\_panel](#disk_read_panel)
-  - [disk\_write\_panel](#disk_write_panel)
-  - [disk\_used\_panel](#disk_used_panel)
-  - [disk\_available\_panel](#disk_available_panel)
-  - [net\_inPackets\_panel](#net_inPackets_panel)
-  - [net\_outPackets\_panel](#net_outPackets_panel)
-  - [net\_inBytes\_panel](#net_inBytes_panel)
-  - [net\_outBytes\_panel](#net_outBytes_panel)
+- [ui-analysis-and-listing-methods](#ui-analysis-and-listing-methods)
+   - [cpu_utiization_panel](#cpu_utiization_panel)
+   - [memory_utilization_panel](#memory_utilization_panel)
+   - [storage_utilization_panel](#storage_utilization_panel)
+   - [network_utilization_panel](#network_utilization_panel)
+   - [cpu_usage_user_panel](#cpu_usage_user_panel)
+   - [cpu_usage_idle_panel](#cpu_usage_idle_panel)
+   - [cpu_usage_sys_panel](#cpu_usage_sys_panel)
+   - [cpu_usage_nice_panel](#cpu_usage_nice_panel)
+   - [mem_total_panel](#mem_total_panel)
+   - [mem_free_panel](#mem_free_panel)
+   - [mem_used_panel](#mem_used_panel)
+   - [mem_physicalram_panel](#mem_physicalram_panel)
+   - [disk_read_panel](#disk_read_panel)
+   - [disk_write_panel](#disk_write_panel)
+   - [disk_used_panel](#disk_used_panel)
+   - [disk_available_panel](#disk_available_panel)
+  - [net_inpackets_panel](#net_inpackets_panel)
+  - [net_outpackets_panel](#net_outpackets_panel)
+  - [net_inbytes_panel](#net_inbytes_panel)
+  - [net_outbytes_panel](#net_outbytes_panel)
+
   
  
 - [list of subcommands and options for EC2](#list-of-subcommands-and-options-for-ec2)
@@ -27,7 +30,7 @@
 # awsx-getelementdetails
 It implements the awsx plugin getElementDetails
  
-# ui-analysys-and listing-methods
+# ui analysis and listing methods
 ![Alt text](ec2_screen.png)
 1. cpu_utilization_panel
 2. memory_utilization_panel
@@ -52,10 +55,12 @@ It implements the awsx plugin getElementDetails
 
 _
 # ui-analysys-and listing-methods
+# cpu_utiization_panel
+
 ![Alt text](ec2_screen.png)
 1. cpu_utilization_panel
 
-## cpu_utiization_panel
+
 
 **called from subcommand**
 
@@ -92,10 +97,12 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
 
 # ui-analysys-and listing-methods
+## memory_utilization_panel
+
 ![Alt text](ec2_screen.png)
 2. memory_utilization_panel 
 
-## memory_utiization_panel
+
 
 **called from subcommand**
 
@@ -132,10 +139,12 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  
  # ui-analysys-and listing-methods
+ ## storage_utilization_panel
+
 ![Alt text](ec2_screen.png)
 3. storage_utilization_panel 
 
-## storage_utiization_panel
+
 
 **called from subcommand**
 
@@ -173,10 +182,12 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
 
  # ui-analysys-and listing-methods
+ ## network_utilization_panel
+
 ![Alt text](ec2_screen.png)
 4. network_utilization_panel 
 
-## network_utiization_panel
+
 
 
 **called from subcommand**
@@ -213,11 +224,13 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  
  # ui-analysys-and listing-methods
+ ## cpu_usage_user_panel
+
 ![Alt text](ec2_screen1.png)
 5. cpu_usage_user_panel
 
 
-## cpu_usage_user_panel
+
 
 **called from subcommand**
 
@@ -252,11 +265,13 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  **Pseudo Code:** 
  
  # ui-analysys-and listing-methods
+## cpu_usage_idle_panel
+
 ![Alt text](ec2_screen1.png)
 6. cpu_usage_user_panel
 
 
-## cpu_usage__idle_panel
+
 
 **called from subcommand**
 
@@ -289,11 +304,13 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  **Pseudo Code:** 
  
  # ui-analysys-and listing-methods
+## cpu_usage_sys_panel
+
 ![Alt text](ec2_screen1.png)
 7. cpu_usage_user_panel
 
  
-## cpu_usage_sys_panel
+
 
 **called from subcommand**
 
@@ -326,11 +343,13 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  **Pseudo Code:** 
  
  # ui-analysys-and listing-methods
+## cpu_usage_nice_panel
+
 ![Alt text](ec2_screen1.png)
 8. cpu_usage_nice_panel
 
 
-## cpu_usage_nice_panel
+
 
 **called from subcommand**
 
@@ -364,11 +383,13 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  
  # ui-analysys-and listing-methods
+##  mem_total_panel
+
 ![Alt text](ec2_screen2.png)
 9. mem_total_panel
 
 
-##  mem_total_panel
+
 
 **called from subcommand**
 
@@ -402,11 +423,12 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  
  # ui-analysys-and listing-methods
+
+##  mem_free_panel
+
 ![Alt text](ec2_screen2.png)
 10. mem_free_panel
 
-
-##  mem_free_panel
 
 **called from subcommand**
 
@@ -477,11 +499,13 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  
  # ui-analysys-and listing-methods
+
+##  mem_physicalram_panel
+
 ![Alt text](ec2_screen2.png)
 12. mem_physicalRAM_panel
 
 
-##  mem_physicalRAM_panel
 
 **called from subcommand**
 
@@ -516,11 +540,12 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  
  # ui-analysys-and listing-methods
+##  disk_read_panel
+
 ![Alt text](ec2_screen3.png)
 13. disk_read_panel
 
 
-##  disk_read_panel
 
 **called from subcommand**
 
@@ -554,11 +579,12 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
 
  # ui-analysys-and listing-methods
+##  disk_write_panel
+
 ![Alt text](ec2_screen3.png)
 14. disk_write_panel
 
 
-##  disk_write_panel
 
 **called from subcommand**
 
@@ -592,11 +618,11 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  
  # ui-analysys-and listing-methods
+##  disk_used_panel
+
 ![Alt text](ec2_screen3.png)
 15. disk_used_panel
 
-
-##  disk_used_panel
 
 **called from subcommand**
 
@@ -629,11 +655,13 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  **Pseudo Code:**  
  
  # ui-analysys-and listing-methods
+##  disk_available_panel
+
 ![Alt text](ec2_screen3.png)
 16. disk_available_panel
 
 
-##  disk_available_panel
+
 
 **called from subcommand**
 
@@ -666,11 +694,13 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  
   # ui-analysys-and listing-methods
+  ##  net_inpackets_panel
+
 ![Alt text](ec2_screen4.png)
-17. net\_inPackets\_panel
+17. net_inPackets_panel
 
 
-##  net\_inPackets\_panel
+
 
 **called from subcommand**
 
@@ -701,11 +731,13 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  **Pseudo Code:**  
  
   # ui-analysys-and listing-methods
+##  net_outpackets_panel
+
 ![Alt text](ec2_screen4.png)
 18. net\_outPackets\_panel
 
 
-##  net\_outPackets\_panel
+##  net_outpackets_panel
 
 **called from subcommand**
 
@@ -736,11 +768,12 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  **Pseudo Code:**  
  
  # ui-analysys-and listing-methods
+##  net_inbytes_panel
+
 ![Alt text](ec2_screen4.png)
-19. net\_inBytes\_panel
+19. net\_inbytes\_panel
 
 
-##  net\_inBytes\_panel
 
 **called from subcommand**
 
@@ -771,11 +804,12 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  **Pseudo Code:**  
  
  # ui-analysys-and listing-methods
+##  net_outbytes_panel
+
 ![Alt text](ec2_screen4.png)
 20. net\_outBytes\_panel
 
 
-##  net\_outBytes\_panel
 
 **called from subcommand**
 
