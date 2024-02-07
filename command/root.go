@@ -75,7 +75,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "storage_utilization_panel" && elementType == "AWS/EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetVolumeMetricsPanel(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting network utilization: ", err)
+					log.Println("Error getting storage utilization: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -87,7 +87,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "cpu_utilization_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetEKScpuUtilizationPanel(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting CPU utilization: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -99,7 +99,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "cpu_requests_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPURequestData(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting CPU requests : ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -122,7 +122,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "network_utilization_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkUtilizationPanel(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting network utilization: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -133,7 +133,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "allocatable_cpu_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetAllocatableCPUData(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting allocatable cpu panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -144,7 +144,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "cpu_limits_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPULimitsData(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting cpu limits: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -155,7 +155,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "cpu_utilization_graph_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPUUtilizationData(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting cpu utilization graph panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -166,7 +166,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "memory_requests_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryRequestData(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting memory request panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -174,10 +174,21 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			}  else if queryName == "memory_limits_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "memory_limits_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryLimitsData(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting memory limits panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "memory_utilization_graph_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryUtilizationGraphData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting memory utilization graph panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -188,7 +199,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "Cpu_utilization_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetContainerPanel(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting cpu utilization for ECS: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -200,7 +211,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "Memory_utilization_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetecsMemoryUtilizationPanel(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting memory utilization for ECS: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -211,7 +222,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "Network_utilization_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetNetworkUtilizationPanel(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting Network utilization for ECS: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -223,7 +234,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "storage_utilization_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetStorageUtilizationPanel(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting storage utilization: ", err)
+					log.Println("Error getting storage utilization for ECS: ", err)
 					return
 				}
 				if responseType == "frame" {
