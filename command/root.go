@@ -189,10 +189,21 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			}  else if queryName == "Network_in_out_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "Network_in_out_panel" && elementType == "ContainerInsights" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkInOutData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting Network_in_out_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "CPU_Utilization_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetCPU_UtilizationData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting CPU_Utilization_panel: ", err)
 					return
 				}
 				if responseType == "frame" {

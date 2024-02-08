@@ -12,14 +12,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type CPUUtilizationResult struct {
+type CPU_UtilizationResult struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
 	} `json:"RawData"`
 }
 
-func GetCPUUtilizationData(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetCPU_UtilizationData(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	clusterName, _ := cmd.PersistentFlags().GetString("clusterName")
 	namespace, _ := cmd.PersistentFlags().GetString("elementType")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -58,7 +58,7 @@ func GetCPUUtilizationData(cmd *cobra.Command, clientAuth *model.Auth) (string, 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetCPUUtilizationMetricData(clientAuth, clusterName, namespace, startTime, endTime)
+	rawData, err := GetCPU_UtilizationMetricData(clientAuth, clusterName, namespace, startTime, endTime)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -69,7 +69,7 @@ func GetCPUUtilizationData(cmd *cobra.Command, clientAuth *model.Auth) (string, 
 	// log.Printf("RawData Result: %+v", rawData)
 
 	// Process the raw data if needed
-	result := processCPUUtilizationRawData(rawData)
+	result := processCPU_UtilizationRawData(rawData)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
@@ -80,7 +80,7 @@ func GetCPUUtilizationData(cmd *cobra.Command, clientAuth *model.Auth) (string, 
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetCPUUtilizationMetricData(clientAuth *model.Auth, clusterName, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+func GetCPU_UtilizationMetricData(clientAuth *model.Auth, clusterName, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -95,7 +95,7 @@ func GetCPUUtilizationMetricData(clientAuth *model.Auth, clusterName, namespace 
 								Value: aws.String(clusterName),
 							},
 						},
-						MetricName: aws.String("pod_cpu_utilization"),
+						MetricName: aws.String("node_cpu_utilization"),
 						Namespace:  aws.String(namespace),
 					},
 					Period: aws.Int64(60),
@@ -113,8 +113,8 @@ func GetCPUUtilizationMetricData(clientAuth *model.Auth, clusterName, namespace 
 	return result, nil
 }
 
-func processCPUUtilizationRawData(result *cloudwatch.GetMetricDataOutput) CPUUtilizationResult {
-	var rawData CPUUtilizationResult
+func processCPU_UtilizationRawData(result *cloudwatch.GetMetricDataOutput) CPU_UtilizationResult {
+	var rawData CPU_UtilizationResult
 	rawData.RawData = make([]struct {
 		Timestamp time.Time
 		Value     float64

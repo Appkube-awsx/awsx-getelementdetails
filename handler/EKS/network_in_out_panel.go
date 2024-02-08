@@ -91,7 +91,7 @@ func GetNetworkInOutMetricData(clientAuth *model.Auth, clusterName, namespace st
 						MetricName: aws.String("node_network_total_bytes"),
 						Namespace:  aws.String(namespace),
 					},
-					Period: aws.Int64(300),
+					Period: aws.Int64(60),
 					Stat:   aws.String("Sum"), // Using Sum for network metrics
 				},
 			},
