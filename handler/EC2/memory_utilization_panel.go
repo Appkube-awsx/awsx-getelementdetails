@@ -1,107 +1,115 @@
 package EC2
 
 import (
-	"fmt"
-
-	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
-
+	"encoding/json"
 	"log"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/model"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-var MemoryUtilizationPanelCmd = &cobra.Command{
-	Use:   "memory_utilization_panel",
-	Short: "getCpuUtilizationPanel command gets cloudwatch metrics data",
-	Long:  `getCpuUtilizationPanel command gets cloudwatch metrics data`,
+func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	instanceID, _ := cmd.PersistentFlags().GetString("instanceID")
+	namespace, _ := cmd.PersistentFlags().GetString("elementType")
+	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
+	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
-	Run: func(cmd *cobra.Command, args []string) {
+	var startTime, endTime *time.Time
 
-		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+	if startTimeStr != "" {
+		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
 		if err != nil {
-			log.Println("Error during authentication: %v", err)
-			cmd.Help()
-			return
+			log.Printf("Error parsing start time: %v", err)
+			err := cmd.Help()
+			if err != nil {
+				return "", nil, err
+			}
+			return "", nil, err
 		}
-		if authFlag {
-			instanceID := "i-05e4e6757f13da657"
-			metricName := "MemoryUtilization"
-			namespace := "AWS/EC2"
-
-			startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-			endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-			var startTime, endTime *time.Time
-
-			// Parse start time if provided
-			if startTimeStr != "" {
-				parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-				if err != nil {
-					log.Printf("Error parsing start time: %v", err)
-					cmd.Help()
-					return
-				}
-				startTime = &parsedStartTime
-			} else {
-				defaultStartTime := time.Now().Add(-5 * time.Minute)
-				startTime = &defaultStartTime
-			}
-
-			if endTimeStr != "" {
-				parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-				if err != nil {
-					log.Printf("Error parsing end time: %v", err)
-					cmd.Help()
-					return
-				}
-				endTime = &parsedEndTime
-			} else {
-				defaultEndTime := time.Now()
-				endTime = &defaultEndTime
-			}
-
-			currentUsage, err := getMemoryMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "SampleCount")
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Printf("Current Memory Usage: %v\n", currentUsage)
-			// Get average usage
-			averageUsage, err := getMemoryMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "Average")
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			// Get max usage
-			maxUsage, err := getMemoryMetricData(clientAuth, instanceID, metricName, namespace, startTime, endTime, "Maximum")
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Printf("Current Memory Usage: %v\n", currentUsage)
-			fmt.Printf("Average Memory Usage: %v\n", averageUsage)
-			fmt.Printf("Max Memory Usage: %v\n", maxUsage)
-		}
-
-	},
-}
-
-func processMetricData(currentUsage, averageUsage, maxUsage *cloudwatch.GetMetricDataOutput) {
-	fmt.Printf("Current Memory Usage: %v\n", extractMetricValue(currentUsage))
-	fmt.Printf("Average Memory Usage: %v\n", extractMetricValue(averageUsage))
-	fmt.Printf("Max Memory Usage: %v\n", extractMetricValue(maxUsage))
-}
-
-func extractMetricValue(metricData *cloudwatch.GetMetricDataOutput) float64 {
-	if len(metricData.MetricDataResults) > 0 && len(metricData.MetricDataResults[0].Values) > 0 {
-		return *metricData.MetricDataResults[0].Values[0]
+		startTime = &parsedStartTime
+	} else {
+		defaultStartTime := time.Now().Add(-5 * time.Minute)
+		startTime = &defaultStartTime
 	}
-	return 0.0
+
+	if endTimeStr != "" {
+		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
+		if err != nil {
+			log.Printf("Error parsing end time: %v", err)
+			err := cmd.Help()
+			if err != nil {
+				return "", nil, err
+			}
+			return "", nil, err
+		}
+		endTime = &parsedEndTime
+	} else {
+		defaultEndTime := time.Now()
+		endTime = &defaultEndTime
+	}
+
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
+
+	currentUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "SampleCount")
+	if err != nil {
+		log.Println("Error in getting sample count: ", err)
+		return "", nil, err
+	}
+	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["CurrentUsage"] = currentUsage
+	} else {
+		log.Println("No data found for current usage")
+	}
+
+	// Get average utilization
+	averageUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "Average")
+	if err != nil {
+		log.Println("Error in getting average: ", err)
+		return "", nil, err
+	}
+	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["AverageUsage"] = averageUsage
+	} else {
+		log.Println("No data found for average usage")
+	}
+
+	maxUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "Maximum")
+	if err != nil {
+		log.Println("Error in getting maximum: ", err)
+		return "", nil, err
+	}
+	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["MaxUsage"] = maxUsage
+	} else {
+		log.Println("No data found for maximum usage")
+	}
+
+	jsonOutput := make(map[string]float64)
+
+	if currentUsage != nil && len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["CurrentUsage"] = *currentUsage.MetricDataResults[0].Values[0]
+	}
+	if averageUsage != nil && len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["AverageUsage"] = *averageUsage.MetricDataResults[0].Values[0]
+	}
+	if maxUsage != nil && len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["MaxUsage"] = *maxUsage.MetricDataResults[0].Values[0]
+	}
+
+	jsonString, err := json.Marshal(jsonOutput)
+	if err != nil {
+		log.Println("Error in marshalling json in string: ", err)
+		return "", nil, err
+	}
+
+	return string(jsonString), cloudwatchMetricData, nil
 }
-func getMemoryMetricData(clientAuth *model.Auth, instanceID, metricName, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
+
+func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -113,15 +121,14 @@ func getMemoryMetricData(clientAuth *model.Auth, instanceID, metricName, namespa
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("InstanceId"),
-								Value: aws.String("i-05e4e6757f13da657"),
+								Value: aws.String(instanceID),
 							},
 						},
-						MetricName: aws.String(metricName),
+						MetricName: aws.String("mem_used_percent"),
 						Namespace:  aws.String(namespace),
 					},
 					Period: aws.Int64(300),
 					Stat:   aws.String(statistic),
-					Unit:   aws.String("Bytes"),
 				},
 			},
 		},
@@ -133,27 +140,4 @@ func getMemoryMetricData(clientAuth *model.Auth, instanceID, metricName, namespa
 	}
 
 	return result, nil
-}
-
-func Execute() {
-	if err := MemoryUtilizationPanelCmd.Execute(); err != nil {
-		log.Println("error executing command: %v", err)
-	}
-}
-
-func init() {
-	MemoryUtilizationPanelCmd.PersistentFlags().String("cloudElementId", "", "cloud element id")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("cloudElementApiUrl", "", "cloud element api")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("accountId", "", "aws account number")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("zone", "", "aws region")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("externalId", "", "aws external id")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("elementType", "", "element type")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("instanceID", "", "instance id")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("query", "", "query")
-	MemoryUtilizationPanelCmd.PersistentFlags().String("timeRange", "", "timeRange")
 }
