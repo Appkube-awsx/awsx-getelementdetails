@@ -222,7 +222,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "Cpu_utilization_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "memory_usage_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryUsageData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting memory_usage_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "Cpu_utilization_panel" && elementType == "AWS/ECS" {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetContainerPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting cpu utilization for ECS: ", err)
@@ -233,7 +244,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "Memory_utilization_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "Memory_utilization_panel" && elementType == "AWS/ECS" {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetecsMemoryUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory utilization for ECS: ", err)
@@ -244,7 +255,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "Network_utilization_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "Network_utilization_panel" && elementType == "AWS/ECS" {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetNetworkUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting Network utilization for ECS: ", err)
@@ -256,7 +267,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 
-			} else if queryName == "storage_utilization_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "storage_utilization_panel" && elementType == "AWS/ECS" {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetStorageUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting storage utilization for ECS: ", err)
@@ -296,7 +307,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("externalId", "", "aws external id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ServiceName", "", "Service Name")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("elementType", "", "element type")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("instanceID", "", "instance id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("clusterName", "", "cluster name")
