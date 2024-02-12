@@ -68,17 +68,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					// default case. it prints json
 					fmt.Println(jsonResp)
 				}
-				// } else if queryName == "cpu_usage_user_panel" && elementType == "AWS/EC2" {
-				// 	jsonResp, cloudwatchMetricResp:= EC2.GetCPUUsageUserPanel(clientAuth, cloudWatchQuery)
-				// 	// if err != nil {
-				// 	// 	log.Println("Error getting CPU usage user panel data: ", err)
-				// 	// 	return
-				// 	// }
-				// 	if responseType == "frame" {
-				// 		fmt.Println(cloudwatchMetricResp)
-				// 	} else {
-				// 		fmt.Println(jsonResp)
-				// 	}
+			// } else if queryName == "cpu_usage_user" && elementType == "CWAgent" {
+			// 	jsonResp, cloudwatchMetricResp, err := EC2.GetCPUUsageUserPanel(cmd, clientAuth)
+			// 	if err != nil {
+			// 		log.Println("Error getting CPU User Usage: ", err)
+			// 		return
+			// 	}
+			// 	if responseType == "frame" {
+			// 		fmt.Println(cloudwatchMetricResp)
+			// 	} else {
+			// 		fmt.Println(jsonResp)
+			// 	}
+			} else if queryName == "disk_read_panel" && elementType == "AWS/EC2" {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskReadPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting CPU User Usage: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "storage_utilization_panel" && elementType == "AWS/EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetVolumeMetricsPanel(cmd, clientAuth)
 				if err != nil {
