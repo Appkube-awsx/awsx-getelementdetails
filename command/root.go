@@ -68,17 +68,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					// default case. it prints json
 					fmt.Println(jsonResp)
 				}
-			// } else if queryName == "cpu_usage_user_panel" && elementType == "AWS/EC2" {
-			// 	jsonResp, cloudwatchMetricResp:= EC2.GetCPUUsageUserPanel(clientAuth, cloudWatchQuery)
-			// 	// if err != nil {
-			// 	// 	log.Println("Error getting CPU usage user panel data: ", err)
-			// 	// 	return
-			// 	// }	
-			// 	if responseType == "frame" {
-			// 		fmt.Println(cloudwatchMetricResp)
-			// 	} else {
-			// 		fmt.Println(jsonResp)
-			// 	}
+				// } else if queryName == "cpu_usage_user_panel" && elementType == "AWS/EC2" {
+				// 	jsonResp, cloudwatchMetricResp:= EC2.GetCPUUsageUserPanel(clientAuth, cloudWatchQuery)
+				// 	// if err != nil {
+				// 	// 	log.Println("Error getting CPU usage user panel data: ", err)
+				// 	// 	return
+				// 	// }
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
 			} else if queryName == "storage_utilization_panel" && elementType == "AWS/EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetVolumeMetricsPanel(cmd, clientAuth)
 				if err != nil {
@@ -226,6 +226,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryUsageData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory_usage_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_throughput_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkThroughputPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting network_throughput_panel: ", err)
 					return
 				}
 				if responseType == "frame" {
