@@ -255,6 +255,21 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "node_capacity_panel" && elementType == "ContainerInsights" {
+				nodeCapacityPanel, err := EKS.GetNodeCapacityPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting node_capacity_panel: ", err)
+					return
+				}
+
+				jsonResp := nodeCapacityPanel.JsonData
+				cloudwatchMetricResp := nodeCapacityPanel.RawData
+
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "Cpu_utilization_panel" && elementType == "AWS/ECS" {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetContainerPanel(cmd, clientAuth)
 				if err != nil {
