@@ -68,21 +68,32 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					// default case. it prints json
 					fmt.Println(jsonResp)
 				}
-			// } else if queryName == "cpu_usage_user" && elementType == "CWAgent" {
-			// 	jsonResp, cloudwatchMetricResp, err := EC2.GetCPUUsageUserPanel(cmd, clientAuth)
-			// 	if err != nil {
-			// 		log.Println("Error getting CPU User Usage: ", err)
-			// 		return
-			// 	}
-			// 	if responseType == "frame" {
-			// 		fmt.Println(cloudwatchMetricResp)
-			// 	} else {
-			// 		fmt.Println(jsonResp)
-			// 	}
-			} else if queryName == "disk_read_panel" && elementType == "AWS/EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskReadPanel(cmd, clientAuth)
+				// } else if queryName == "cpu_usage_user" && elementType == "CWAgent" {
+				// 	jsonResp, cloudwatchMetricResp, err := EC2.GetCPUUsageUserPanel(cmd, clientAuth)
+				// 	if err != nil {
+				// 		log.Println("Error getting CPU User Usage: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
+			} else if queryName == "net_inpackets" && elementType == "AWS/EC2" {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInPacketsPanel(cmd, clientAuth)
 				if err != nil {
-					log.Println("Error getting CPU User Usage: ", err)
+					log.Println("Error getting network In packets: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "net_outpackets" && elementType == "AWS/EC2" {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting network Out packets: ", err)
 					return
 				}
 				if responseType == "frame" {
