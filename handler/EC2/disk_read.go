@@ -75,6 +75,7 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[s
 }
 
 func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID string, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, namespace, startTime, endTime)
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -85,14 +86,14 @@ func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID string, names
 					Metric: &cloudwatch.Metric{
 						Dimensions: []*cloudwatch.Dimension{
 							{
-								Name:  aws.String("instanceID"),
+								Name:  aws.String("InstanceId"),
 								Value: aws.String(instanceID),
 							},
 						},
-						MetricName: aws.String("NetworkOut"), // Adjusted for disk read panel
+						MetricName: aws.String("DiskReadBytes"),
 						Namespace:  aws.String(namespace),
 					},
-					Period: aws.Int64(60),
+					Period: aws.Int64(300),
 					Stat:   aws.String("Average"),
 				},
 			},
@@ -101,22 +102,36 @@ func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID string, names
 	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
+		log.Println("Error fetching metric data:", err)
 		return nil, err
 	}
+	log.Println("Metric data result:", result)
 
 	return result, nil
 }
 
 func processDiskReadPanelRawData(result *cloudwatch.GetMetricDataOutput) DiskReadPanelData {
 	var rawData DiskReadPanelData
-	rawData.RawData = make([]struct {
+
+	// Initialize an empty slice to store the raw data
+	rawData.RawData = []struct {
 		Timestamp time.Time
 		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
+	}{}
 
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+	// Iterate over each metric data result
+	for _, metricDataResult := range result.MetricDataResults {
+		// Iterate over each timestamp and value pair in the current metric data result
+		for i, timestamp := range metricDataResult.Timestamps {
+			// Append the timestamp and value to the rawData slice
+			rawData.RawData = append(rawData.RawData, struct {
+				Timestamp time.Time
+				Value     float64
+			}{
+				Timestamp: *timestamp,
+				Value:     *metricDataResult.Values[i],
+			})
+		}
 	}
 
 	return rawData
