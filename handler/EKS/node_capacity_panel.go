@@ -18,6 +18,7 @@ type NodeCapacityMetrics struct {
 	StorageAvail float64 `json:"storage_avail"`
 }
 
+
 const (
 	NodeCPUMetricName     = "node_cpu_utilization"
 	NodeMemoryMetricName  = "node_memory_utilization"
@@ -97,12 +98,10 @@ func calculateMemoryUsage(data *cloudwatch.GetMetricDataOutput, totalMemory floa
 			sum += *value
 		}
 	}
-	// Calculate average memory usage percentage
 	return (sum / float64(len(data.MetricDataResults))) / totalMemory
 }
 
 func calculateStorageAvailability(data *cloudwatch.GetMetricDataOutput, totalStorage float64) float64 {
-	// Sum up storage availability values
 	var sum float64
 	for _, result := range data.MetricDataResults {
 		for _, value := range result.Values {
