@@ -23,6 +23,7 @@ type MemoryResult struct {
 func GetecsMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 
 	clusterName, _ := cmd.PersistentFlags().GetString("clusterName")
+	serviceName, _ := cmd.PersistentFlags().GetString("serviceName")
 	namespace, _ := cmd.PersistentFlags().GetString("elementType")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -63,21 +64,21 @@ func GetecsMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (s
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	//if queryName == "eks_memory_utilization_panel" {
-	currentUsage, err := GetContainerMetricData(clientAuth, clusterName, namespace, startTime, endTime, "SampleCount")
+	currentUsage, err := GetContainerMetricData(clientAuth, clusterName, serviceName, namespace, startTime, endTime, "SampleCount")
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["CurrentUsage"] = currentUsage
 	// Get average usage
-	averageUsage, err := GetContainerMetricData(clientAuth, clusterName, namespace, startTime, endTime, "Average")
+	averageUsage, err := GetContainerMetricData(clientAuth, clusterName, serviceName, namespace, startTime, endTime, "Average")
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["AverageUsage"] = averageUsage
 	// Get max usage
-	maxUsage, err := GetContainerMetricData(clientAuth, clusterName, namespace, startTime, endTime, "Maximum")
+	maxUsage, err := GetContainerMetricData(clientAuth, clusterName, serviceName, namespace, startTime, endTime, "Maximum")
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
@@ -99,7 +100,7 @@ func GetecsMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (s
 
 }
 
-func GetecsContainerMetricData(clientAuth *model.Auth, clusterName, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetecsContainerMetricData(clientAuth *model.Auth, clusterName, serviceName, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -113,9 +114,13 @@ func GetecsContainerMetricData(clientAuth *model.Auth, clusterName, namespace st
 								Name:  aws.String("ClusterName"),
 								Value: aws.String(clusterName),
 							},
+							{
+								Name:  aws.String("ServiceName"),
+								Value: aws.String(serviceName),
+							},
 						},
-						MetricName: aws.String("container_memory_utilization"),
-						Namespace:  aws.String(namespace), // Use the appropriate namespace for Container Insights
+						MetricName: aws.String("MemoryUtilization"),
+						Namespace:  aws.String(namespace),
 					},
 					Period: aws.Int64(300),
 					Stat:   aws.String(statistic),

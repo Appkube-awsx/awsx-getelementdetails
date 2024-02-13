@@ -91,16 +91,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "net_outpackets" && elementType == "AWS/EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth)
-				if err != nil {
-					log.Println("Error getting network Out packets: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
+				// jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth)
+				// if err != nil {
+				// 	log.Println("Error getting network Out packets: ", err)
+				// 	return
+				// }
+				// if responseType == "frame" {
+				// 	fmt.Println(cloudwatchMetricResp)
+				// } else {
+				// 	fmt.Println(jsonResp)
+				// }
 			} else if queryName == "storage_utilization_panel" && elementType == "AWS/EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetVolumeMetricsPanel(cmd, clientAuth)
 				if err != nil {
@@ -319,6 +319,30 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := ECS.GetStorageUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting storage utilization for ECS: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_reservation_panel" && elementType == "AWS/ECS" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetCPUReservationData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting cpu reservation data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					// default case. it prints json
+					fmt.Println(jsonResp)
+				}
+
+			} else if queryName == "memory_reservation_panel" && elementType == "AWS/ECS" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetMemoryReservationData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting memory  data: ", err)
 					return
 				}
 				if responseType == "frame" {
