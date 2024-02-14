@@ -79,6 +79,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "disk_write" && elementType == "AWS/EC2" {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskWritePanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting Disk Write Data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "disk_used" && elementType == "AWS/EC2" {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskUsagePanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting in used disk data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "net_inpackets" && elementType == "AWS/EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInPacketsPanel(cmd, clientAuth)
 				if err != nil {
