@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 
@@ -55,9 +57,27 @@ var AwsxEc2CpuUtilizationCmd = &cobra.Command{
 }
 
 func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	instanceID, _ := cmd.PersistentFlags().GetString("instanceID")
-	namespace, _ := cmd.PersistentFlags().GetString("elementType")
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
+
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -97,21 +117,21 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string,
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	//if queryName == "cpu_utilization_panel" {
-	currentUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "SampleCount")
+	currentUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "SampleCount")
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["CurrentUsage"] = currentUsage
 	// Get average usage
-	averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "Average")
+	averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average")
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["AverageUsage"] = averageUsage
 	// Get max usage
-	maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "Maximum")
+	maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Maximum")
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
@@ -133,7 +153,7 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string,
 
 }
 
-func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -149,7 +169,7 @@ func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, namespace s
 							},
 						},
 						MetricName: aws.String("CPUUtilization"),
-						Namespace:  aws.String(namespace),
+						Namespace:  aws.String("AWS/" + elementType),
 					},
 					Period: aws.Int64(300),
 					Stat:   aws.String(statistic),
@@ -167,21 +187,19 @@ func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, namespace s
 }
 
 func init() {
-	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("cloudElementId", "", "cloud element id")
-	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("cloudElementApiUrl", "", "cloud element api")
+	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("accountId", "", "aws account number")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-
-	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("instanceID", "", "instance id")
-	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxEc2CpuUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")

@@ -33,7 +33,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			// cloudWatchQuery, _ := cmd.PersistentFlags().GetString("cloudWatchQuery")
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
 
-			if queryName == "cpu_utilization_panel" && elementType == "AWS/EC2" {
+			if queryName == "cpu_utilization_panel" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetCpuUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting cpu utilization: ", err)
@@ -368,8 +368,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("RootVolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("EBSVolume1Id", "", "ebs volume 1 id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("EBSVolume2Id", "", "ebs volume 2 id")
-	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cloudElementId", "", "cloud element id")
-	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cloudElementApiUrl", "", "cloud element api")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("vaultToken", "", "vault token")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("accountId", "", "aws account number")
@@ -381,7 +381,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ServiceName", "", "Service Name")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxCloudWatchMetricsCmd.PersistentFlags().String("instanceID", "", "instance id")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("instanceId", "", "instance id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("clusterName", "", "cluster name")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("query", "", "query")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("startTime", "", "start time")
