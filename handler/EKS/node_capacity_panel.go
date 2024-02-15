@@ -54,7 +54,7 @@ func GetNodeCapacityPanel(cmd *cobra.Command, clientAuth *model.Auth) (*NodeCapa
 		return nil, err
 	}
 
-	totalCPU := 100.0     // Assuming 100% CPU
+	totalCPU := 100.0       // Assuming 100% CPU
 	totalMemory := 100.0  // Assuming 100% Memory
 	totalStorage := 100.0 // Assuming 100% Storage
 

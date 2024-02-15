@@ -91,7 +91,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "disk_used" && elementType == "AWS/EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskUsagePanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskWritePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting in used disk data: ", err)
 					return
@@ -298,6 +298,61 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp := nodeCapacityPanel.JsonData
 				cloudwatchMetricResp := nodeCapacityPanel.RawData
 
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "node_uptime_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeUptimePanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting node_uptime_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_throughput_Panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkThroughputSinglePanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting network_throughput_Panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "node_downtime_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeDowntimePanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting node_downtime_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_availability_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkAvailabilityData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting network_availability_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "service_availability_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetServiceAvailabilityData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting service_availability_panel: ", err)
+					return
+				}
 				if responseType == "frame" {
 					fmt.Println(cloudwatchMetricResp)
 				} else {
