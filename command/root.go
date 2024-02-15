@@ -91,7 +91,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "disk_used" && elementType == "AWS/EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskWritePanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskUsagePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting in used disk data: ", err)
 					return
@@ -361,7 +361,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "node_event_logs_panel" && elementType == "ContainerInsights" {
-				jsonResp, cloudwatchMetricResp, err:= EKS.GetNodeEventLogsSinglePanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeEventLogsSinglePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting node_event_logs_panel: ", err)
 					return
