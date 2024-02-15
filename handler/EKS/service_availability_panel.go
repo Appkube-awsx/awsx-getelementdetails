@@ -12,10 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type ServiceAvailabilityResult struct {
-	Availability float64 `json:"availability"`
-}
-
 type TimeseriesDataPoint struct {
 	Timestamp     time.Time `json:"timestamp"`
 	Availability  float64   `json:"availability"`

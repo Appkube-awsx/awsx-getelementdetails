@@ -354,6 +354,19 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				if responseType == "frame" {
+					for _, dataPoint := range cloudwatchMetricResp {
+						fmt.Printf("%v %f\n", dataPoint.Timestamp, dataPoint.Availability)
+					}
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "node_event_logs_panel" && elementType == "ContainerInsights" {
+				jsonResp, cloudwatchMetricResp, err:= EKS.GetNodeEventLogsSinglePanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting node_event_logs_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
 					fmt.Println(cloudwatchMetricResp)
 				} else {
 					fmt.Println(jsonResp)

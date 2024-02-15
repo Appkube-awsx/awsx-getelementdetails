@@ -55,8 +55,8 @@ func GetNodeCapacityPanel(cmd *cobra.Command, clientAuth *model.Auth) (*NodeCapa
 	}
 
 	totalCPU := 100.0       // Assuming 100% CPU
-	totalMemory := 100.0  // Assuming 100% Memory
-	totalStorage := 100.0 // Assuming 100% Storage
+	totalMemory := 100.0  
+	totalStorage := 100.0 
 
 	nodeCapacity := NodeCapacityMetrics{
 		CPUUsage:     calculateCPUUsage(cpuUsageRawData, totalCPU),
@@ -131,7 +131,7 @@ func GetNodeCapacityMetricData(clientAuth *model.Auth, clusterName, namespace st
 						Namespace:  aws.String("ContainerInsights"),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Sum"), // Using Sum as an example, change as needed
+					Stat:   aws.String("Sum"), 
 				},
 			},
 		},
