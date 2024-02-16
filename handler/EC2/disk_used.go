@@ -9,6 +9,8 @@ import (
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -21,11 +23,29 @@ type DiskUsagePanelData struct {
 }
 
 func GetDiskUsagePanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	instanceID, _ := cmd.PersistentFlags().GetString("instanceId")
-	namespace, _ := cmd.PersistentFlags().GetString("elementType")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
+
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
 	var startTime, endTime *time.Time
 
 	if startTimeStr != "" {
@@ -57,14 +77,14 @@ func GetDiskUsagePanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data for disk read and write
-	readRawData, err := GetDiskReadpanelMetricData(clientAuth, instanceID, namespace, startTime, endTime)
+	readRawData, err := GetDiskReadpanelMetricData(clientAuth, instanceId, elementType, startTime, endTime)
 	if err != nil {
 		log.Println("Error in getting disk read raw data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["DiskReadRawData"] = readRawData
 
-	writeRawData, err := GetDiskWritepanelMetricData(clientAuth, instanceID, namespace, startTime, endTime)
+	writeRawData, err := GetDiskWritepanelMetricData(clientAuth, instanceId, elementType, startTime, endTime)
 	if err != nil {
 		log.Println("Error in getting disk write raw data: ", err)
 		return "", nil, err
@@ -160,7 +180,7 @@ func GetDiskReadpanelMetricData(clientAuth *model.Auth, instanceID string, names
 	return result, nil
 }
 
-func GetDiskWritepanelMetricData(clientAuth *model.Auth, instanceID string, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+func GetDiskWritepanelMetricData(clientAuth *model.Auth, instanceID string, elementType string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -176,7 +196,7 @@ func GetDiskWritepanelMetricData(clientAuth *model.Auth, instanceID string, name
 							},
 						},
 						MetricName: aws.String("DiskWriteBytes"),
-						Namespace:  aws.String(namespace),
+						Namespace:  aws.String("AWS/" + elementType),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String("Average"),

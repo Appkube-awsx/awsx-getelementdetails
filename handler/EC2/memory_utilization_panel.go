@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -13,8 +15,27 @@ import (
 )
 
 func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	instanceID, _ := cmd.PersistentFlags().GetString("instanceID")
-	namespace, _ := cmd.PersistentFlags().GetString("elementType")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
+
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -51,10 +72,9 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (stri
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
-
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	currentUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "SampleCount")
+	currentUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, startTime, endTime, "SampleCount")
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
@@ -66,7 +86,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (stri
 	}
 
 	// Get average utilization
-	averageUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "Average")
+	averageUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, startTime, endTime, "Average")
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
@@ -77,7 +97,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (stri
 		log.Println("No data found for average usage")
 	}
 
-	maxUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceID, namespace, startTime, endTime, "Maximum")
+	maxUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, startTime, endTime, "Maximum")
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
@@ -109,7 +129,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (stri
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID, namespace string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -125,7 +145,7 @@ func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID, namespac
 							},
 						},
 						MetricName: aws.String("mem_used_percent"),
-						Namespace:  aws.String(namespace),
+						Namespace:  aws.String("CWAgent"),
 					},
 					Period: aws.Int64(300),
 					Stat:   aws.String(statistic),

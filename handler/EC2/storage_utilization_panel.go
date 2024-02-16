@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -25,13 +27,32 @@ type volumeMetrics struct {
 }
 
 func GetVolumeMetricsPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	instanceID, _ := cmd.PersistentFlags().GetString("instanceID")
-	namespace, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	RootVolumeId, _ := cmd.PersistentFlags().GetString("RootVolumeId")
 	EBSVolume1Id, _ := cmd.PersistentFlags().GetString("EBSVolume1Id")
 	EBSVolume2Id, _ := cmd.PersistentFlags().GetString("EBSVolume2Id")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
+
+	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
+	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
 	var startTime, endTime *time.Time
 
@@ -70,7 +91,7 @@ func GetVolumeMetricsPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get metrics for root volume
-	rootVolumeMetrics, err := GetMetrics(clientAuth, instanceID, RootVolumeId, namespace, startTime, endTime, "VolumeStalledIOCheck")
+	rootVolumeMetrics, err := GetMetrics(clientAuth, instanceId, RootVolumeId, elementType, startTime, endTime, "VolumeStalledIOCheck")
 	if err != nil {
 		log.Println("Error in getting metrics for root volume: ", err)
 		return "", nil, err
@@ -78,7 +99,7 @@ func GetVolumeMetricsPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, 
 	cloudwatchMetricData["RootVolume"] = rootVolumeMetrics
 
 	// Get metrics for EBS1 volume
-	ebsVolume1Metrics, err := GetMetrics(clientAuth, instanceID, EBSVolume1Id, namespace, startTime, endTime, "VolumeStalledIOCheck")
+	ebsVolume1Metrics, err := GetMetrics(clientAuth, instanceId, EBSVolume1Id, elementType, startTime, endTime, "VolumeStalledIOCheck")
 	if err != nil {
 		log.Println("Error in getting metrics for EBS1 volume: ", err)
 		return "", nil, err
@@ -86,7 +107,7 @@ func GetVolumeMetricsPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, 
 	cloudwatchMetricData["EBSVolume1"] = ebsVolume1Metrics
 
 	// Get metrics for EBS2 volume
-	ebsVolume2Metrics, err := GetMetrics(clientAuth, instanceID, EBSVolume2Id, namespace, startTime, endTime, "VolumeStalledIOCheck")
+	ebsVolume2Metrics, err := GetMetrics(clientAuth, instanceId, EBSVolume2Id, elementType, startTime, endTime, "VolumeStalledIOCheck")
 	if err != nil {
 		log.Println("Error in getting metrics for EBS2 volume: ", err)
 		return "", nil, err
@@ -127,7 +148,7 @@ func GetVolumeMetricsPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, 
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetMetrics(clientAuth *model.Auth, instanceID, volumeID, namespace string, startTime, endTime *time.Time, metrics ...string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetMetrics(clientAuth *model.Auth, instanceID, volumeID, elementType string, startTime, endTime *time.Time, metrics ...string) (*cloudwatch.GetMetricDataOutput, error) {
 	var metricDataQueries []*cloudwatch.MetricDataQuery
 
 	for i, metricName := range metrics {
@@ -146,7 +167,7 @@ func GetMetrics(clientAuth *model.Auth, instanceID, volumeID, namespace string, 
 						},
 					},
 					MetricName: aws.String(metricName),
-					Namespace:  aws.String(namespace),
+					Namespace:  aws.String("AWS/" + elementType),
 				},
 				Period: aws.Int64(300),
 				Stat:   aws.String("SampleCount"), // You can customize this if needed

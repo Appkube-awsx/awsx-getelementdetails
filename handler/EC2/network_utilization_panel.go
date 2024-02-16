@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -19,8 +21,27 @@ type NetworkResult struct {
 }
 
 func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	instanceID, _ := cmd.PersistentFlags().GetString("instanceID")
-	namespace, _ := cmd.PersistentFlags().GetString("elementType")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
+
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -62,7 +83,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (str
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Inbound Traffic
-	inboundTraffic, err := GetNetworkMetricData(clientAuth, instanceID, namespace, startTime, endTime, "NetworkIn")
+	inboundTraffic, err := GetNetworkMetricData(clientAuth, instanceId, elementType, startTime, endTime, "NetworkIn")
 	if err != nil {
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
@@ -70,7 +91,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (str
 	cloudwatchMetricData["InboundTraffic"] = inboundTraffic
 
 	// Get Outbound Traffic
-	outboundTraffic, err := GetNetworkMetricData(clientAuth, instanceID, namespace, startTime, endTime, "NetworkOut")
+	outboundTraffic, err := GetNetworkMetricData(clientAuth, instanceId, elementType, startTime, endTime, "NetworkOut")
 	if err != nil {
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
@@ -96,7 +117,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (str
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNetworkMetricData(clientAuth *model.Auth, instanceID, namespace string, startTime, endTime *time.Time, metricName string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetNetworkMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, metricName string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -112,7 +133,7 @@ func GetNetworkMetricData(clientAuth *model.Auth, instanceID, namespace string, 
 							},
 						},
 						MetricName: aws.String(metricName),
-						Namespace:  aws.String(namespace),
+						Namespace:  aws.String("AWS/" + elementType),
 					},
 					Period: aws.Int64(300),
 					Stat:   aws.String("Sum"),
@@ -128,13 +149,6 @@ func GetNetworkMetricData(clientAuth *model.Auth, instanceID, namespace string, 
 
 	return result, nil
 }
-
-// func extractMetricValue(result *cloudwatch.GetMetricDataOutput, index int) float64 {
-// 	if len(result.MetricDataResults) > 0 && len(result.MetricDataResults[0].Values) > index {
-// 		return *result.MetricDataResults[0].Values[index]
-// 	}
-// 	return 0
-// }
 
 func createMetricDataOutput(value float64) *cloudwatch.GetMetricDataOutput {
 	return &cloudwatch.GetMetricDataOutput{

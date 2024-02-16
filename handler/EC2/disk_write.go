@@ -20,7 +20,7 @@ type DiskWritePanelData struct {
 }
 
 func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	instanceID, _ := cmd.PersistentFlags().GetString("instanceID")
+	instanceID, _ := cmd.PersistentFlags().GetString("instanceId")
 	namespace, _ := cmd.PersistentFlags().GetString("elementType")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -32,7 +32,7 @@ func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[
 		if err != nil {
 			log.Printf("Error parsing start time: %v", err)
 			return "", nil, err
-		}	
+		}
 		startTime = &parsedStartTime
 	} else {
 		defaultStartTime := time.Now().Add(-5 * time.Minute)
@@ -85,7 +85,7 @@ func GetDiskWritePanelMetricData(clientAuth *model.Auth, instanceID string, name
 					Metric: &cloudwatch.Metric{
 						Dimensions: []*cloudwatch.Dimension{
 							{
-								Name:  aws.String("instanceID"),
+								Name:  aws.String("InstanceId"),
 								Value: aws.String(instanceID),
 							},
 						},
