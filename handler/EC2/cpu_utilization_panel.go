@@ -40,7 +40,7 @@ var AwsxEc2CpuUtilizationCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetCpuUtilizationPanel(cmd, clientAuth)
+			jsonResp, cloudwatchMetricResp, err := GetCpuUtilizationPanel(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting cpu utilization: ", err)
 				return
@@ -56,7 +56,7 @@ var AwsxEc2CpuUtilizationCmd = &cobra.Command{
 	},
 }
 
-func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -117,21 +117,21 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string,
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	//if queryName == "cpu_utilization_panel" {
-	currentUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "SampleCount")
+	currentUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "SampleCount", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["CurrentUsage"] = currentUsage
 	// Get average usage
-	averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average")
+	averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["AverageUsage"] = averageUsage
 	// Get max usage
-	maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Maximum")
+	maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
@@ -153,7 +153,11 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string,
 
 }
 
-func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	elmType := "EC2"
+	if elementType == "AWS/EC2" {
+		elmType = elementType
+	}
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -169,7 +173,8 @@ func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType
 							},
 						},
 						MetricName: aws.String("CPUUtilization"),
-						Namespace:  aws.String("AWS/" + elementType),
+
+						Namespace: aws.String(elmType),
 					},
 					Period: aws.Int64(300),
 					Stat:   aws.String(statistic),
@@ -177,7 +182,10 @@ func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType
 			},
 		},
 	}
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
+
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err

@@ -33,8 +33,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			// cloudWatchQuery, _ := cmd.PersistentFlags().GetString("cloudWatchQuery")
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
 
-			if queryName == "cpu_utilization_panel" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetCpuUtilizationPanel(cmd, clientAuth)
+			if queryName == "cpu_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetCpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting cpu utilization: ", err)
 					return
