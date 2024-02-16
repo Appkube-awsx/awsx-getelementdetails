@@ -154,9 +154,9 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 }
 
 func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "EC2"
-	if elementType == "AWS/EC2" {
-		elmType = elementType
+	elmType := "AWS/EC2"
+	if elementType == "EC2" {
+		elmType = "AWS/" + elementType
 	}
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
