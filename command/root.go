@@ -45,7 +45,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					// default case. it prints json
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "memory_utilization_panel" && elementType == "CWAgent" {
+			} else if queryName == "memory_utilization_panel" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory utilization: ", err)
@@ -56,7 +56,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "network_utilization_panel" && elementType == "AWS/EC2" {
+			} else if queryName == "network_utilization_panel" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network utilization: ", err)
@@ -68,7 +68,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					// default case. it prints json
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "disk_read" && elementType == "AWS/EC2" {
+			} else if queryName == "disk_read" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskReadPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting CPU User Usage: ", err)
@@ -79,7 +79,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "disk_write" && elementType == "AWS/EC2" {
+			} else if queryName == "disk_write" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskWritePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting Disk Write Data: ", err)
@@ -90,7 +90,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "disk_used" && elementType == "AWS/EC2" {
+			} else if queryName == "disk_used" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskUsagePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting in used disk data: ", err)
@@ -101,7 +101,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "net_inpackets" && elementType == "AWS/EC2" {
+			} else if queryName == "net_inpackets" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInPacketsPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network In packets: ", err)
@@ -112,7 +112,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "net_inbytes" && elementType == "AWS/EC2" {
+			} else if queryName == "net_inbytes" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInBytesPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network In packets: ", err)
@@ -123,7 +123,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "net_outpackets" && elementType == "AWS/EC2" {
+			} else if queryName == "net_Outbytes" && elementType == "EC2" {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutBytesPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting network In packets: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "net_outpackets" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network Out packets: ", err)
@@ -134,7 +145,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "storage_utilization_panel" && elementType == "AWS/EC2" {
+			} else if queryName == "storage_utilization_panel" && elementType == "EC2" {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetVolumeMetricsPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting storage utilization: ", err)
