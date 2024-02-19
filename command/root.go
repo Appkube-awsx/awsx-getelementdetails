@@ -167,7 +167,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "cpu_utilization_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "cpu_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetEKScpuUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting CPU utilization: ", err)
@@ -178,7 +178,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "cpu_requests_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "cpu_requests_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPURequestData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting CPU requests : ", err)
@@ -189,7 +189,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "memory_utilization_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "memory_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GeteksMemoryUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory utilization: ", err)
@@ -200,7 +200,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "network_utilization_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "network_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network utilization: ", err)
@@ -211,7 +211,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "allocatable_cpu_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "allocatable_cpu_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetAllocatableCPUData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting allocatable cpu panel: ", err)
@@ -222,7 +222,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "cpu_limits_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "cpu_limits_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPULimitsData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting cpu limits: ", err)
@@ -233,7 +233,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "cpu_utilization_graph_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "cpu_utilization_graph_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPUUtilizationData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting cpu utilization graph panel: ", err)
@@ -244,7 +244,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "memory_requests_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "memory_requests_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryRequestData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory request panel: ", err)
@@ -255,7 +255,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "memory_limits_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "memory_limits_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryLimitsData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory limits panel: ", err)
@@ -266,7 +266,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "memory_utilization_graph_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "memory_utilization_graph_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryUtilizationGraphData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory utilization graph panel: ", err)
@@ -277,7 +277,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "Network_in_out_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "Network_in_out_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkInOutData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting Network_in_out_panel: ", err)
@@ -288,7 +288,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "CPU_Utilization_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "CPU_Utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPU_UtilizationData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting CPU_Utilization_panel: ", err)
@@ -299,7 +299,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "memory_usage_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "memory_usage_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryUsageData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting memory_usage_panel: ", err)
@@ -310,7 +310,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "network_throughput_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "network_throughput_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkThroughputPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network_throughput_panel: ", err)
@@ -321,7 +321,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "node_capacity_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "node_capacity_panel" && elementType == "EKS" {
 				nodeCapacityPanel, err := EKS.GetNodeCapacityPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting node_capacity_panel: ", err)
@@ -336,7 +336,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "node_uptime_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "node_uptime_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeUptimePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting node_uptime_panel: ", err)
@@ -347,7 +347,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "network_throughput_Panel" && elementType == "ContainerInsights" {
+			} else if queryName == "network_throughput_Panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkThroughputSinglePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network_throughput_Panel: ", err)
@@ -358,7 +358,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "node_downtime_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "node_downtime_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeDowntimePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting node_downtime_panel: ", err)
@@ -369,7 +369,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "network_availability_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "network_availability_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkAvailabilityData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network_availability_panel: ", err)
@@ -380,7 +380,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "service_availability_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "service_availability_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetServiceAvailabilityData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting service_availability_panel: ", err)
@@ -393,7 +393,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "node_event_logs_panel" && elementType == "ContainerInsights" {
+			} else if queryName == "node_event_logs_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeEventLogsSinglePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting node_event_logs_panel: ", err)
