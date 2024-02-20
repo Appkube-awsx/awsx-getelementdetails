@@ -95,6 +95,7 @@ func GetNetworkOutPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth) (stri
 }
 
 func GetNetworkOutPacketsMetricData(clientAuth *model.Auth, instanceID string, elementType string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
