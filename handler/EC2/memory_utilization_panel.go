@@ -2,9 +2,11 @@ package EC2
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
@@ -14,9 +16,42 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+var AwsxEc2MemoryUtilizationCmd = &cobra.Command{
+	Use:   "memory_utilization_panel",
+	Short: "get memory utilization metrics data",
+	Long:  `command to get memory utilization metrics data`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetMemoryUtilizationPanel(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting memory utilization: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				// default case. it prints json
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
@@ -74,7 +109,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (stri
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	currentUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, startTime, endTime, "SampleCount")
+	currentUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "SampleCount", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
@@ -86,7 +121,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (stri
 	}
 
 	// Get average utilization
-	averageUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, startTime, endTime, "Average")
+	averageUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
@@ -97,7 +132,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (stri
 		log.Println("No data found for average usage")
 	}
 
-	maxUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, startTime, endTime, "Maximum")
+	maxUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
@@ -129,7 +164,8 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth) (stri
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID string, startTime, endTime *time.Time, statistic string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -153,11 +189,32 @@ func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID string, s
 			},
 		},
 	}
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
+
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err
 	}
 
 	return result, nil
+}
+func init() {
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEc2MemoryUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
