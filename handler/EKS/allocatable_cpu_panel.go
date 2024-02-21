@@ -2,10 +2,14 @@ package EKS
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -13,7 +17,7 @@ import (
 )
 
 type TimeSeriesData struct {
-	Timestamp     time.Time
+	Timestamp      time.Time
 	AllocatableCPU float64
 }
 
@@ -21,11 +25,62 @@ type AllocateResult struct {
 	RawData []TimeSeriesData `json:"RawData"`
 }
 
-func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	clusterName, _ := cmd.PersistentFlags().GetString("clusterName")
-	namespace, _ := cmd.PersistentFlags().GetString("elementType")
+var AwsxEKSAllocatableCpuCmd = &cobra.Command{
+	Use:   "allocatable_cpu_panel",
+	Short: "get allocatable cpu metrics data",
+	Long:  `command to get allocatable cpu metrics data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetAllocatableCPUData(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting allocatable cpu: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
 
 	var startTime, endTime *time.Time
 
@@ -60,7 +115,7 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth) (string, 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetAllocatableCPUMetricData(clientAuth, clusterName, namespace, startTime, endTime)
+	rawData, err := GetAllocatableCPUMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -84,7 +139,8 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth) (string, 
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetAllocatableCPUMetricData(clientAuth *model.Auth, clusterName, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+func GetAllocatableCPUMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	elmType := "ContainerInsights"
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -96,11 +152,11 @@ func GetAllocatableCPUMetricData(clientAuth *model.Auth, clusterName, namespace 
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("ClusterName"),
-								Value: aws.String(clusterName),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("node_cpu_limit"),
-						Namespace:  aws.String(namespace),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60), // Set a common period for both metrics
 					Stat:   aws.String("Average"),
@@ -113,11 +169,11 @@ func GetAllocatableCPUMetricData(clientAuth *model.Auth, clusterName, namespace 
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("ClusterName"),
-								Value: aws.String(clusterName),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("node_cpu_reserved_capacity"),
-						Namespace:  aws.String(namespace),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60), // Set a common period for both metrics
 					Stat:   aws.String("Average"),
@@ -125,7 +181,9 @@ func GetAllocatableCPUMetricData(clientAuth *model.Auth, clusterName, namespace 
 			},
 		},
 	}
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err
@@ -154,4 +212,23 @@ func processCPURawData(result *cloudwatch.GetMetricDataOutput) AllocateResult {
 	}
 
 	return rawData
+}
+
+func init() {
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("query", "", "query")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

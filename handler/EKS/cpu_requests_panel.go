@@ -2,10 +2,14 @@ package EKS
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -19,11 +23,62 @@ type cpuResult struct {
 	} `json:"RawData"`
 }
 
-func GetCPURequestData(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	clusterName, _ := cmd.PersistentFlags().GetString("clusterName")
-	namespace, _ := cmd.PersistentFlags().GetString("elementType")
+var AwsxEKSCpuRequestsCmd = &cobra.Command{
+	Use:   "cpu_requests_panel",
+	Short: "get cpu requests metrics data",
+	Long:  `command to get cpu requests metrics data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetCPURequestData(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting cpu requests data : ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetCPURequestData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
 
 	var startTime, endTime *time.Time
 
@@ -58,7 +113,7 @@ func GetCPURequestData(cmd *cobra.Command, clientAuth *model.Auth) (string, map[
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetCPURequestMetricData(clientAuth, clusterName, namespace, startTime, endTime)
+	rawData, err := GetCPURequestMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -80,7 +135,8 @@ func GetCPURequestData(cmd *cobra.Command, clientAuth *model.Auth) (string, map[
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetCPURequestMetricData(clientAuth *model.Auth, clusterName, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+func GetCPURequestMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	elmType := "ContainerInsights"
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -92,11 +148,11 @@ func GetCPURequestMetricData(clientAuth *model.Auth, clusterName, namespace stri
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("ClusterName"),
-								Value: aws.String(clusterName),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("pod_cpu_request"),
-						Namespace:  aws.String(namespace),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String("Average"),
@@ -104,7 +160,9 @@ func GetCPURequestMetricData(clientAuth *model.Auth, clusterName, namespace stri
 			},
 		},
 	}
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err
@@ -126,4 +184,23 @@ func processRawData(result *cloudwatch.GetMetricDataOutput) cpuResult {
 	}
 
 	return rawData
+}
+
+func init() {
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("query", "", "query")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEKSCpuRequestsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

@@ -2,12 +2,17 @@ package EKS
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
 )
@@ -20,17 +25,69 @@ type NodeEventLog struct {
 	EventMessage    string `json:"EventMessage"`
 }
 
-func GetNodeEventLogsSinglePanel(cmd *cobra.Command, clientAuth *model.Auth) (string, string, error) {
-	clusterName, _ := cmd.PersistentFlags().GetString("clusterName")
+var AwsxEKSNodeEventLogsCmd = &cobra.Command{
+	Use:   "node_event_logs_panel",
+	Short: "get node event logs data",
+	Long:  `command to get node event logs data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetNodeEventLogsSinglePanel(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting Node event logs data: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetNodeEventLogsSinglePanel(cmd *cobra.Command, clientAuth *model.Auth,cloudWatchClient *cloudwatch.CloudWatch) (string, string, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", "", err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
+	
 	startTime, endTime := Parsetime(startTimeStr, endTimeStr)
 
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	// Fetch node event logs
-	nodeEventLogs, err := GetNodeEventLogs(clientAuth, clusterName, startTime, endTime)
+	nodeEventLogs, err := GetNodeEventLogs(clientAuth, instanceId, startTime, endTime,cloudWatchClient)
 	if err != nil {
 		log.Println("Error fetching node event logs: ", err)
 		return "", "", err
@@ -53,8 +110,8 @@ func GetNodeEventLogsSinglePanel(cmd *cobra.Command, clientAuth *model.Auth) (st
 }
 
 // Function to fetch node event logs
-func GetNodeEventLogs(clientAuth *model.Auth, clusterName string, startTime, endTime *time.Time) ([]NodeEventLog, error) {
-	logGroupName := "/aws/containerinsights/" + clusterName + "/host"
+func GetNodeEventLogs(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time,cloudWatchClient *cloudwatch.CloudWatch) ([]NodeEventLog, error) {
+	logGroupName := "/aws/containerinsights/" + instanceId + "/host"
 	startTimeMillis := startTime.UnixNano() / int64(time.Millisecond) // Convert to milliseconds
 	endTimeMillis := endTime.UnixNano() / int64(time.Millisecond)     // Convert to milliseconds
 	filterPattern := "\"node\""
@@ -131,4 +188,23 @@ func Parsetime(startTimeStr, endTimeStr string) (*time.Time, *time.Time) {
 	}
 
 	return startTime, endTime
+}
+
+func init() {
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("query", "", "query")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEKSNodeEventLogsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

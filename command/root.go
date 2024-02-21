@@ -57,7 +57,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "network_utilization_panel" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkUtilizationPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkUtilizationPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network utilization: ", err)
 					return
@@ -69,7 +69,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "disk_read" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskReadPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskReadPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting CPU User Usage: ", err)
 					return
@@ -80,7 +80,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "cpu_usage_panel" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetCPUUsageUserPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetCPUUsageUserPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting CPU User Usage: ", err)
 					return
@@ -91,7 +91,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "disk_write" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskWritePanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskWritePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting Disk Write Data: ", err)
 					return
@@ -102,7 +102,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "disk_used" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskUsedPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetDiskWritePanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting in used disk data: ", err)
 					return
@@ -113,7 +113,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "net_inpackets" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInPacketsPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInPacketsPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network In packets: ", err)
 					return
@@ -124,7 +124,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "net_inbytes" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInBytesPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInBytesPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network In packets: ", err)
 					return
@@ -135,7 +135,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "net_Outbytes" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutBytesPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutBytesPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network In packets: ", err)
 					return
@@ -146,7 +146,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "net_outpackets" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting network Out packets: ", err)
 					return
@@ -157,7 +157,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "storage_utilization_panel" && elementType == "EC2" {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetCPUUsageIdlePanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting storage utilization: ", err)
 					return
@@ -179,7 +179,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "cpu_requests_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetCPURequestData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetCPURequestData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting CPU requests : ", err)
 					return
@@ -190,7 +190,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "memory_utilization_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GeteksMemoryUtilizationPanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GeteksMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory utilization: ", err)
 					return
@@ -201,7 +201,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "network_utilization_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkUtilizationPanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network utilization: ", err)
 					return
@@ -212,7 +212,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "allocatable_cpu_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetAllocatableCPUData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetAllocatableCPUData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting allocatable cpu panel: ", err)
 					return
@@ -223,7 +223,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "cpu_limits_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetCPULimitsData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetCPULimitsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting cpu limits: ", err)
 					return
@@ -234,7 +234,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "cpu_utilization_graph_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetCPUUtilizationData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetCPUUtilizationData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting cpu utilization graph panel: ", err)
 					return
@@ -245,7 +245,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "memory_requests_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryRequestData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryRequestData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory request panel: ", err)
 					return
@@ -256,7 +256,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "memory_limits_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryLimitsData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryLimitsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory limits panel: ", err)
 					return
@@ -267,7 +267,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "memory_utilization_graph_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryUtilizationGraphData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryUtilizationGraphData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory utilization graph panel: ", err)
 					return
@@ -278,7 +278,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "Network_in_out_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkInOutData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkInOutData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting Network_in_out_panel: ", err)
 					return
@@ -288,10 +288,10 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "CPU_Utilization_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetCPU_UtilizationData(cmd, clientAuth)
+			} else if queryName == "cpu_utilization_node_graph_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetCPUUtilizationNodeData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting CPU_Utilization_panel: ", err)
+					log.Println("Error getting cpu utilization node graph panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -300,7 +300,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "memory_usage_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryUsageData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetMemoryUsageData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory_usage_panel: ", err)
 					return
@@ -311,7 +311,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "network_throughput_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkThroughputPanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkThroughputPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network_throughput_panel: ", err)
 					return
@@ -322,7 +322,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "node_capacity_panel" && elementType == "EKS" {
-				nodeCapacityPanel, err := EKS.GetNodeCapacityPanel(cmd, clientAuth)
+				nodeCapacityPanel, err := EKS.GetNodeCapacityPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting node_capacity_panel: ", err)
 					return
@@ -337,7 +337,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "node_uptime_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeUptimePanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeUptimePanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting node_uptime_panel: ", err)
 					return
@@ -347,8 +347,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "network_throughput_Panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkThroughputSinglePanel(cmd, clientAuth)
+			} else if queryName == "network_throughput_single_panel" && elementType == "EKS" {
+				cloudwatchMetricResp, jsonResp, err := EKS.GetNetworkThroughputSinglePanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network_throughput_Panel: ", err)
 					return
@@ -359,7 +359,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "node_downtime_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeDowntimePanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeDowntimePanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting node_downtime_panel: ", err)
 					return
@@ -370,7 +370,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "network_availability_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkAvailabilityData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkAvailabilityData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network_availability_panel: ", err)
 					return
@@ -381,7 +381,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "service_availability_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetServiceAvailabilityData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetServiceAvailabilityData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting service_availability_panel: ", err)
 					return
@@ -394,7 +394,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "node_event_logs_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeEventLogsSinglePanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeEventLogsSinglePanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting node_event_logs_panel: ", err)
 					return
@@ -489,7 +489,7 @@ func Execute() {
 func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2MemoryUtilizationCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkUtilizationCmd)
+	// AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkUtilizationCmd)
 	// AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2StorageUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("RootVolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("EBSVolume1Id", "", "ebs volume 1 id")

@@ -2,10 +2,14 @@ package EKS
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -18,7 +22,6 @@ type NodeCapacityMetrics struct {
 	StorageAvail float64 `json:"storage_avail"`
 }
 
-
 const (
 	NodeCPUMetricName     = "node_cpu_utilization"
 	NodeMemoryMetricName  = "node_memory_utilization"
@@ -30,33 +33,89 @@ type NodeCapacityPanel struct {
 	JsonData string                                     `json:"json_data"`
 }
 
-func GetNodeCapacityPanel(cmd *cobra.Command, clientAuth *model.Auth) (*NodeCapacityPanel, error) {
-	clusterName, _ := cmd.PersistentFlags().GetString("clusterName")
+var AwsxEKSNodeCapacityCmd = &cobra.Command{
+	Use:   "node_capacity_panel",
+	Short: "get node capacity metrics data",
+	Long:  `command to get node capacity metrics data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			nodeCapacityPanel, err := GetNodeCapacityPanel(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting node capacity data: ", err)
+				return
+			}
+
+			jsonResp := nodeCapacityPanel.JsonData
+			cloudwatchMetricResp := nodeCapacityPanel.RawData
+
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetNodeCapacityPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (*NodeCapacityPanel, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
 
 	startTime, endTime := NodeCapacityparseTime(startTimeStr, endTimeStr)
 
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	cpuUsageRawData, err := GetNodeCapacityMetricData(clientAuth, clusterName, "", startTime, endTime, NodeCPUMetricName)
+	cpuUsageRawData, err := GetNodeCapacityMetricData(clientAuth, instanceId, "", startTime, endTime, NodeCPUMetricName, cloudWatchClient)
 	if err != nil {
 		return nil, err
 	}
 
-	memoryUsageRawData, err := GetNodeCapacityMetricData(clientAuth, clusterName, "", startTime, endTime, NodeMemoryMetricName)
+	memoryUsageRawData, err := GetNodeCapacityMetricData(clientAuth, instanceId, "", startTime, endTime, NodeMemoryMetricName, cloudWatchClient)
 	if err != nil {
 		return nil, err
 	}
 
-	storageAvailRawData, err := GetNodeCapacityMetricData(clientAuth, clusterName, "", startTime, endTime, NodeStorageMetricName)
+	storageAvailRawData, err := GetNodeCapacityMetricData(clientAuth, instanceId, "", startTime, endTime, NodeStorageMetricName, cloudWatchClient)
 	if err != nil {
 		return nil, err
 	}
 
-	totalCPU := 100.0       // Assuming 100% CPU
-	totalMemory := 100.0  
-	totalStorage := 100.0 
+	totalCPU := 100.0 // Assuming 100% CPU
+	totalMemory := 100.0
+	totalStorage := 100.0
 
 	nodeCapacity := NodeCapacityMetrics{
 		CPUUsage:     calculateCPUUsage(cpuUsageRawData, totalCPU),
@@ -112,7 +171,8 @@ func calculateStorageAvailability(data *cloudwatch.GetMetricDataOutput, totalSto
 	return (sum / float64(len(data.MetricDataResults))) / totalStorage
 }
 
-func GetNodeCapacityMetricData(clientAuth *model.Auth, clusterName, namespace string, startTime, endTime *time.Time, metricName string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetNodeCapacityMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	elmType := "ContainerInsights"
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -124,20 +184,22 @@ func GetNodeCapacityMetricData(clientAuth *model.Auth, clusterName, namespace st
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("ClusterName"),
-								Value: aws.String(clusterName),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String(metricName),
-						Namespace:  aws.String("ContainerInsights"),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Sum"), 
+					Stat:   aws.String("Sum"),
 				},
 			},
 		},
 	}
 
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err
@@ -176,4 +238,23 @@ func NodeCapacityparseTime(startTimeStr, endTimeStr string) (*time.Time, *time.T
 	}
 
 	return startTime, endTime
+}
+
+func init() {
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("query", "", "query")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEKSNodeCapacityCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

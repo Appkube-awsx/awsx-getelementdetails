@@ -2,10 +2,14 @@ package EKS
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -19,11 +23,62 @@ type MemoryUsageResult struct {
 	} `json:"RawData"`
 }
 
-func GetMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	clusterName, _ := cmd.PersistentFlags().GetString("clusterName")
-	namespace, _ := cmd.PersistentFlags().GetString("elementType")
+var AwsxEKSMemoryUsageCmd = &cobra.Command{
+	Use:   "memory_usage_panel",
+	Short: "get memory_usage metrics data",
+	Long:  `command to get memory_usage metrics data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetMemoryUsageData(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting memory_usage: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
 
 	var startTime, endTime *time.Time
 
@@ -55,7 +110,7 @@ func GetMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth) (string, map
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := GetMemoryUsageMetricData(clientAuth, clusterName, namespace, startTime, endTime)
+	rawData, err := GetMemoryUsageMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -76,7 +131,8 @@ func GetMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth) (string, map
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetMemoryUsageMetricData(clientAuth *model.Auth, clusterName, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+func GetMemoryUsageMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	elmType := "ContainerInsights"
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -88,11 +144,11 @@ func GetMemoryUsageMetricData(clientAuth *model.Auth, clusterName, namespace str
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("ClusterName"),
-								Value: aws.String(clusterName),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("node_memory_utilization"),
-						Namespace:  aws.String(namespace),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String("Average"),
@@ -100,7 +156,9 @@ func GetMemoryUsageMetricData(clientAuth *model.Auth, clusterName, namespace str
 			},
 		},
 	}
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err
@@ -122,4 +180,23 @@ func ProcessMemoryUsageRawData(result *cloudwatch.GetMetricDataOutput) MemoryUsa
 	}
 
 	return rawData
+}
+
+func init() {
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("query", "", "query")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEKSMemoryUsageCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
