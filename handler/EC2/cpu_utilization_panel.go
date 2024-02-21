@@ -3,6 +3,7 @@ package EC2
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
@@ -10,10 +11,11 @@ import (
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 
-	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	"github.com/spf13/cobra"
 	"log"
 	"time"
+
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
+	"github.com/spf13/cobra"
 )
 
 type Result struct {
@@ -154,6 +156,8 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 }
 
 func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
+
 	elmType := "AWS/EC2"
 	if elementType == "EC2" {
 		elmType = "AWS/" + elementType
@@ -173,8 +177,7 @@ func GetCpuUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType
 							},
 						},
 						MetricName: aws.String("CPUUtilization"),
-
-						Namespace: aws.String(elmType),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(300),
 					Stat:   aws.String(statistic),

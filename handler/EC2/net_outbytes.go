@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"time"
-
+	"fmt"
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
@@ -21,7 +22,41 @@ type NetworkOutBytes struct {
 	} `json:"RawData"`
 }
 
-func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+var AwsxEc2NetworkOutBytesCmd = &cobra.Command{
+	Use:   "network_outbytes_utilization_panel",
+	Short: "get network outbytes utilization metrics data",
+	Long:  `command to get network out bytes utilization metrics data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetNetworkOutBytesPanel(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting outbytes utilization: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				// default case. it prints json
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -77,7 +112,7 @@ func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth) (string
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetNetworkOutBytesMetricData(clientAuth, instanceId, elementType, startTime, endTime)
+	rawData, err := GetNetworkOutBytesMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -95,8 +130,15 @@ func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth) (string
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNetworkOutBytesMetricData(clientAuth *model.Auth, instanceID string, elementType string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
-	input := &cloudwatch.GetMetricDataInput{
+
+func GetNetworkOutBytesMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
+
+	elmType := "AWS/EC2"
+	if elementType == "EC2" {
+		elmType = "AWS/" + elementType
+	}
+		input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
@@ -111,7 +153,7 @@ func GetNetworkOutBytesMetricData(clientAuth *model.Auth, instanceID string, ele
 							},
 						},
 						MetricName: aws.String("NetworkOut"),
-						Namespace:  aws.String("AWS/" + elementType),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String("Sum"), // Assuming you want the sum of network in bytes
@@ -119,7 +161,10 @@ func GetNetworkOutBytesMetricData(clientAuth *model.Auth, instanceID string, ele
 			},
 		},
 	}
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
+
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err
@@ -142,3 +187,23 @@ func processOutbytesRawdata(result *cloudwatch.GetMetricDataOutput) NetworkOutBy
 
 	return rawData
 }
+
+func init() {
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+}
+

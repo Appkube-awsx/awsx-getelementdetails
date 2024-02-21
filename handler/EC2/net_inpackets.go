@@ -2,9 +2,11 @@ package EC2
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
@@ -21,7 +23,41 @@ type NetworkInPackets struct {
 	} `json:"RawData"`
 }
 
-func GetNetworkInPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+var AwsxEc2NetworkInPacketsCmd = &cobra.Command{
+	Use:   "network_inpackets_utilization_panel",
+	Short: "get network inpackets utilization metrics data",
+	Long:  `command to get network inpackets utilization metrics data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetNetworkInPacketsPanel(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting network inpackets utilization: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				// default case. it prints json
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetNetworkInPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -77,7 +113,7 @@ func GetNetworkInPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth) (strin
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetNetworkInPackerMetricData(clientAuth, instanceId, elementType, startTime, endTime)
+	rawData, err := GetNetworkInPackerMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -95,8 +131,13 @@ func GetNetworkInPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth) (strin
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNetworkInPackerMetricData(clientAuth *model.Auth, instanceID string, elementType string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+func GetNetworkInPackerMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
+
+	elmType := "AWS/EC2"
+	if elementType == "EC2" {
+		elmType = "AWS/" + elementType
+	}
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -112,7 +153,7 @@ func GetNetworkInPackerMetricData(clientAuth *model.Auth, instanceID string, ele
 							},
 						},
 						MetricName: aws.String("NetworkPacketsIn"),
-						Namespace:  aws.String("AWS/" + elementType),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String("Average"),
@@ -120,14 +161,14 @@ func GetNetworkInPackerMetricData(clientAuth *model.Auth, instanceID string, ele
 			},
 		},
 	}
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
+
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
-		log.Println("Error fetching metric data:", err)
 		return nil, err
 	}
-	// log.Println("Metric data result:", result)
-
 	return result, nil
 }
 
@@ -156,4 +197,23 @@ func processNetworkInRawData(result *cloudwatch.GetMetricDataOutput) NetworkInPa
 	}
 
 	return rawData
+}
+
+func init() {
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

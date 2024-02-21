@@ -166,6 +166,8 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 
 func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
+
+	elmType := "CWAgent"
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -181,7 +183,7 @@ func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID, elementT
 							},
 						},
 						MetricName: aws.String("mem_used_percent"),
-						Namespace:  aws.String("CWAgent"),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(300),
 					Stat:   aws.String(statistic),

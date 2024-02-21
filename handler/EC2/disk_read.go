@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+	"fmt"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
@@ -21,7 +23,41 @@ type DiskReadPanelData struct {
 	} `json:"RawData"`
 }
 
-func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+var AwsxEc2DiskReadCmd = &cobra.Command{
+	Use:   "disk_read_panel",
+	Short: "get disk read metrics data",
+	Long:  `command to get disk read metrics data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetDiskReadPanel(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting disk read  utilization: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				// default case. it prints json
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -77,7 +113,7 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[s
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetDiskReadPanelMetricData(clientAuth, instanceId, elementType, startTime, endTime)
+	rawData, err := GetDiskReadPanelMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient )
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -95,9 +131,15 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[s
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID string, elementType string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+
+func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
-	input := &cloudwatch.GetMetricDataInput{
+
+	elmType := "AWS/EC2"
+	if elementType == "EC2" {
+		elmType = "AWS/" + elementType
+	}
+		input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
@@ -112,7 +154,7 @@ func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID string, eleme
 							},
 						},
 						MetricName: aws.String("DiskReadBytes"),
-						Namespace:  aws.String("AWS/" + elementType),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(300),
 					Stat:   aws.String("Average"),
@@ -120,13 +162,14 @@ func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID string, eleme
 			},
 		},
 	}
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
+
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
-		log.Println("Error fetching metric data:", err)
 		return nil, err
 	}
-	log.Println("Metric data result:", result)
 
 	return result, nil
 }
@@ -156,4 +199,23 @@ func processDiskReadPanelRawData(result *cloudwatch.GetMetricDataOutput) DiskRea
 	}
 
 	return rawData
+}
+
+func init() {
+	AwsxEc2DiskReadCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEc2DiskReadCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

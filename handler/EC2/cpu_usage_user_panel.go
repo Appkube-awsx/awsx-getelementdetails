@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+	"fmt"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
@@ -20,8 +22,41 @@ type CpuUsageUser struct {
 		Value     float64
 	} `json:"RawData"`
 }
+var AwsxEc2CpuUsageUserCmd = &cobra.Command{
+	Use:   "cpu_usage_user_utilization_panel",
+	Short: "get cpu usage user utilization metrics data",
+	Long:  `command to get cpu usage user utilization metrics data`,
 
-func GetCPUUsageUserPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetCPUUsageUserPanel(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting cpu usage user panel utilization: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				// default case. it prints json
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
+}
+
+func GetCPUUsageUserPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -76,7 +111,7 @@ func GetCPUUsageUserPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, m
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetCPUUsageUserMetricData(clientAuth, instanceId, elementType, startTime, endTime)
+	rawData, err := GetCpuUsageUserMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -94,7 +129,12 @@ func GetCPUUsageUserPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, m
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetCPUUsageUserMetricData(clientAuth *model.Auth, instanceID string, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+func GetCpuUsageUserMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
+	elmType := "CWAgent"
+	if elementType == "EC2" {
+		elmType = "CWAgent"
+	}
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -110,7 +150,7 @@ func GetCPUUsageUserMetricData(clientAuth *model.Auth, instanceID string, namesp
 							},
 						},
 						MetricName: aws.String("cpu_usage_user"),
-						Namespace:  aws.String("CWAgent/"),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String("Average"),
@@ -118,7 +158,10 @@ func GetCPUUsageUserMetricData(clientAuth *model.Auth, instanceID string, namesp
 			},
 		},
 	}
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
+
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err
@@ -126,6 +169,7 @@ func GetCPUUsageUserMetricData(clientAuth *model.Auth, instanceID string, namesp
 
 	return result, nil
 }
+
 
 func processRawData(result *cloudwatch.GetMetricDataOutput) CpuUsageUser {
 	var rawData CpuUsageUser
@@ -141,3 +185,23 @@ func processRawData(result *cloudwatch.GetMetricDataOutput) CpuUsageUser {
 
 	return rawData
 }
+
+func init() {
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+}
+
