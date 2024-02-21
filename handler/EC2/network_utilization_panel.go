@@ -119,17 +119,17 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Inbound Traffic
-	inboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "NetworkIn", "AWS/EC2", cloudWatchClient)
- 	 	if err != nil {
+	inboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", "NetworkIn", cloudWatchClient)
+	if err != nil {
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["InboundTraffic"] = inboundTraffic
 
 	// Get Outbound Traffic
-	outboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "NetworkOut", "AWS/EC2", cloudWatchClient)
+	outboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", "NetworkOut", cloudWatchClient)
 	if err != nil {
- 		log.Println("Error in getting outbound traffic: ", err)
+		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["OutboundTraffic"] = outboundTraffic
@@ -153,7 +153,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNetworkUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string,  metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetNetworkUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 	elmType := "AWS/EC2"
 	if elementType == "EC2" {
