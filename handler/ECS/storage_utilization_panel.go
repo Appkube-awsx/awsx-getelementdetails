@@ -117,7 +117,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Root Volume Usage
-	rootVolumeUsage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_utilization", cloudWatchClient)
+	rootVolumeUsage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "EphemeralStorageUtilized", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting root volume usage: ", err)
 		return "", nil, err
@@ -125,7 +125,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData["RootVolumeUsage"] = rootVolumeUsage
 
 	// Get EBS Volume 1 Usage
-	ebsVolume1Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_utilization", cloudWatchClient)
+	ebsVolume1Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "EphemeralStorageUtilized", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS volume 1 usage: ", err)
 		return "", nil, err
@@ -133,7 +133,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData["EBSVolume1Usage"] = ebsVolume1Usage
 
 	// Get EBS Volume 2 Usage
-	ebsVolume2Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_utilization", cloudWatchClient)
+	ebsVolume2Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "EphemeralStorageUtilized", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS volume 2 usage: ", err)
 		return "", nil, err
