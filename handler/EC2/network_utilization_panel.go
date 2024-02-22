@@ -119,7 +119,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Inbound Traffic
-	inboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", "NetworkIn", cloudWatchClient)
+	inboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "NetworkIn", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
@@ -127,7 +127,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData["InboundTraffic"] = inboundTraffic
 
 	// Get Outbound Traffic
-	outboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", "NetworkOut", cloudWatchClient)
+	outboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "NetworkOut", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
@@ -177,7 +177,7 @@ func GetNetworkUtilizationMetricData(clientAuth *model.Auth, instanceID, element
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(300),
-					Stat:   aws.String("Sum"),
+					Stat:   aws.String(statistic),
 				},
 			},
 		},

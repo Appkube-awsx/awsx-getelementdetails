@@ -14,14 +14,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type MemPhysicalRam struct {
+type MemCache struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
 	} `json:"RawData"`
 }
 
-func GetMemPhysicalRamPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetMemCachePanel(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -77,7 +77,7 @@ func GetMemPhysicalRamPanel(cmd *cobra.Command, clientAuth *model.Auth) (string,
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetMemPhysicalRamMetricData(clientAuth, instanceId, elementType, startTime, endTime)
+	rawData, err := GetMemCacheMetricData(clientAuth, instanceId, elementType, startTime, endTime)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -95,7 +95,7 @@ func GetMemPhysicalRamPanel(cmd *cobra.Command, clientAuth *model.Auth) (string,
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetMemPhysicalRamMetricData(clientAuth *model.Auth, instanceID string, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
+func GetMemCacheMetricData(clientAuth *model.Auth, instanceID string, namespace string, startTime, endTime *time.Time) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -110,8 +110,8 @@ func GetMemPhysicalRamMetricData(clientAuth *model.Auth, instanceID string, name
 								Value: aws.String(instanceID),
 							},
 						},
-						MetricName: aws.String("disk_used_percent"),
-						Namespace:  aws.String("CWAgent/"),
+						MetricName: aws.String("mem_cached"),
+						Namespace:  aws.String("CWAgent"),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String("Average"),
@@ -128,8 +128,8 @@ func GetMemPhysicalRamMetricData(clientAuth *model.Auth, instanceID string, name
 	return result, nil
 }
 
-func proceedRawData(result *cloudwatch.GetMetricDataOutput) MemPhysicalRam {
-	var rawData MemPhysicalRam
+func proceedRawData(result *cloudwatch.GetMetricDataOutput) MemCache {
+	var rawData MemCache
 	rawData.RawData = make([]struct {
 		Timestamp time.Time
 		Value     float64

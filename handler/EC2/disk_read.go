@@ -2,9 +2,9 @@ package EC2
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
-	"fmt"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
@@ -113,7 +113,7 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetDiskReadPanelMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient )
+	rawData, err := GetDiskReadPanelMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -131,15 +131,12 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-
 func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
-	elmType := "AWS/EC2"
-	if elementType == "EC2" {
-		elmType = "AWS/" + elementType
-	}
-		input := &cloudwatch.GetMetricDataInput{
+	elmType := "CWAgent"
+
+	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{

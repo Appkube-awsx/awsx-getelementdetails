@@ -8,6 +8,8 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -22,9 +24,9 @@ type DiskWritePanelData struct {
 }
 
 var AwsxEc2DiskWriteCmd = &cobra.Command{
-	Use:   "disk_write_utilization_panel",
-	Short: "get disk write utilization metrics data",
-	Long:  `command to get disk write utilization metrics data`,
+	Use:   "disk_write_panel",
+	Short: "get disk write metrics data",
+	Long:  `command to get disk write metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -56,8 +58,27 @@ var AwsxEc2DiskWriteCmd = &cobra.Command{
 }
 
 func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	instanceID, _ := cmd.PersistentFlags().GetString("instanceId")
-	namespace, _ := cmd.PersistentFlags().GetString("elementType")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
+
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -92,7 +113,7 @@ func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetDiskWritePanelMetricData(clientAuth, instanceID, namespace, startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := GetDiskWritePanelMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -113,10 +134,8 @@ func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 func GetDiskWritePanelMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
-	elmType := "AWS/EC2"
-	if elementType == "EC2" {
-		elmType = "AWS/" + elementType
-	}
+	elmType := "CWAgent"
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,

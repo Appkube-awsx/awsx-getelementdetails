@@ -134,10 +134,8 @@ func GetNetworkInPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 func GetNetworkInPackerMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
-	elmType := "AWS/EC2"
-	if elementType == "EC2" {
-		elmType = "AWS/" + elementType
-	}
+	elmType := "CWAgent"
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,

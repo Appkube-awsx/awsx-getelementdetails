@@ -132,9 +132,7 @@ func GetCPUUsageUserPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 func GetCpuUsageUserMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 	elmType := "CWAgent"
-	if elementType == "EC2" {
-		elmType = "CWAgent"
-	}
+	
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
