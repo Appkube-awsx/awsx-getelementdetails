@@ -8,6 +8,7 @@ import (
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EC2"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/ECS"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EKS"
+	"github.com/Appkube-awsx/awsx-getelementdetails/handler/Lambda"
 	"github.com/spf13/cobra"
 )
 
@@ -404,8 +405,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "Cpu_utilization_panel" && elementType == "AWS/ECS" {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetContainerPanel(cmd, clientAuth)
+			} else if queryName == "cpu_utilization_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetECScpuUtilizationPanel(cmd, clientAuth,nil)
 				if err != nil {
 					log.Println("Error getting cpu utilization for ECS: ", err)
 					return
@@ -415,8 +416,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "Memory_utilization_panel" && elementType == "AWS/ECS" {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetecsMemoryUtilizationPanel(cmd, clientAuth)
+			} else if queryName == "memory_utilization_panel" && elementType == "ECS" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetECSMemoryUtilizationPanel(cmd, clientAuth,nil)
 				if err != nil {
 					log.Println("Error getting memory utilization for ECS: ", err)
 					return
@@ -426,20 +427,42 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "Network_utilization_panel" && elementType == "AWS/ECS" {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetNetworkUtilizationPanel(cmd, clientAuth)
+			} else if queryName == "cpu_utilization_graph_panel" && elementType == "ECS" {
+					jsonResp, cloudwatchMetricResp, err := ECS.GetCPUUtilizationGraphData(cmd, clientAuth,nil)
+					if err != nil {
+						log.Println("Error getting cpu utilization graph for ECS: ", err)
+						return
+					}
+					if responseType == "frame" {
+						fmt.Println(cloudwatchMetricResp)
+					} else {
+						fmt.Println(jsonResp)
+					}	
+			} else if queryName == "memory_utilization_graph_panel" && elementType == "ECS" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetMemoryUtilizationGraphData(cmd, clientAuth,nil)
 				if err != nil {
-					log.Println("Error getting Network utilization for ECS: ", err)
+					log.Println("Error getting memory utilization graph for ECS: ", err)
 					return
 				}
 				if responseType == "frame" {
 					fmt.Println(cloudwatchMetricResp)
 				} else {
 					fmt.Println(jsonResp)
-				}
+				}	
+			//} else if queryName == "Network_utilization_panel" && elementType == "AWS/ECS" {
+				//jsonResp, cloudwatchMetricResp, err := ECS.GetNetworkUtilizationPanel(cmd, clientAuth,nil)
+				//if err != nil {
+					//log.Println("Error getting Network utilization for ECS: ", err)
+					//return
+				//}
+				//if responseType == "frame" {
+					//fmt.Println(cloudwatchMetricResp)
+				//} else {
+					//fmt.Println(jsonResp)
+				//}
 
-			} else if queryName == "storage_utilization_panel" && elementType == "AWS/ECS" {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetStorageUtilizationPanel(cmd, clientAuth)
+			} else if queryName == "storage_utilization_panel" && elementType == "ECS" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetStorageUtilizationPanel(cmd, clientAuth,nil)
 				if err != nil {
 					log.Println("Error getting storage utilization for ECS: ", err)
 					return
@@ -449,8 +472,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "cpu_reservation_panel" && elementType == "AWS/ECS" {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetCPUReservationData(cmd, clientAuth)
+			} else if queryName == "cpu_reservation_panel" && elementType == "ECS" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetCPUReservationData(cmd, clientAuth,nil)
 				if err != nil {
 					log.Println("Error getting cpu reservation data: ", err)
 					return
@@ -462,8 +485,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 
-			} else if queryName == "memory_reservation_panel" && elementType == "AWS/ECS" {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetMemoryReservationData(cmd, clientAuth)
+			} else if queryName == "memory_reservation_panel" && elementType == "ECS" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetMemoryReservationData(cmd, clientAuth,nil)
 				if err != nil {
 					log.Println("Error getting memory  data: ", err)
 					return
@@ -473,6 +496,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "error_panel" && elementType == "Lambda" {
+					jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaErrorData(cmd, clientAuth,nil)
+					if err != nil {
+						log.Println("Error getting lambda error  data: ", err)
+						return
+					}
+					if responseType == "frame" {
+						fmt.Println(cloudwatchMetricResp)
+					} else {
+						fmt.Println(jsonResp)
+					}
+			} else if queryName == "throttles_panel" && elementType == "Lambda" {
+						jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaThrottleData(cmd, clientAuth,nil)
+						if err != nil {
+							log.Println("Error getting lambda throttles  data: ", err)
+							return
+						}
+						if responseType == "frame" {
+							fmt.Println(cloudwatchMetricResp)
+						} else {
+							fmt.Println(jsonResp)
+						}			
 			} else {
 				fmt.Println("query not found")
 			}
