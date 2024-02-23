@@ -134,7 +134,7 @@ func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 func GetDiskWritePanelMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
-	elmType := "CWAgent"
+	elmType := "AWS/EC2"
 
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,

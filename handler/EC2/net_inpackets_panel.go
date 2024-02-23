@@ -16,17 +16,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type DiskReadPanelData struct {
+type NetworkInPackets struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
 	} `json:"RawData"`
 }
 
-var AwsxEc2DiskReadCmd = &cobra.Command{
-	Use:   "disk_read_panel",
-	Short: "get disk read metrics data",
-	Long:  `command to get disk read metrics data`,
+var AwsxEc2NetworkInPacketsCmd = &cobra.Command{
+	Use:   "network_inpackets_utilization_panel",
+	Short: "get network inpackets utilization metrics data",
+	Long:  `command to get network inpackets utilization metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -41,9 +41,9 @@ var AwsxEc2DiskReadCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetDiskReadPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetNetworkInPacketsPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting disk read  utilization: ", err)
+				log.Println("Error getting network inpackets utilization: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -57,7 +57,7 @@ var AwsxEc2DiskReadCmd = &cobra.Command{
 	},
 }
 
-func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetNetworkInPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -113,14 +113,14 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetDiskReadPanelMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := GetNetworkInPackerMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["RawData"] = rawData
 
-	result := processDiskReadPanelRawData(rawData)
+	result := processNetworkInRawData(rawData)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
@@ -131,10 +131,10 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetNetworkInPackerMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
-	elmType := "CWAgent"
+	elmType := "AWS/EC2"
 
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
@@ -150,10 +150,10 @@ func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID, elementType 
 								Value: aws.String(instanceID),
 							},
 						},
-						MetricName: aws.String("DiskReadBytes"),
+						MetricName: aws.String("NetworkPacketsIn"),
 						Namespace:  aws.String(elmType),
 					},
-					Period: aws.Int64(300),
+					Period: aws.Int64(60),
 					Stat:   aws.String("Average"),
 				},
 			},
@@ -167,12 +167,11 @@ func GetDiskReadPanelMetricData(clientAuth *model.Auth, instanceID, elementType 
 	if err != nil {
 		return nil, err
 	}
-
 	return result, nil
 }
 
-func processDiskReadPanelRawData(result *cloudwatch.GetMetricDataOutput) DiskReadPanelData {
-	var rawData DiskReadPanelData
+func processNetworkInRawData(result *cloudwatch.GetMetricDataOutput) NetworkInPackets {
+	var rawData NetworkInPackets
 
 	// Initialize an empty slice to store the raw data
 	rawData.RawData = []struct {
@@ -199,20 +198,20 @@ func processDiskReadPanelRawData(result *cloudwatch.GetMetricDataOutput) DiskRea
 }
 
 func init() {
-	AwsxEc2DiskReadCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEc2NetworkInPacketsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
