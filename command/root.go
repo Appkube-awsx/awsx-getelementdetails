@@ -606,6 +606,51 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+
+				} else if queryName == "net_rxinbytes_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+					jsonResp, cloudwatchMetricResp, err := ECS.GetECSNetworkRxInBytesPanel(cmd, clientAuth, nil)
+					if err != nil {
+						log.Println("Error getting network received in bytes data: ", err)
+						return
+					}
+					if responseType == "frame" {
+						fmt.Println(cloudwatchMetricResp)
+					} else {
+						fmt.Println(jsonResp)
+					}
+			} else if queryName == "net_txinbytes_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+						jsonResp, cloudwatchMetricResp, err := ECS.GetECSNetworkTxInBytesPanel(cmd, clientAuth, nil)
+						if err != nil {
+							log.Println("Error getting network transmitted in bytes data: ", err)
+							return
+						}
+						if responseType == "frame" {
+							fmt.Println(cloudwatchMetricResp)
+						} else {
+							fmt.Println(jsonResp)
+						}
+			} else if queryName == "volume_read_bytes_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+							jsonResp, cloudwatchMetricResp, err := ECS.GetECSReadBytesPanel(cmd, clientAuth, nil)
+							if err != nil {
+								log.Println("Error getting volume read bytes data: ", err)
+								return
+							}
+							if responseType == "frame" {
+								fmt.Println(cloudwatchMetricResp)
+							} else {
+								fmt.Println(jsonResp)
+							}
+			} else if queryName == "volume_write_bytes_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+								jsonResp, cloudwatchMetricResp, err := ECS.GetECSWriteBytesPanel(cmd, clientAuth, nil)
+								if err != nil {
+									log.Println("Error getting volume write bytes data: ", err)
+									return
+								}
+								if responseType == "frame" {
+									fmt.Println(cloudwatchMetricResp)
+								} else {
+									fmt.Println(jsonResp)
+								}										
 			} else if queryName == "error_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaErrorData(cmd, clientAuth, nil)
 				if err != nil {
@@ -686,8 +731,17 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSServiceAvailabilityCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSStorageUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSCpuUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSCpuUtilizationGraphCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxCpuReservedCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSMemoryUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSMemoryUtilizationGraphCmd)
+    AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxMemoryReservedCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSStorageUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSNetworkRxInBytesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSNetworkTxInBytesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSReadBytesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSWriteBytesCmd)
+
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("RootVolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("EBSVolume1Id", "", "ebs volume 1 id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("EBSVolume2Id", "", "ebs volume 2 id")
