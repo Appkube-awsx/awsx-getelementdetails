@@ -8,8 +8,6 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -17,173 +15,125 @@ import (
 )
 
 type ErrorResult struct {
-	RawData []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"RawData"`
+    Value float64 `json:"Value"`
 }
 
 var AwsxLambdaErrorCmd = &cobra.Command{
-	Use:   "error_panel",
-	Short: "get error metrics data",
-	Long:  `command to get error metrics data`,
+    Use:   "error_panel",
+    Short: "get error metrics data",
+    Long:  `command to get error metrics data`,
 
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("running from child command")
-		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
-		if err != nil {
-			log.Printf("Error during authentication: %v\n", err)
-			err := cmd.Help()
-			if err != nil {
-				return
-			}
-			return
-		}
-		if authFlag {
-			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetLambdaErrorData(cmd, clientAuth, nil)
-			if err != nil {
-				log.Println("Error getting lambda errors data : ", err)
-				return
-			}
-			if responseType == "frame" {
-				fmt.Println(cloudwatchMetricResp)
-			} else {
-				fmt.Println(jsonResp)
-			}
-		}
+    Run: func(cmd *cobra.Command, args []string) {
+        fmt.Println("running from child command")
+        var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+        if err != nil {
+            log.Printf("Error during authentication: %v\n", err)
+            err := cmd.Help()
+            if err != nil {
+                return
+            }
+            return
+        }
+        if authFlag {
+            responseType, _ := cmd.PersistentFlags().GetString("responseType")
+            jsonResp, cloudwatchMetricResp, err := GetLambdaErrorData(cmd, clientAuth, nil)
+            if err != nil {
+                log.Println("Error getting lambda errors data : ", err)
+                return
+            }
+            if responseType == "frame" {
+                fmt.Println(cloudwatchMetricResp)
+            } else {
+                fmt.Println(jsonResp)
+            }
+        }
 
-	},
+    },
 }
 
-func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]float64, error) {
+    startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
+    endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
+    var startTime, endTime *time.Time
 
-	}
+    // Parse start time if provided
+    if startTimeStr != "" {
+        parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
+        if err != nil {
+            log.Printf("Error parsing start time: %v", err)
+            return "", nil, err
+        }
+        startTime = &parsedStartTime
+    } else {
+        defaultStartTime := time.Now().Add(-5 * time.Minute)
+        startTime = &defaultStartTime
+    }
 
-	var startTime, endTime *time.Time
+    if endTimeStr != "" {
+        parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
+        if err != nil {
+            log.Printf("Error parsing end time: %v", err)
+            return "", nil, err
+        }
+        endTime = &parsedEndTime
+    } else {
+        defaultEndTime := time.Now()
+        endTime = &defaultEndTime
+    }
 
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
-	}
+    // Debug prints
+    log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
+    cloudwatchMetricData := map[string]float64{}
 
-	// Debug prints
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
+    // Fetch raw data
+    avgErrorValue, err := GetAverageLambdaErrorMetricValue(clientAuth, startTime, endTime, cloudWatchClient)
+    if err != nil {
+        log.Println("Error in getting average error value: ", err)
+        return "", nil, err
+    }
+    cloudwatchMetricData["AverageErrors"] = avgErrorValue
 
-	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
+    // Debug prints
+    log.Printf("Average Error Value: %f", avgErrorValue)
 
-	// Fetch raw data
-	rawData, err := GetLambdaErrorMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
-	if err != nil {
-		log.Println("Error in getting raw data: ", err)
-		return "", nil, err
-	}
-	cloudwatchMetricData["RawData"] = rawData
+    jsonString, err := json.Marshal(ErrorResult{Value: avgErrorValue})
+    if err != nil {
+        log.Println("Error in marshalling json in string: ", err)
+        return "", nil, err
+    }
 
-	// Debug prints
-	// log.Printf("RawData Result: %+v", rawData)
-
-	// Process the raw data if needed
-	result := processLambdaErrorRawData(rawData)
-
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
+    return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetLambdaErrorMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "Lambda"
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("FunctionName"),
-								Value: aws.String(instanceId),
-							},
-						},
-						MetricName: aws.String("Errors"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(60),
-					Stat:   aws.String("Average"),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
+func GetAverageLambdaErrorMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
+    input := &cloudwatch.GetMetricStatisticsInput{
+        Namespace:  aws.String("AWS/Lambda"),
+        MetricName: aws.String("Errors"),
+        StartTime:  startTime,
+        EndTime:    endTime,
+        Period:     aws.Int64(2592000), 
+        Statistics: []*string{aws.String("Average")},
+    }
 
-	return result, nil
-}
+    if cloudWatchClient == nil {
+        cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+    }
 
-func processLambdaErrorRawData(result *cloudwatch.GetMetricDataOutput) ErrorResult {
-	var rawData ErrorResult
-	rawData.RawData = make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
+    result, err := cloudWatchClient.GetMetricStatistics(input)
+    if err != nil {
+        return 0, err
+    }
 
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
-	}
+    if len(result.Datapoints) == 0 {
+        return 0, fmt.Errorf("no data available for the specified time range")
+    }
 
-	return rawData
+    // Extract the average value from the first datapoint
+    averageValue := aws.Float64Value(result.Datapoints[0].Average)
+
+    return averageValue, nil
 }
 
 func init() {

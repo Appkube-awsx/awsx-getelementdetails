@@ -112,7 +112,8 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	// Debug prints
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
+	// cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
+	
 
 	// Fetch raw data
 	rawData, err := GetAllocatableCPUMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
@@ -120,16 +121,34 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
-
+	
 	// Process the raw data if needed
 	result := processCPURawData(rawData)
+	// log.Println(result)
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{
+		"RawData": &cloudwatch.GetMetricDataOutput{
+			MetricDataResults: []*cloudwatch.MetricDataResult{
+				{
+					Timestamps: make([]*time.Time, len(result.RawData)),
+					Values:     make([]*float64, len(result.RawData)),
+				},
+			},
+		},
+	}
+	
+	// Assign the processed data to cloudwatchMetricData
+	for i, data := range result.RawData {
+		cloudwatchMetricData["RawData"].MetricDataResults[0].Timestamps[i] = &data.Timestamp
+		cloudwatchMetricData["RawData"].MetricDataResults[0].Values[i] = &data.AllocatableCPU
+	}
+	
+	// log.Printf("CloudWatch Metric Data: %+v", cloudwatchMetricData)
 
 	// Log only the allocatable CPU and its corresponding timestamp
 	for _, data := range result.RawData {
+		// log.Println(data)
 		log.Printf("Timestamp: %v, Allocatable CPU: %v", data.Timestamp, data.AllocatableCPU)
 	}
-
 	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
@@ -158,7 +177,7 @@ func GetAllocatableCPUMetricData(clientAuth *model.Auth, instanceId, elementType
 						MetricName: aws.String("node_cpu_limit"),
 						Namespace:  aws.String(elmType),
 					},
-					Period: aws.Int64(60), // Set a common period for both metrics
+					Period: aws.Int64(60), 
 					Stat:   aws.String("Average"),
 				},
 			},
@@ -175,7 +194,7 @@ func GetAllocatableCPUMetricData(clientAuth *model.Auth, instanceId, elementType
 						MetricName: aws.String("node_cpu_reserved_capacity"),
 						Namespace:  aws.String(elmType),
 					},
-					Period: aws.Int64(60), // Set a common period for both metrics
+					Period: aws.Int64(60), 
 					Stat:   aws.String("Average"),
 				},
 			},
@@ -188,7 +207,7 @@ func GetAllocatableCPUMetricData(clientAuth *model.Auth, instanceId, elementType
 	if err != nil {
 		return nil, err
 	}
-
+	// log.Println (result)
 	return result, nil
 }
 
@@ -206,11 +225,12 @@ func processCPURawData(result *cloudwatch.GetMetricDataOutput) AllocateResult {
 		// log.Printf("Timestamp: %v, cpuLimit: %v, reservedCapacity: %v", *timestamp, cpuLimit, reservedCapacity)
 
 		allocatableCPU := cpuLimit - reservedCapacity
+		// log.Println(allocatableCPU)
 
 		// Only include the calculated allocatable CPU in the result
 		rawData.RawData[i].AllocatableCPU = allocatableCPU
 	}
-
+	// log.Println(rawData)
 	return rawData
 }
 
