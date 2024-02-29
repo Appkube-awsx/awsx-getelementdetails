@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EC2"
@@ -289,6 +290,9 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "instance_hours_running_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetInstanceStartCountMetricData(clientAuth, time.Time{}, time.Time{})
+
 			} else if queryName == "storage_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth, nil)
 				if err != nil {
