@@ -603,17 +603,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-				//} else if queryName == "Network_utilization_panel" && elementType == "AWS/ECS" {
-				//jsonResp, cloudwatchMetricResp, err := ECS.GetNetworkUtilizationPanel(cmd, clientAuth,nil)
-				//if err != nil {
-				//log.Println("Error getting Network utilization for ECS: ", err)
-				//return
-				//}
-				//if responseType == "frame" {
-				//fmt.Println(cloudwatchMetricResp)
-				//} else {
-				//fmt.Println(jsonResp)
-				//}
+			} else if queryName == "Network_utilization_panel" && elementType == "AWS/ECS" {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetNetworkUtilizationPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting Network utilization for ECS: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 
 			} else if queryName == "storage_utilization_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetStorageUtilizationPanel(cmd, clientAuth, nil)
