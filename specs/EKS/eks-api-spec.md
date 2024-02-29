@@ -11,17 +11,24 @@
   - [memory\_requests\_panel](#memory_requests_panel)
   - [memory\_limits\_panel](#memory_limits_panel)
   - [allocatable\_memory\_panel](#allocatable_memory_panel)
-  - [memory\_utilization\_panel](#memory_utilization_panel)
+  - [memory\_utilization\_graph\_panel](#memory_utilization_graph_panel)
   - [disk\_utilization\_panel](#disk_utiization_panel)
   - [network\_in\_out\_panel](#network_in_out_panel)
-  - [CPU\_utilization\_panel](#cpu_utilization_panel)
+  - [cpu\_utilization\_graph\_panel](#cpu_utilization_graph_panel)
   - [memory\_usage\_panel](#memory_usage-panel)
   - [alerts\_warnings\_panel](#alerts-and-warning)
-  - [network\_throughput\_panel](#network_throughput_panel-1)
+  - [network\_throughput\_single\_panel](#network_throughput_single_panel)
   - [node\_capacity\_panel](#node_capacity)
   - [node\_condition\_panel](#node_condition)
   - [disk\_io\_performance\_panel](#disk_io_performance_panel)
   - [node\_event\_logs\_panel](#node_event_logs_panel)
+  - [node\_uptime\_panel](#node_uptime_panel)
+  - [node\_downtime\_panel](#node_downtime_panel)
+  - [network\_availablility\_panel](#network_availablility_panel)
+  - [service\_availability\_panel](#service_availablility_panel)
+
+  
+
 
 - [List of subcommands and options for EKS](#list-of-subcommands-and-options-for-eks)
 
@@ -37,16 +44,17 @@ It implements the awsx plugin getElementDetails
 
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="cpu_utilization_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="cpu_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_utilization_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="cpu_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_utilization_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=cpu_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json format:**
@@ -72,19 +80,21 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 2. memory_utilization_panel 
 
 
-
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="memory_utilization_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="memory_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_utilization_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="memory_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=memory_utilization_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=memory_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
 
 
 **Desired Output in json format:**
@@ -112,19 +122,20 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 3. storage_utilization_panel 
 
 
-
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="storage_utilization_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="storage_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="storage_utilization_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="storage_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=storage_utilization_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
@@ -153,19 +164,21 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 4. network_utilization_panel 
 
 
-
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="network_utilization_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="network_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="network_utilization_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="network_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=network_utilization_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=network_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
 
 
 **Desired Output in json / graph format:**
@@ -194,16 +207,18 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="cpu_requests_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="cpu_requests_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_requests_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="cpu_requests_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_requests_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=cpu_requests_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in  graph format:**
@@ -226,19 +241,20 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 6. allocatable_cpu_panel 
 
 
-
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="allocatable_cpu_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="allocatable_cpu_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="allocatable_cpu_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="allocatable_cpu_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=allocatable_cpu_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=allocatable_cpu_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in  graph format:**
@@ -261,16 +277,19 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="cpu_limits_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="cpu_limits_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_limits_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="cpu_limits_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_limits_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=cpu_limits_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
 
 
 **Desired Output in  graph format:**
@@ -291,19 +310,20 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 8. cpu_utilization_graph_panel 
 
 
-
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="cpu_utilization_graph_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="cpu_utilization_graph_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_utilization_graph_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="cpu_utilization_graph_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=cpu_utilization_graph_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=cpu_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in  graph format:**
@@ -324,19 +344,19 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 9. memory_requests_panel 
 
 
-
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="memory_requests_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="memory_requests_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_requests_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="memory_requests_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=memory_requests_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=memory_requests_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in  graph format:**
@@ -357,18 +377,21 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 
 ## memory_limits_panel
 
+
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="memory_limits_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="memory_limits_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_limits_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="memory_limits_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=memory_limits_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=memory_limits_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in  graph format:**
@@ -389,19 +412,20 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
 11. allocatable_memory_panel 
 
 
-
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="allocatable_memory_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="allocatable_memory_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="allocatable_memory_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="allocatable_memory_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=allocatable_memory_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=allocatable_memory_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in  graph format:**
@@ -416,34 +440,35 @@ awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --eleme
  **Pseudo Code:**
 
 # ui-analysys-and listing-methods
-## memory_utilization_panel 
+## memory_utilization_graph_panel 
 ![Alt text](eks-screen-3.png)
-12. memory_utilization_panel 
-
+12. memory_utilization_graph_panel 
 
 
 **called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="memory_utilization_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="memory_utilization_graph_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_utilization_panel" --timeRange={}
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="memory_utilization_graph_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **Called from API**
 
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=memory_utilization_panel, --timeRange={}
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=memory_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in  graph format:**
-- memory_utilization_panel 
+- memory_utilization_graph_panel 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- memory_utilization_panel - Fire a cloudwatch query for memory_utilization_panel, using metric name as node_memory_utilization. NOTE - The percentage of memory currently being used by the node or nodes. It is the percentage of node memory usage divided by the node memory limitation.
+- memory_utilization_graph_panel - Fire a cloudwatch query for memory_utilization_panel, using metric name as node_memory_utilization. NOTE - The percentage of memory currently being used by the node or nodes. It is the percentage of node memory usage divided by the node memory limitation.
 
 Formula: node_memory_working_set / node_memory_limit. 
 
@@ -454,86 +479,113 @@ Formula: node_memory_working_set / node_memory_limit.
 ## Disk_utiization_panel
 ![Alt text](eks-screen-4.png)
 
-13. Disk_utilization_panel
+13. disk_utilization_panel
 
-Disk_utilization_panel (incomplete)
+disk_utilization_panel (incomplete)
+
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="disk_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**called from maincommand**
+
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="disk_utilization_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=disk_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="Disk_utilization_panel" --timeRange={}
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="Disk_utilization_panel" --timeRange={}
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=Disk_utilization_panel, --timeRange={}
+**Desired Output in graph format:**
 
-Desired Output in graph format:
-Disk_utilization_panel
+ -disk_utilization_panel
 
-Algorithm/ Pseudo Code
-Algorithm:
-Disk_utilization_panel - Write a cloudwatch query for Disk_utilization_panel, where we shall retrieve the data in graph format.
+**Algorithm/ Pseudo Code**
 
-Pseudo Code:
+**Algorithm:** 
+-disk_utilization_panel - Write a cloudwatch query for disk_utilization_panel, where we shall retrieve the data in graph format.
+
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
 ## Network_in_out_panel
 ![Alt text](eks-screen-5.png)
 
-14. Network_in_out_panel
+14. network_in_out_panel
 
 
 Network_in_out_panel
-called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="Network_in_out_panel" --timeRange={}
+**called from subcommand**
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="Network_in_out_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="network_in_out_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=Disk_utilization_panel, --timeRange={}
 
-Desired Output in graph format:
-Network_in_out_panel
+**called from maincommand**
 
-Algorithm/ Pseudo Code
-Algorithm:
-Network_in_out_panel - Write a cloudwatch query for Network_in_out_panel, where we shall retrieve the data in graph format, metrics used -- pod_network_rx_bytes, pod_network_tx_bytes
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="network_in_out_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=network_in_out_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+
+**Desired Output in graph format:**
+
+ -Network_in_out_panel
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+
+-Network_in_out_panel - Write a cloudwatch query for Network_in_out_panel, where we shall retrieve the data in graph format, metrics used -- pod_network_rx_bytes, pod_network_tx_bytes
   NOTE - These are container insights metrics which is a custom namespace in cloudwatch when enabled.
 
-Pseudo Code:
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
-## Cpu_utilization_panel
+## cpu_utilization_graph_panel
 ![Alt text](eks-screen-6.png)
 
-15. CPU utilization panel
+15. cpu utilization graph panel
 
-CPU_Utilization_panel
-called from subcommand
+cpu_utilization_graph_panel
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="CPU_Utilization_panel
-" --timeRange={}
+**called from subcommand**
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="CPU_Utilization_panel
-" --timeRange={}
-
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=CPU_Utilization_panel
-, --timeRange={}
-
-Desired Output in graph format:
-CPU_Utilization_panel
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="cpu_utilization_graph_panel
+" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
-Algorithm/ Pseudo Code
-Algorithm:
-CPU_Utilization_panel - Write a cloudwatch query for CPU_Utilization_panel
+**called from maincommand**
+
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="cpu_utilization_graph_panel
+" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=cpu_utilization_graph_panel
+&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+**Desired Output in graph format:**
+
+-cpu_utilization_graph_panel
+
+
+**Algorithm/ Pseudo Code**
+**Algorithm:**
+-cpu_utilization_panel - Write a cloudwatch query for cpu_utilization_graph_panel
 , where we shall retrieve the data in graph format, metrics used -- node_cpu_utilization, metric namespace - container Insights
 
-Pseudo Code:
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
 ## memory_usage panel
@@ -541,26 +593,33 @@ Pseudo Code:
 
 16. memory usage panel
 
-memory_Usage_panel
-called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="memory_Usage_panel" --timeRange={}
+**called from subcommand**
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_Usage_panel" --timeRange={}
-
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=memory_Usage_panel, --timeRange={}
-
-Desired Output in graph format:
-memory_Usage_panel
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="memory_usage_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
-Algorithm/ Pseudo Code
-Algorithm:
-memory_Usage_panel -  metric namespace - container insights. metric name - node_memory_reserved_capacity, Formula - node_memory_request / node_memory_limit
+**called from maincommand**
 
-Pseudo Code:
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="memory_usage_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=memory_usage_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in graph format:**
+
+-memory_usage_panel
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+memory_usage_panel -  metric namespace - container insights. metric name - node_memory_reserved_capacity, Formula - node_memory_request / node_memory_limit
+
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
 ## network_throughput_panel
@@ -568,26 +627,32 @@ Pseudo Code:
 
 17. network throughput panel
 
-network_throughput_panel
-called from subcommand
+**called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="network_throughput_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="network_throughput_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="network_throughput_panel" --timeRange={}
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=network_throughput_panel, --timeRange={}
+**called from maincommand**
 
-Desired Output in graph format:
-network_throughput_panel
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="network_throughput_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Algorithm/ Pseudo Code
-Algorithm:
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=network_throughput_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in graph format:**
+
+-network_throughput_panel
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
 Write a cloudwatch query for Network_in_out_panel, where we shall retrieve the data in graph format, metrics used -- pod_network_rx_bytes, pod_network_tx_bytes
   NOTE - These are container insights metrics which is a custom namespace in cloudwatch when enabled. Metric NameSpace - Container Insights.
 
-Pseudo Code:
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
 ## node_capacity
@@ -595,25 +660,32 @@ Pseudo Code:
 
 18. node capacity
 
-node_capacity_panel
-called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="node_capacity_panel" --timeRange={}
+**called from subcommand**
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="node_capacity_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="node_capacity_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=node_capacity_panel, --timeRange={}
 
-Desired Output in pie chart format:
-node_capacity_panel
+**called from maincommand**
 
-Algorithm/ Pseudo Code
-Algorithm:
-node_capacity_panel - metric namespace - Container Insights, metric name - node_status_capacity_pods.
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="node_capacity_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Pseudo Code:
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=node_capacity_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in pie chart format:**
+
+-node_capacity_panel
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+-node_capacity_panel - metric namespace - Container Insights, metric name - node_status_capacity_pods.
+
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
 ## node_condition
@@ -621,25 +693,32 @@ Pseudo Code:
 
 19. node condition
 
-node_condition_panel
-called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="node_condition_panel" --timeRange={}
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="node_condition_panel" --timeRange={}
+**called from subcommand**
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=node_condition_panel, --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="node_condition_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Desired Output in pie cahrt format:
-node_condition_panel
 
-Algorithm/ Pseudo Code
-Algorithm:
-node_condition_panel - metric name - node_status_condition_ready,node_status_condition_memory_pressure, node_status_condition_pid_pressure, node_status_condition_disk_pressure, node_status_condition_unknown. Metric Namespace - Container Insights. Use all given metrics to specify a condition of a node.
+**called from maincommand**
 
-Pseudo Code:
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="node_condition_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=node_condition_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in pie cahrt format:**
+-node_condition_panel
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+-node_condition_panel - metric name - node_status_condition_ready,node_status_condition_memory_pressure, node_status_condition_pid_pressure, node_status_condition_disk_pressure, node_status_condition_unknown. Metric Namespace - Container Insights. Use all given metrics to specify a condition of a node.
+
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
 ## disk_io_performance_panel
@@ -647,25 +726,31 @@ Pseudo Code:
 
 20. Disk I/O performance
 
-disk_io_performance_panel
-called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="disk_io_performance_panel" --timeRange={}
+**called from subcommand**
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="disk_io_performance_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="disk_io_performance_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=disk_io_performance_panel, --timeRange={}
 
-Desired Output in graph format:
-disk_io_performance_panel
+**called from maincommand**
 
-Algorithm/ Pseudo Code
-Algorithm:
-disk_io_performance_panel -  metric namespace - EKS, metric name - node_diskio_io_serviced_total, This metric is related to Container Insights metrics.
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="disk_io_performance_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Pseudo Code:
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=disk_io_performance_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in graph format:**
+
+-disk_io_performance_panel
+
+**Algorithm/ Pseudo Code**
+**Algorithm:**
+-disk_io_performance_panel -  metric namespace - EKS, metric name - node_diskio_io_serviced_total, This metric is related to Container Insights metrics.
+
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
 
@@ -674,25 +759,31 @@ Pseudo Code:
 
 21. Node Event Logs
 
-node_event_logs_panel
-called from subcommand
+**called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="node_event_logs_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="node_event_logs_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="node_event_logs_panel" --timeRange={}
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=node_event_logs_panel, --timeRange={}
+**called from maincommand**
 
-Desired Output in graph format:
-node_event_logs_panel
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="node_event_logs_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Algorithm/ Pseudo Code
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=node_event_logs_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in graph format:**
+
+-node_event_logs_panel
+
+**Algorithm/ Pseudo Code**
+
 Algorithm:
 node_event_logs_panel - NA metric namespace - EKS
 
-Pseudo Code:
+**Pseudo Code:**
 
 
 # ui-analysys-and listing-methods
@@ -701,25 +792,30 @@ Pseudo Code:
 
 22. Alerts and warnings - 
 
-alerts and warning panel
-called from subcommand
+**called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="alert_warning_panel" --timRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="alerts_and_warnings_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="alert_warning_panel"" --timeRange={}
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=alert_warning_panel"l, --timeRange={}
+**called from maincommand**
 
-Desired Output in graph format:
-node_event_logs_panel
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="alerts_and_warnings_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Algorithm/ Pseudo Code
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=alerts_and_warnings_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in graph format:**
+
+-node_event_logs_panel
+
+**Algorithm/ Pseudo Code**
 Algorithm:
-node_event_logs_panel - NA metric namespace - EKS
+-node_event_logs_panel - NA metric namespace - EKS
 
-Pseudo Code:
+**Pseudo Code:**
 
 
 
@@ -729,25 +825,32 @@ Pseudo Code:
 
 23. Node Uptime
 
-node_uptime_panel
-called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="node_uptime_panel" --timeRange={}
+**called from subcommand**
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="node_uptime_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="node_uptime_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=node_uptime_panel, --timeRange={}
 
-Desired Output in graph format:
-node_uptime_panel
+**called from maincommand**
 
-Algorithm/ Pseudo Code
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="node_uptime_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=node_uptime_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in graph format:**
+
+-node_uptime_panel
+
+**Algorithm/ Pseudo Code**
+
 Algorithm:
-node_uptime_panel - NA metric namespace - EKS
+-node_uptime_panel - NA metric namespace - EKS
 
-Pseudo Code:
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
 ## node_downtime_panel
@@ -755,105 +858,135 @@ Pseudo Code:
 
 24. Node Downtime
 
-node_downtime_panel
-called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="node_downtime_panel" --timeRange={}
+**called from subcommand**
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="node_downtime_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="node_downtime_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=node_downtime_panel, --timeRange={}
 
-Desired Output in graph format:
-node_downtime_panel
+**called from maincommand**
 
-Algorithm/ Pseudo Code
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="node_downtime_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=node_downtime_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in graph format:**
+
+-node_downtime_panel
+
+**Algorithm/ Pseudo Code**
 Algorithm:
-node_downtime_panel - NA metric namespace - EKS
+-node_downtime_panel - NA metric namespace - EKS
 
-Pseudo Code:
+**Pseudo Code:**
 
 
 # ui-analysys-and listing-methods
-## network availability_panel
+
+## network_availablility_panel
 ![Alt text](eks-screen-7.png)
 
 25. Network Availability
 
-network_availability_panel
-called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="network_availability_panel" --timeRange={}
+**called from subcommand**
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="network_availability_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="network_availability_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=network_availability_panel, --timeRange={}
 
-Desired Output in graph format:
-network_availability_panel
+**called from maincommand**
 
-Algorithm/ Pseudo Code
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="network_availability_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=network_availability_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in graph format:**
+
+-network_availability_panel
+
+**Algorithm/ Pseudo Code**
+
 Algorithm:
-network_availability_panel - NA metric namespace - EKS
+-network_availability_panel - NA metric namespace - EKS
 
-Pseudo Code:
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
+
 ## service_availability_panel
 ![Alt text](eks-screen-7.png)
 
 26. Service Availability
 
-service_availability_panel
-called from subcommand
+**called from subcommand**
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="service_availability_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="service_availability_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="service_availability_panel" --timeRange={}
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=network_availability_panel, --timeRange={}
+**called from maincommand**
 
-Desired Output in graph format:
-service_availability_panel
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="service_availability_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Algorithm/ Pseudo Code
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=service_availability_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+
+**Desired Output in graph format:**
+
+-service_availability_panel
+
+**Algorithm/ Pseudo Code**
+
 Algorithm:
-service_availability_panel - NA metric namespace - EKS
+-service_availability_panel - NA metric namespace - EKS
 
-Pseudo Code:
+**Pseudo Code:**
 
 # ui-analysys-and listing-methods
 
-## network_throughput_panel
+## network_throughput_single_panel
 ![Alt text](eks-screen-7.png)
 
-27. Network Throughput
+27. Network Throughput single 
 
-network_throughput_panel
-called from subcommand
 
-awsx-getelementdetails --vaultURL=vault.synectiks.net --elementId="1234" --elementType=EKS --query="network_throughput_panel" --timeRange={}
+**called from subcommand**
 
-called from maincommand
-awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="network_throughput_panel" --timeRange={}
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9315 --query="network_throughput_single_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
-Called from API
-/awsx-api/getQueryOutput? elementType=EKS, elementId="1234" , query=network_throughput_panel, --timeRange={}
 
-Desired Output in graph format:
-network_throughput_panel
+**called from maincommand**
 
-Algorithm/ Pseudo Code
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9315  --query="network_throughput_single_panel" --elementType="EKS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9315&elementType=EKS&query=network_throughput_single_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+
+**Desired Output in graph format:**
+
+-network_throughput_single_panel
+
+**Algorithm/ Pseudo Code**
+
 Algorithm:
-network_throughput_panel - NA metric namespace - EKS
+-network_throughput_single_panel - NA metric namespace - EKS
 
-Pseudo Code:
+**Pseudo Code:**
 
 
 
@@ -861,17 +994,17 @@ Pseudo Code:
 
 | S.No | CLI Spec|  Description                           
 |------|----------------|----------------------|
-| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_utilization_panel"  | This will get the specific EKS Cluster cpu utilization panel data in hybrid structure |
-| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="storage_utilization_panel" | This will get the specific EKS Cluster storage utilization panel data in hybrid structure|
-| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="network_utilization_panel"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="network_utilization_panel"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
-| 5    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="CPUrequests"  | This will get the specific EKS Cluster cpu requests to a pod panel data in hybrid structure |
-| 6    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="AllocatableCPU"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
-| 7    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="CPU_limits"  | This will get the specific EKS Cluster cpu limits in a pod, data in hybrid structure |
-| 8    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="cpu_utilization_panel"  | This will get the specific EKS Cluster cpu utilization panel data in hybrid structure |
-| 9    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_request_panel"  | This will get the specific EKS Cluster memory request panel data in hybrid structure |
-| 10    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_limits"  | This will get the specific EKS Cluster memory limits panel over a pod data in hybrid structure |
-| 11    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="network_utilization_panel"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
-| 12    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="memory_utilization_panel"  | This will get the specific EKS memory network utilization panel data in hybrid structure |
-| 13    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="disk_utilization_panel"  | This will get the specific EKS Cluster disk utilization(ebs) panel data in hybrid structure |
-| 14    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EKS --query="network_in_out_panel"  | This will get the specific EKS Cluster network in & out panel data in hybrid structure |
+| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="cpu_utilization_panel"  | This will get the specific EKS Cluster cpu utilization panel data in hybrid structure |
+| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="storage_utilization_panel" | This will get the specific EKS Cluster storage utilization panel data in hybrid structure|
+| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_utilization_panel"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_utilization_panel"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
+| 5    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="CPUrequests"  | This will get the specific EKS Cluster cpu requests to a pod panel data in hybrid structure |
+| 6    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="AllocatableCPU"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
+| 7    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="CPU_limits"  | This will get the specific EKS Cluster cpu limits in a pod, data in hybrid structure |
+| 8    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="cpu_utilization_panel"  | This will get the specific EKS Cluster cpu utilization panel data in hybrid structure |
+| 9    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_request_panel"  | This will get the specific EKS Cluster memory request panel data in hybrid structure |
+| 10    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_limits"  | This will get the specific EKS Cluster memory limits panel over a pod data in hybrid structure |
+| 11    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_utilization_panel"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
+| 12    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_utilization_panel"  | This will get the specific EKS memory network utilization panel data in hybrid structure |
+| 13    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="disk_utilization_panel"  | This will get the specific EKS Cluster disk utilization(ebs) panel data in hybrid structure |
+| 14    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_in_out_panel"  | This will get the specific EKS Cluster network in & out panel data in hybrid structure |
