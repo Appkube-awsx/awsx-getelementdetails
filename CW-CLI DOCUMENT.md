@@ -10,20 +10,18 @@ cli to monitors AWS resources using cloudwatch metric queries. It is written in 
 
 ### Command Details
 ```
-go run .\main.go \
-  --crossAccountRoleArn=arn:aws:iam::<account-id>:role/CrossAccount \
-  --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"AWS/EC2\",\"MetricName\": \"CPUUtilization\",\"Period\": 300,\"Stat\": \"Average\"}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9321 --query="cpu_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 ```
 ### Command Parameter:
 - --crossAccountRoleArn: AWS IAM role ARN for cross-account access.
 - -cloudWatchQueries: JSON array of CloudWatch queries.
        mandatory paramters of cloudWatchQueries
-            1. RefID
-            2. Namespace
-            3. MetricName
-            4. Period
-            5. Stat
+            1. elementId
+            2. elementType
+            3. query
+            4. responseType
+            5. startTime and End Time
     
 ### Logic to get GLOBAL_AWS_SECRETS (access/secret key) in cli: 
         Since we are only passing crossAccountRoleArn, we need GLOBAL_AWS_SECRETS (access/secret key) from vault. It can be retrieved by two ways explaind below: 

@@ -4,13 +4,13 @@
   - [memory\_utilization\_panel](#memory_utiization_panel)
   - [storage\_utilization\_panel](#storage_utiization_panel)
   - [network\_utilization\_panel](#network_utiization_panel)
-  - [cpu\_utilization\_panel](#cpu_utilizaion_panel)
+  - [cpu\_utilization\_graph\_panel](#cpu_utilizaion_graph_panel)
   - [cpu\_reservation\_panel](#cpu_reservation_panel)   
   - [cpu\_usage\_sys\_panel](#cpu_usage_sys_panel)
   - [cpu\_usage\_nice\_panel](#cpu_usage_nice_panel)
-  - [memory\_utilization\_panel](#memory_utilization_panel)
+  - [memory\_utilization\_graph\_panel](#memory_utilization_graph_panel)
   - [memory\_reservation\_panel](#memory_reservation_panel)
-  - [memory\_usage\_panel](#memory_usage_panel)
+  - [container\_memory\_usage\_panel](#container_memory_usage_panel)
   - [memory\_overtime\_panel](#memory_overtime_panel)
   - [volume\_readBytes\_panel](#volume_readbytes_panel)
   - [volume\_writeBytes\_panel](#volume_writebytes_panel)
@@ -64,19 +64,21 @@ _
 
 ## cpu_utiization_panel
 
+
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --instanceID="i-05e4e6757f13da657" --query="cpu_utilization_panel" --elementType="AWS/EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
- 
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --instanceID="i-05e4e6757f13da657" --query="cpu_utilization_panel" --elementType="AWS/EC2" --responseType=frame --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=cpu_utilization_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
@@ -103,19 +105,21 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
 ## memory_utiization_panel
 
+
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --instanceID="i-05e4e6757f13da657" --query="memory_utilization_panel" --elementType="AWS/EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="memory_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --instanceID="i-05e4e6757f13da657" --query="memory_utilization_panel" --elementType="AWS/EC2" --responseType=frame --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="memory_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=memory_utilization_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=memory_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
@@ -145,19 +149,18 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --instanceID="i-05e4e6757f13da657" --query="storage_utilization_panel" --elementType="AWS/EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --instanceID="i-05e4e6757f13da657" --query="storage_utilization_panel" --elementType="AWS/EC2" --responseType=frame --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=storage_utilization_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
@@ -185,20 +188,19 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
 ## network_utiization_panel
 
-
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --instanceID="i-05e4e6757f13da657" --query="network_utilization_panel" --elementType="AWS/EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
- **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --instanceID="i-05e4e6757f13da657" --query="network_utilization_panel" --elementType="AWS/EC2" --responseType=frame --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+**called from maincommand**
+
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=network_utilization_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -220,30 +222,30 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  # ui-analysys-and listing-methods
 
-5. cpu_utilization_panel
+## cpu_utilizaion_graph_panel
+
+5. cpu_utilization_graph_panel
 ![Alt text](ecs_screen2.png)
 
 
-## cpu_utilizaion_panel
-
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(CPUUtilization)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(CPUUtilization)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=CPUUtilization
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
-5. CPU utilizaion panel
+5. CPU utilizaion  graph panel
 
 	-CPUUtilization
 
@@ -252,32 +254,34 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- CPU utilization  -Fire a cloudwatch query for cpu_utilization_panel, using metric CPUUtilization.
+- CPU utilization graph  -Fire a cloudwatch query for cpu_utilization_graph_panel, using metric CPUUtilization.
 
  **Pseudo Code:** 
  
  # ui-analysys-and listing-methods
 
-6. cpu_reservation_panel
-![Alt text](ecs_screen2.png)
-
 
 ## cpu_reservation_panel
 
+
+![Alt text](ecs_screen2.png)
+6. cpu_reservation_panel
+
+
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(CPUReservation)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(CPUReservation)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=CPUReservation
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_reservation_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
@@ -295,33 +299,31 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  # ui-analysys-and listing-methods
 
+## cpu_usage_sys_panel
+
 7. cpu_usage_system_panel
 ![Alt text](ecs_screen2.png)
 
  
-## cpu_usage_sys_panel
-
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(cpu_usage_system)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_usage_system_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(cpu_usage_system)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_usage_system_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=cpu_usage_system_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_usage_system_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
 7. CPU usage system panel
 
 	-cpu_usage_system
-
 
 
 **Algorithm/ Pseudo Code**
@@ -331,28 +333,27 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
  **Pseudo Code:** 
  
- # ui-analysys-and listing-methods
+# ui-analysys-and listing-methods
+
+## cpu_usage_nice_panel
 
 8. cpu_usage_nice_panel
 ![Alt text](ecs_screen2.png)
 
 
-## cpu_usage_nice_panel
-
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(cpu_usage_nice)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_usage_nice_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(cpu_usage_nice)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_usage_nice_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=cpu_usage_nice_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_usage_nice_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -372,65 +373,66 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  # ui-analysys-and listing-methods
 
-9. memory_utilization_panel
+##  memory_utilization_graph_panel
+
+9. memory_utilization_graph_panel
 ![Alt text](ecs_screen3.png)
 
 
-##  memory_utilization_panel
-
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(MemoryUtilization)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="memory_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(MemoryUtilization)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="memory_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=MemoryUtilization
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=memory_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
+
+ 
 **Desired Output in json / graph format:**
-9. memory utilization panel
+9. memory utilization graph  panel
 
-	-MemoryUtilizaion_panel
+	-MemoryUtilizaion_graph_panel
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Memory utilization panel  -Fire a cloudwatch query for memory_utilization_panel, using metric MemoryUtilization_panel.
+- Memory utilization graph panel  -Fire a cloudwatch query for memory_utilization_graph_panel, using metric MemoryUtilization_graph_panel.
 
  **Pseudo Code:** 
  
  
  # ui-analysys-and listing-methods
 
+##  memory_reservation_panel
+
 10. memory_reservation_panel
 ![Alt text](ecs_screen3.png)
 
 
-##  memory_reservation_panel
-
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(MemoryReservation)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="memory_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(MemoryReservation)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="memory_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=MemoryReservation
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=memory_reservation_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
@@ -449,29 +451,30 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  # ui-analysys-and listing-methods
 
-11. memory_usage_panel
+##  container_memory_usage_panel
+
+11. container_memory_usage_panel
 ![Alt text](ecs_screen3.png)
 
 
-##  memory_usage_panel
-
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(memory_used)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="container_memory_usage_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(memory_used)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="container_memory_usage_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=memory_used
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=container_memory_usage_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
 
 **Desired Output in json / graph format:**
-11. memory usage panel
+11. container_memory_usage_panel
 
 	-mem_used_panel
 
@@ -480,73 +483,72 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Memory used panel  -Fire a cloudwatch query for memory_usage_panel, using metric memory_usage_panel.
+- container Memory used panel  -Fire a cloudwatch query for memory_usage_panel, using metric container memory_usage_panel.
 
  **Pseudo Code:** 
  
  
  # ui-analysys-and listing-methods
 
-12. memory_overtime_panel
+##  available_memory_overtime_panel
+
+12. available_available_memory_overtime_panel
 ![Alt text](ecs_screen3.png)
 
 
-##  memory_overtime_panel
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(memory_overtime)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="available_memory_overtime_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(memory_overtime)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="available_memory_overtime_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=memory_overtime_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=available_memory_overtime_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
-12. memory overtime panel
+12. available memory overtime panel
 
-	-memory_overtime_panel
+	-available memory_overtime_panel
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Memory_overtime panel  -Fire a cloudwatch query for memory_overtime_panel, using metric memory_overtime_panel.
+- Available Memory_overtime panel  -Fire a cloudwatch query for available memory_overtime_panel, using metric memory_overtime_panel.
 
  **Pseudo Code:**  
+
  
- 
- 
- # ui-analysys-and listing-methods
+# ui-analysys-and listing-methods
+
+##  volume_readBytes_panel
 
 13. volume_readBytes_panel
 ![Alt text](ecs_screen4.png)
 
-
-##  volume_readBytes_panel
-
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(volume_readBytes)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="volume_readBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(volume_readBytes)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="volume_readBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=volume_readBytes_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=volume_readBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
@@ -566,26 +568,27 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
  # ui-analysys-and listing-methods
 
+ ##  volume_writebytes_panel
+
 14. volume_writeBytes_panel
 ![Alt text](ecs_screen4.png)
 
 
-##  volume_writebytes_panel
+
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(volume_writeBytes)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="volume_writeBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(volume_writeBytes)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="volume_writeBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=volume_writeBytes_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=volume_writeBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -605,26 +608,29 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  # ui-analysys-and listing-methods
 
+##  input_output_bytes_panel
+
 15. I/O_Bytes_panel
 ![Alt text](ecs_screen4.png)
 
 
 ##  input_output_bytes_panel
 
+
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(InBytes,OutBytes)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="input_output_bytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(InBytes,OutBytes)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="input_output_bytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=InBytes,OutBytes
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=input_output_bytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
 
 
 **Desired Output in json / graph format:**
@@ -643,21 +649,26 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  # ui-analysys-and listing-methods
 
-16. disk_available_panel
-![Alt text](ec2_screen3.png)
-
-
 ##  disk_available_panel
+
+16. disk_available_panel
+![Alt text](ecs_screen4.png)
+
+
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_available)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="disk_available_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(disk_available)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="disk_available_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=disk_available_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
@@ -679,27 +690,29 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  **Pseudo Code:**  
  
  
-  # ui-analysys-and listing-methods
+# ui-analysys-and listing-methods
+
+##  net_inBytes_panel
 
 17. net\_inBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
-##  net\_inBytes\_panel
-
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesIn)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_inBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesIn)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_inBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=NetworkBytesIn
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_inBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
 
 
 **Desired Output in json / graph format:**
@@ -717,27 +730,28 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  
  
-  # ui-analysys-and listing-methods
+ # ui-analysys-and listing-methods
 
-18. net\_outBytes\_panel
+##  net_outBytes_panel
+
+18. net_outBytes_panel
 ![Alt text](ecs_screen5.png)
 
 
-##  net\_outBytes\_panel
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesOut)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_outBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesOut)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_outBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=NetworkBytesOut
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_outBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -762,19 +776,20 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
 ##  net\_RecieveInBytes\_panel
 
+
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesIn)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_recieveInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesIn)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_recieveInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=NetworkBytesIn_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_recieveInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -792,25 +807,26 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  # ui-analysys-and listing-methods
 
+##  net\_transmitInBytes\_panel
+
 20. net\_transmitInBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
-##  net\_transmitInBytes\_panel
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesIn)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_transmitInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(networNetworkBytesInk_out)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_transmitInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=NetworkBytesIn_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_transmitInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -829,25 +845,26 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  # ui-analysys-and listing-methods
 
+##  net\_RxInBytes\_panel
+
 21. net\_RxInBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
-##  net\_RxInBytes\_panel
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesIn)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_rxinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(networNetworkBytesInk_out)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_rxinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=NetworkBytesIn_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_rxinbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -865,25 +882,28 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
  # ui-analysys-and listing-methods
 
+##  net\_TxInBytes\_panel
+
 22. net\_TxInBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
-##  net\_TxInBytes\_panel
+
+
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesIn)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_txinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
-awsx --zone=us-east-1 --externalId=<afreenxxxx1309> --crossAccountRoleArn=<afreenxxxx1309> --cloudWatchQueries="[{\"RefID\": \"A\",\"MaxDataPoint\": 100,\"Interval\": 60,\"TimeRange\": {\"From\": \"\",\"To\": \"\",\"TimeZone\": \"UTC\"},\"Query\": [{\"Namespace\": \"(CWAgent, ImageId,InstanceId,InstanceType)\",\"MetricName\": \"COUNT(NetworkBytesIn)\",\"Period\": 300,\"Stat\": \"Average\",\"Dimensions\": [{\"Name\": \"InstanceId\",\"Value\": \"i-02b30f1ea5c56e31a\"}]}]}]"
+
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_txinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=NetworkBytesIn_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_txinbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -905,10 +925,10 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
  
 | S.No | CLI Spec|  Description                          
 |------|----------------|----------------------|
-| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="cpu_utilization_panel"  | This will get the specific EC2 instance cpu utilization panel data in hybrid structure |
-| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="memory_utilization_panel" | This will get the specific EC2 instance memory utilization panel data in hybrid structure|
-| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="storage_utilization_panel"  | This will get the specific EC2 instance storage utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="network_utilization_panel"  | This will get th1e specific EC2 instance network utilization panel data in hybrid structure |
+| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900001" --elementType=EC2 --query="cpu_utilization_panel"  | This will get the specific EC2 instance cpu utilization panel data in hybrid structure |
+| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900001" --elementType=EC2 --query="memory_utilization_panel" | This will get the specific EC2 instance memory utilization panel data in hybrid structure|
+| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900001" --elementType=EC2 --query="storage_utilization_panel"  | This will get the specific EC2 instance storage utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900001" --elementType=EC2 --query="network_utilization_panel"  | This will get th1e specific EC2 instance network utilization panel data in hybrid structure |
 
 
 

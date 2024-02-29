@@ -64,18 +64,18 @@ _
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9321 --query="cpu_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900000 --query="cpu_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
  
 
 **called from maincommand**
 
  
-awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9321 --query="cpu_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=900000 --query="cpu_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=9321&elementType=EC2&query=cpu_utilization_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900000&elementType=EC2&query=cpu_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -107,18 +107,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=93
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9321 --query="memory_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900000 --query="memory_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9321 --query="memory_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=900000 --query="memory_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreen1309XXX>&elementType=AWS/EC2&elementId=9321&query=memory_utilization_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreen1309XXX>&elementType=AWS/EC2&elementId=900000&query=memory_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -149,19 +149,19 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreen1309XXX>&elementTy
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=9321 --query="storage_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900000 --query="storage_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=9321 --query="storage_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=900000 --query="storage_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=storage_utilization_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -193,18 +193,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_utilization_panel" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_utilization_panel" --elementType="EC2" --responseType=frame --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_utilization_panel" --elementType="EC2" --responseType=frame --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=AWS/EC2&elementId=9321&query=network_utilization_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=AWS/EC2&elementId=900000&query=network_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -235,20 +235,20 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="cpu_usage_user" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="cpu_usage_user" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="cpu_usage_user" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="cpu_usage_user" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=cpu_usage_user_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=cpu_usage_user_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -276,20 +276,20 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="cpu_usage_idle" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="cpu_usage_idle" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="cpu_usage_idle" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="cpu_usage_idle" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=cpu_usage_idle_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=cpu_usage_idle_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -317,18 +317,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="cpu_usage_sys" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="cpu_usage_sys" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="cpu_usage_sys" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="cpu_usage_sys" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=cpu_usage_sys_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=cpu_usage_sys_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -356,16 +356,16 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="cpu_usage_nice" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="cpu_usage_nice" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="cpu_usage_nice" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="cpu_usage_nice" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=cpu_usage_nice_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=cpu_usage_nice_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -394,18 +394,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="memory_total" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="memory_total" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="memory_total" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="memory_total" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=memory_total_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=memory_total_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -433,19 +433,19 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="memory_free" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="memory_free" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="memory_free" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="memory_free" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=memory_free_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=memory_free_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -471,19 +471,19 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="memory_used" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="memory_used" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="memory_used" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="memory_used" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=memory_used_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=memory_used_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -512,18 +512,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="memory_physicalRAM" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="memory_physicalRAM" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="memory_physicalRAM" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="memory_physicalRAM" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=memory_physicalRAM_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=memory_physicalRAM_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -552,18 +552,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="disk_read" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="disk_read" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="disk_read" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="disk_read" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=disk_read_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=disk_read_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -590,18 +590,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="disk_write" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="disk_write" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="disk_write" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="disk_write" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=disk_write_panel
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=disk_write_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -628,17 +628,17 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="disk_used" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="disk_used" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="disk_used" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="disk_used" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=disk_used_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=disk_used_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -665,18 +665,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="disk_available" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="disk_available" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="disk_available" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="disk_available" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=disk_available_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=disk_available_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -704,17 +704,17 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_in" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_in" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_in" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_in" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=network_in_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=network_in_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -741,18 +741,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_out" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_out" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_out" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_out" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=network_out_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=network_out_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -778,19 +778,19 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_in" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_in" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_in" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_in" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl<afreenxxxx1309>&elementType=EC2&elementId=9321&query=network_in_panel$responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl<afreenxxxx1309>&elementType=EC2&elementId=900000&query=network_in_panel$responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -816,19 +816,19 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl<afreenxxxx1309>&elementTy
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_out" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_out" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> --elementId=9321 --query="network_out" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> --elementId=900000 --query="network_out" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=9321&query=network_out_panel&responsetype=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=EC2&elementId=900000&query=network_out_panel&responsetype=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
@@ -851,10 +851,10 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
  
 | S.No | CLI Spec|  Description                          
 |------|----------------|----------------------|
-| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="cpu_utilization_panel"  | This will get the specific EC2 instance cpu utilization panel data in hybrid structure |
-| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="memory_utilization_panel" | This will get the specific EC2 instance memory utilization panel data in hybrid structure|
-| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="storage_utilization_panel"  | This will get the specific EC2 instance storage utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="1234" --elementType=EC2 --query="network_utilization_panel"  | This will get th1e specific EC2 instance network utilization panel data in hybrid structure |
+| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="cpu_utilization_panel"  | This will get the specific EC2 instance cpu utilization panel data in hybrid structure |
+| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="memory_utilization_panel" | This will get the specific EC2 instance memory utilization panel data in hybrid structure|
+| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="storage_utilization_panel"  | This will get the specific EC2 instance storage utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="network_utilization_panel"  | This will get th1e specific EC2 instance network utilization panel data in hybrid structure |
 
 
 
