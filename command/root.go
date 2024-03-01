@@ -48,6 +48,9 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					// default case. it prints json
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "instance_hours_running_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
+
 			} else if queryName == "memory_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -796,17 +799,6 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "cpu_used_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaCpuUsedData(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting lambda cpu used  data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
 			} else if queryName == "request_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaRequestData(cmd, clientAuth, nil)
 				if err != nil {
@@ -818,9 +810,22 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else {
-				fmt.Println("query not found")
 			}
+			//else if queryName == "cpu_used_panel" && elementType == "Lambda" {
+			//	jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaCpuUsedData(cmd, clientAuth, nil)
+			//	if err != nil {
+			//		log.Println("Error getting lambda cpu used  data: ", err)
+			//		return
+			//	}
+			//	if responseType == "frame" {
+			//		fmt.Println(cloudwatchMetricResp)
+			//	} else {
+			//		fmt.Println(jsonResp)
+			//	}
+			//}
+			// else {
+			//	fmt.Println("query not found")
+			//}
 		}
 	},
 }
@@ -910,4 +915,5 @@ func init() {
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("logGroupName", "", "log group name")
 }

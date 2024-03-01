@@ -66,7 +66,11 @@ func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 		LogGroupName: aws.String(logGroupName),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
 		EndTime:      aws.Int64(endTime.Unix() * 1000),
-		QueryString:  aws.String(filterPattern),
+		QueryString: aws.String(`fields @timestamp, @message
+            | filter eventSource=="ec2.amazonaws.com"
+            | filter eventName=="StartInstances"
+            | stats count(*) as InstanceCount by bin(1mo)
+            | sort @timestamp desc`),
 	}
 
 	if cloudWatchLogs == nil {
