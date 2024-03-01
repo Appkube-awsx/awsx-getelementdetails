@@ -915,4 +915,5 @@ func init() {
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("logGroupName", "", "log group name")
 }
