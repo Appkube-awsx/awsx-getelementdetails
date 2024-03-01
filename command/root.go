@@ -3,7 +3,8 @@ package command
 import (
 	"fmt"
 	"log"
-	"time"
+
+	// "time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EC2"
@@ -290,9 +291,6 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "instance_hours_running_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceStartCountMetricData(clientAuth, time.Time{}, time.Time{})
-
 			} else if queryName == "storage_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -780,6 +778,39 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaTrendsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda error  data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "net_received_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaNetReceivedData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda net received  data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_used_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaCpuUsedData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda cpu used  data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "request_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaRequestData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda request  data: ", err)
 					return
 				}
 				if responseType == "frame" {
