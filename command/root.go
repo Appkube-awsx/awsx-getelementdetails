@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	// "time"
-
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EC2"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/ECS"
@@ -826,22 +824,31 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "failure_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaFailureData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda failure  data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_used_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaCpuData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda cpu used  data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else {
+				fmt.Println("query not found")
 			}
-			//else if queryName == "cpu_used_panel" && elementType == "Lambda" {
-			//	jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaCpuUsedData(cmd, clientAuth, nil)
-			//	if err != nil {
-			//		log.Println("Error getting lambda cpu used  data: ", err)
-			//		return
-			//	}
-			//	if responseType == "frame" {
-			//		fmt.Println(cloudwatchMetricResp)
-			//	} else {
-			//		fmt.Println(jsonResp)
-			//	}
-			//}
-			// else {
-			//	fmt.Println("query not found")
-			//}
 		}
 	},
 }
@@ -912,6 +919,9 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSNetworkTxInBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSReadBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSWriteBytesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
+
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
