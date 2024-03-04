@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	// "time"
-
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EC2"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/ECS"
