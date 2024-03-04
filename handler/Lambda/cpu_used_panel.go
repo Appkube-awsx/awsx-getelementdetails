@@ -14,14 +14,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type CpuUsed struct {
+type CpuResult struct {
 	Value float64 `json:"Value"`
 }
 
-var AwsxLambdaCpuUsedCmd = &cobra.Command{
-	Use:   "cpu_used_panel",
-	Short: "get cpu used metrics data",
-	Long:  `command to get cpu used metrics data`,
+var AwsxLambdaCpuCmd = &cobra.Command{
+	Use:   "cpu_panel",
+	Short: "get cpu metrics data",
+	Long:  `command to get cpu metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -36,9 +36,9 @@ var AwsxLambdaCpuUsedCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetLambdaCpuUsedData(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetLambdaLatencyData(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting lambda cpu received data : ", err)
+				log.Println("Error getting lambda cpu data : ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -47,10 +47,11 @@ var AwsxLambdaCpuUsedCmd = &cobra.Command{
 				fmt.Println(jsonResp)
 			}
 		}
+
 	},
 }
 
-func GetLambdaCpuUsedData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]float64, error) {
+func GetLambdaCpuData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]float64, error) {
 	functionName := "CW-agent-installation-automation"
 
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -58,7 +59,6 @@ func GetLambdaCpuUsedData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 
 	var startTime, endTime *time.Time
 
-	// Parse start time if provided
 	if startTimeStr != "" {
 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
 		if err != nil {
@@ -89,17 +89,17 @@ func GetLambdaCpuUsedData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	cloudwatchMetricData := map[string]float64{}
 
 	// Fetch raw data
-	metricValue, err := GetLambdaCpuUsedMetricValue(clientAuth, startTime, endTime, functionName, cloudWatchClient)
+	CpuUsedValue, err := GetLambdaCpuMetricValue(clientAuth, startTime, endTime, functionName, cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting cpu used metric value: ", err)
+		log.Println("Error in getting cpu used value: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["Memory"] = metricValue
+	cloudwatchMetricData["CpuUsedValue"] = CpuUsedValue
 
 	// Debug prints
-	log.Printf("Memory Metric Value: %f", metricValue)
+	log.Printf("Raw Cpu Value: %f", CpuUsedValue)
 
-	jsonString, err := json.Marshal(MetricResult{Value: metricValue})
+	jsonString, err := json.Marshal(CpuResult{Value: CpuUsedValue})
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
@@ -108,11 +108,11 @@ func GetLambdaCpuUsedData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetLambdaCpuUsedMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, functionName string, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
+func GetLambdaCpuMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, functionName string, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Id: aws.String("cpuused"),
+				Id: aws.String("cpu_total_time"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
 						Namespace:  aws.String("LambdaInsights"),
@@ -161,21 +161,20 @@ func GetLambdaCpuUsedMetricValue(clientAuth *model.Auth, startTime, endTime *tim
 }
 
 func init() {
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("query", "", "query")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxLambdaCpuUsedCmd.PersistentFlags().String("functionName", "", "Lambda function name")
+	AwsxLambdaCpuCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxLambdaCpuCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxLambdaCpuCmd.PersistentFlags().String("query", "", "query")
+	AwsxLambdaCpuCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxLambdaCpuCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxLambdaCpuCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxLambdaCpuCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxLambdaCpuCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxLambdaCpuCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxLambdaCpuCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxLambdaCpuCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxLambdaCpuCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxLambdaCpuCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxLambdaCpuCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxLambdaCpuCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxLambdaCpuCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
