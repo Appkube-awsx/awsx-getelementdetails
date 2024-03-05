@@ -298,6 +298,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "latency_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetLatencyPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting latency metric data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "alert_and_notification_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, err := EC2.GetAlertsAndNotificationsPanel(cmd, clientAuth)
 				if err != nil {
