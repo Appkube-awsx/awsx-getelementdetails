@@ -41,7 +41,7 @@ var AwsxEc2NetworkInboundCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetNetworkInBytesPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetNetworkInBoundPanel(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting network in bytes metrics data: ", err)
 				return
