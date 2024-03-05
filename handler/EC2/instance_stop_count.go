@@ -230,3 +230,30 @@ func filterTheCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Ti
 	return results, nil
 
 }
+
+
+func init() {
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("ebsvolume2Id", "", "ebs volume 2 id")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("accountId", "", "aws account number")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("ServiceName", "", "Service Name")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("clusterName", "", "cluster name")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxEc2InstanceStopCmd.PersistentFlags().String("logGroupName", "", "log group name")
+}
