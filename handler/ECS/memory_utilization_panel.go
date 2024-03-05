@@ -149,7 +149,7 @@ func GetECSMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 }
 
 func GetECSContainerMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "ECS/ContainerInsights"
+	elmType := "AWS/ECS"
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -164,7 +164,7 @@ func GetECSContainerMetricData(clientAuth *model.Auth, instanceId, elementType s
 								Value: aws.String(instanceId),
 							},
 						},
-						MetricName: aws.String("MemoryUtilized"),
+						MetricName: aws.String("MemoryUtilization"),
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(300),
