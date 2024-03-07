@@ -846,6 +846,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "error_messages_count_panel" && elementType == "Lambda" {
+				Lambda.GetLambdaErrorMessageCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda functions  data: ", err)
+					return
+				}
+			} else if queryName == "throttling_trends_panel" && elementType == "Lambda" {
+				Lambda.GetThrottlingTrendsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda functions  data: ", err)
+					return
+				}
 			} else if queryName == "function_panel" && elementType == "Lambda" {
 				Lambda.GetFunctionPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -857,6 +869,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				// } else {
 				// 	fmt.Println(jsonResp)
 				// }
+			} else if queryName == "success_and_failure_function_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailureData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda request  data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_used_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaCpuData(cmd, clientAuth, nil)
 				if err != nil {
@@ -943,6 +966,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSWriteBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaSuccessFailureCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
