@@ -109,7 +109,7 @@ func filterCloudWatchErrorMessageLogs(clientAuth *model.Auth, startTime, endTime
 		}
 	}
 
-	return results, nil
+	return results,nil
 }
 
 

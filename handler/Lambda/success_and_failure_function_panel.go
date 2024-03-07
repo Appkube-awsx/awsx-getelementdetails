@@ -146,7 +146,7 @@ func GetMetricData(cloudWatchClient *cloudwatch.CloudWatch, clientAuth *model.Au
 	// Extract the sum of the metric from the first datapoint
 	metricValue := aws.Float64Value(result.Datapoints[0].Sum)
 
-	return metricValue, nil
+	return metricValue,nil
 }
 
 func init() {

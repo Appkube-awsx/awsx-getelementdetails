@@ -179,7 +179,6 @@ func filterCloudWatchLogsThrottling(clientAuth *model.Auth, startTime, endTime *
 		}
 
 	}
-
 	return results, nil
 
 }
