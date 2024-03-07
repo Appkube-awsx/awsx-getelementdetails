@@ -39,7 +39,7 @@ var AwsxLambdaSuccessFailureCmd = &cobra.Command{
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
 			jsonResp, cloudwatchMetricResp, err := GetLambdaSuccessFailureData(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting lambda throttling data : ", err)
+				log.Println("Error getting lambda data : ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -113,7 +113,7 @@ func GetLambdaSuccessFailureData(cmd *cobra.Command, clientAuth *model.Auth, clo
 	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
-		
+
 		return "", nil, err
 	}
 
