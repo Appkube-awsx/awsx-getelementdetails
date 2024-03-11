@@ -183,21 +183,21 @@ func filterCloudWatchLogsThrottling(clientAuth *model.Auth, startTime, endTime *
 
 }
 
-func init() {
-	AwsxLambdaErrorCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxLambdaErrorCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxLambdaErrorCmd.PersistentFlags().String("query", "", "query")
-	AwsxLambdaErrorCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxLambdaErrorCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxLambdaErrorCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxLambdaErrorCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxLambdaErrorCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxLambdaErrorCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxLambdaErrorCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxLambdaErrorCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxLambdaErrorCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxLambdaErrorCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxLambdaErrorCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxLambdaErrorCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxLambdaErrorCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-}
+// func init() {
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("elementId", "", "element id")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("elementType", "", "element type")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("query", "", "query")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("vaultToken", "", "vault token")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("zone", "", "aws region")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("accessKey", "", "aws access key")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("externalId", "", "aws external id")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("instanceId", "", "instance id")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("startTime", "", "start time")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("endTime", "", "endcl time")
+// 	AwsxLambdaErrorCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+// }
