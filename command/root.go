@@ -53,8 +53,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
 
 			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceRunningHoursPanel(cmd, clientAuth, nil)
-
+				cloudwatchMetricResp, _, err := EC2.GetInstanceRunningHoursPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(cloudwatchMetricResp)
+				}
 			} else if queryName == "memory_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
