@@ -20,7 +20,7 @@ type DiskWritePanelData struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"disk_writes"`
 }
 
 var AwsxEc2DiskWriteCmd = &cobra.Command{

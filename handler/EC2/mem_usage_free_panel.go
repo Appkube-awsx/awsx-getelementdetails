@@ -20,7 +20,7 @@ type MemUsageFree struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"mem_usage_free"`
 }
 
 var AwsxEc2MemoryUsageFreeCmd = &cobra.Command{

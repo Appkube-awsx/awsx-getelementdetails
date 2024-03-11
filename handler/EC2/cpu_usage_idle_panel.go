@@ -20,7 +20,7 @@ type CpuUsageIdle struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"cpu_usage_idle"`
 }
 
 var AwsxEc2CpuUsageIdleCmd = &cobra.Command{

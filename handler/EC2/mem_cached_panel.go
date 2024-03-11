@@ -20,7 +20,7 @@ type MemCache struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"mem_cached"`
 }
 var AwsxEc2MemCachedCmd = &cobra.Command{
 	Use:   "memory_cached_panel",

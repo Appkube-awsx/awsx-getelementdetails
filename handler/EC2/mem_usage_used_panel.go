@@ -20,7 +20,7 @@ type MemUsageUsed struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"mem_usage_used"`
 }
 var AwsxEc2MemoryUsageUsedCmd = &cobra.Command{
 	Use:   "memory_usage_used__utilization_panel",

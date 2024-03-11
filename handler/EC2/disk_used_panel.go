@@ -20,7 +20,7 @@ type DiskUsedPanelData struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"disk_used"`
 }
 
 var AwsxEc2DiskUsedCmd = &cobra.Command{

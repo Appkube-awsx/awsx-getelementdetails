@@ -20,7 +20,7 @@ type NetworkInPackets struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"net_inpackets"`
 }
 
 var AwsxEc2NetworkInPacketsCmd = &cobra.Command{

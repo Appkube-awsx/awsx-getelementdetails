@@ -20,7 +20,7 @@ type CpuUsageSys struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"cpu_usage_sys"`
 }
 
 var AwsxEc2CpuSysTimeCmd = &cobra.Command{

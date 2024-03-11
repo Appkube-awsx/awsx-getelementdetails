@@ -20,7 +20,7 @@ type CpuUsageNice struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"cpu_usage_nice"`
 }
 
 var AwsxEc2CpuUsageNiceCmd = &cobra.Command{

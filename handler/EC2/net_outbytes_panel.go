@@ -19,7 +19,7 @@ type NetworkOutBytes struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"net_outbytes"`
 }
 
 var AwsxEc2NetworkOutBytesCmd = &cobra.Command{

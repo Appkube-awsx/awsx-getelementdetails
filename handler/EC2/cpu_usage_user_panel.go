@@ -20,7 +20,7 @@ type CpuUsageUser struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"cpu_usage_user"`
 }
 var AwsxEc2CpuUsageUserCmd = &cobra.Command{
 	Use:   "cpu_usage_user_utilization_panel",

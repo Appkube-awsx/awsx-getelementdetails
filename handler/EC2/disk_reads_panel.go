@@ -20,7 +20,7 @@ type DiskReadPanelData struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"disk_reads"`
 }
 
 var AwsxEc2DiskReadCmd = &cobra.Command{
