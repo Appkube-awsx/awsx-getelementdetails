@@ -1,6 +1,7 @@
 package EC2
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -15,44 +16,40 @@ import (
 
 var AwsxEc2InstanceRunningHourCmd = &cobra.Command{
 
-	Use: "instance_running_hour_panel",
-
+	Use:   "instance_running_hour_panel",
 	Short: "get instance running hour metrics data",
-
-	Long: `command to get instance running hour metrics data`,
+	Long:  `command to get instance running hour metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-
 		fmt.Println("running from child command")
 
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
 
 		if err != nil {
-
 			log.Printf("Error during authentication: %v\n", err)
-
 			err := cmd.Help()
-
 			if err != nil {
-
 				return
 			}
-
 			return
 		}
 		if authFlag {
+			rawEvents, jsonData, err := GetInstanceRunningHoursPanel(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error retrieving instance running hours data:", err)
+				return
+			}
 
-			
-
-		 GetInstanceRunningHoursPanel(cmd, clientAuth, nil)
-
-			
+			// Now you have access to rawEvents and jsonData
+			// You can process or use them as needed
+			fmt.Println("Raw Events:")
+			fmt.Println(rawEvents)
+			fmt.Println("JSON Data:", string(jsonData))
 		}
-
 	},
 }
 
-func GetInstanceRunningHoursPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) {
+func GetInstanceRunningHoursPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) (string, []byte, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 	filterPattern, _ := cmd.PersistentFlags().GetString("filterPattern")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -67,7 +64,7 @@ func GetInstanceRunningHoursPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 			log.Printf("Error parsing start time: %v", err)
 			err := cmd.Help()
 			if err != nil {
-				// handle error
+				log.Printf("Error parsing start time: %v", err)
 			}
 		}
 		startTime = &parsedStartTime
@@ -94,11 +91,24 @@ func GetInstanceRunningHoursPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 	events, err := filterCloudwatchLogs(clientAuth, startTime, endTime, logGroupName, filterPattern, cloudWatchLogs)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
-		// handle error
+		return "", nil, err
 	}
+
+	// Convert events to a string
+	var rawEventsStr string
 	for _, event := range events {
-		fmt.Println(event)
+		rawEventsStr += fmt.Sprintf("%+v\n", event)
 	}
+
+	// Convert events to JSON
+	jsonData, err := json.Marshal(events)
+	if err != nil {
+		log.Println("Error marshaling JSON: ", err)
+		return "", nil, err
+	}
+
+	// Return raw data and JSON data
+	return rawEventsStr, jsonData, nil
 }
 
 func filterCloudwatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, filterPattern string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.ResultField, error) {
@@ -143,14 +153,11 @@ func filterCloudwatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 	// Query is complete, now process results
 	var results []*cloudwatchlogs.ResultField
 	for _, resultRow := range queryResults.Results {
-		for _, resultField := range resultRow {
-			results = append(results, resultField)
-		}
+		results = append(results, resultRow...)
 	}
 
 	return results, nil
 }
-
 
 func init() {
 	AwsxEc2InstanceRunningHourCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
