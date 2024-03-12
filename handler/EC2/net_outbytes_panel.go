@@ -20,7 +20,7 @@ type NetworkOutBytes struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"NetOutbytes"`
+	} `json:"Net_Outbytes"`
 }
 
 var AwsxEc2NetworkOutBytesCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 		log.Println("Error in getting network outbytes data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["NetOutbytes"] = rawData
+	cloudwatchMetricData["Net_Outbytes"] = rawData
 
 	result := processOutbytesRawdata(rawData)
 
