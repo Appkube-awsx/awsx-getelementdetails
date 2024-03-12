@@ -20,7 +20,7 @@ type MemUsageFree struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"MemUsageFree"`
+	} `json:"Mem_Free"`
 }
 
 var AwsxEc2MemoryUsageFreeCmd = &cobra.Command{
@@ -117,7 +117,7 @@ func GetMemUsageFreePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 		log.Println("Error in getting memeory usage free data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MemUsageFree"] = rawData
+	cloudwatchMetricData["Mem_Free"] = rawData
 
 	result := processRawDatas(rawData)
 

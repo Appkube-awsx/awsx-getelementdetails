@@ -20,7 +20,7 @@ type MemUsageTotal struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"MemUsageTotal"`
+	} `json:"Mem_Total"`
 }
 
 var AwsxEc2MemoryUsageTotalCmd = &cobra.Command{
@@ -117,7 +117,7 @@ func GetMemUsageTotal(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 		log.Println("Error in getting memory usage total data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MemUsageTotal"] = rawData
+	cloudwatchMetricData["Mem_Total"] = rawData
 
 	result := processessRawData(rawData)
 
