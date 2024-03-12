@@ -20,7 +20,7 @@ type NetworkInBytes struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"NetI_nbytes"`
+	} `json:"Net_Inbytes"`
 }
 
 var AwsxEc2NetworkInBytesCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetNetworkInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		log.Println("Error in getting network bytes in data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["NetI_nbytes"] = rawData
+	cloudwatchMetricData["Net_Inbytes"] = rawData
 
 	result := processInbytesRawdata(rawData)
 
