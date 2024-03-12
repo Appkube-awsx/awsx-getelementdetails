@@ -872,11 +872,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					log.Println("Error getting lambda functions  data: ", err)
 					return
 				}
-				// if responseType == "frame" {
-				// 	fmt.Println(cloudwatchMetricResp)
-				// } else {
-				// 	fmt.Println(jsonResp)
-				// }
+			} else if queryName == "top_failure_function_panel" && elementType == "Lambda" {
+				Lambda.GetTotalFailureFunctionsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda functions  data: ", err)
+					return
+				}
 			} else if queryName == "success_and_failure_function_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailureData(cmd, clientAuth, nil)
 				if err != nil {

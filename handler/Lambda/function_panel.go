@@ -3,6 +3,7 @@ package Lambda
 import (
 	"fmt"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 
 	"github.com/Appkube-awsx/awsx-common/model"
@@ -17,6 +18,42 @@ import (
 
 	"time"
 )
+
+var AwsxLambdaFunctionCmd = &cobra.Command{
+
+	Use: "lambda_function_panel",
+
+	Short: "get function metrics data",
+
+	Long: `command to get function metrics data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+
+		fmt.Println("running from child command")
+
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+
+		if err != nil {
+
+			log.Printf("Error during authentication: %v\n", err)
+
+			err := cmd.Help()
+
+			if err != nil {
+
+				return
+			}
+
+			return
+		}
+		if authFlag {
+
+			GetFunctionPanel(cmd, clientAuth, nil)
+
+		}
+
+	},
+}
 
 func GetFunctionPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) {
 
@@ -121,7 +158,7 @@ func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 		QueryString: aws.String(`fields @timestamp, @message
 	   | filter eventSource=="lambda.amazonaws.com"
 	   | filter eventName=="GetPolicy20150331"
-	   | stats count(*) as functionName by bin(1mo)
+	   | stats count(*) as functionCount by bin(1mo)
 
        | sort @timestamp desc`),
 	}
@@ -186,3 +223,29 @@ func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 	return results, nil
 
 }
+func init() {
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("ebsvolume2Id", "", "ebs volume 2 id")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("elementId", "", "element id")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("accountId", "", "aws account number")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("zone", "", "aws region")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("externalId", "", "aws external id")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("ServiceName", "", "Service Name")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("elementType", "", "element type")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("instanceId", "", "instance id")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("clusterName", "", "cluster name")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("query", "", "query")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("startTime", "", "start time")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("endTime", "", "endcl time")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	 AwsxLambdaFunctionCmd.PersistentFlags().String("logGroupName", "", "log group name")
+}
+
