@@ -2,9 +2,9 @@ package EC2
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
-	"fmt"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
@@ -20,8 +20,9 @@ type CpuUsageUser struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"cpu_usage_user"`
+	} `json:"CpuUsageUser"`
 }
+
 var AwsxEc2CpuUsageUserCmd = &cobra.Command{
 	Use:   "cpu_usage_user_utilization_panel",
 	Short: "get cpu usage user utilization metrics data",
@@ -116,7 +117,7 @@ func GetCPUUsageUserPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["CpuUsageUser"] = rawData
 
 	result := processRawData(rawData)
 
@@ -132,7 +133,7 @@ func GetCPUUsageUserPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 func GetCpuUsageUserMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 	elmType := "CWAgent"
-	
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -168,7 +169,6 @@ func GetCpuUsageUserMetricData(clientAuth *model.Auth, instanceID, elementType s
 	return result, nil
 }
 
-
 func processRawData(result *cloudwatch.GetMetricDataOutput) CpuUsageUser {
 	var rawData CpuUsageUser
 	rawData.RawData = make([]struct {
@@ -202,4 +202,3 @@ func init() {
 	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxEc2CpuUsageUserCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
-

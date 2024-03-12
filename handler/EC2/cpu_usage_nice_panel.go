@@ -20,7 +20,7 @@ type CpuUsageNice struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"cpu_usage_nice"`
+	} `json:"CpuUsageNice"`
 }
 
 var AwsxEc2CpuUsageNiceCmd = &cobra.Command{
@@ -114,10 +114,10 @@ func GetCPUUsageNicePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	// Fetch raw data
 	rawData, err := GetCpuUsageNiceUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting cpu usage nice data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["CpuUsageNice"] = rawData
 
 	result := processedRawData(rawData)
 
@@ -134,7 +134,7 @@ func GetCpuUsageNiceUtilizationMetricData(clientAuth *model.Auth, instanceID, el
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
 	elmType := "CWAgent"
-	
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,

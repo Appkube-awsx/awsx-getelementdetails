@@ -20,7 +20,7 @@ type Networkoutbound struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"network_outbound"`
+	} `json:"NetworkOutbound"`
 }
 
 var AwsxEc2NetworkOutboundCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetNetworkOutBoundPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["NetworkOutbound"] = rawData
 
 	result := processtheRawdata(rawData)
 

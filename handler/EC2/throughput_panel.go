@@ -20,7 +20,7 @@ type NetworkThroughputData struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"NetworkThroughputData"`
 }
 
 var AwsxEc2NetworkThroughputCmd = &cobra.Command{
@@ -116,7 +116,7 @@ func GetNetworkThroughputPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		log.Println("Error in getting raw data for NetworkIn: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawDataIn"] = rawDataIn
+	cloudwatchMetricData["NetworkThroughputData"] = rawDataIn
 
 	// Fetch raw data for NetworkOut
 	rawDataOut, err := GetNetworkThroughputMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", "NetworkOut", cloudWatchClient)
@@ -124,7 +124,7 @@ func GetNetworkThroughputPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		log.Println("Error in getting raw data for NetworkOut: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawDataOut"] = rawDataOut
+	cloudwatchMetricData["NetworkThroughputData"] = rawDataOut
 
 	// Combine the raw data for both NetworkIn and NetworkOut
 	combinedRawData := combineNetworkThroughputRawData(rawDataIn, rawDataOut)
@@ -210,7 +210,7 @@ func processNetworkThroughputRawData(rawData map[string][]struct {
 	var processedData NetworkThroughputData
 
 	// Assign the combined raw data to the processed data
-	processedData.RawData = rawData["RawData"]
+	processedData.RawData = rawData["NetworkThroughputData"]
 
 	return processedData
 }

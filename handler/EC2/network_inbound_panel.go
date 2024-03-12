@@ -20,7 +20,7 @@ type NetworkInbound struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"network_inbound"`
+	} `json:"NetworkInbound"`
 }
 
 var AwsxEc2NetworkInboundCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetNetworkInBoundPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["NetworkInbound"] = rawData
 
 	result := processTheRawdata(rawData)
 
@@ -135,7 +135,7 @@ func GetNetworkInBoundMetricData(clientAuth *model.Auth, instanceID, elementType
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
 	elmType := "AWS/EC2"
-	
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
