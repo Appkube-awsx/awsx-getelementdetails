@@ -17,7 +17,7 @@ import (
 )
 
 type CpuUsageIdle struct {
-	RawData []struct {
+	CPU_Idle []struct {
 		Timestamp time.Time
 		Value     float64
 	} `json:"CpuUsageIdle"`
@@ -175,14 +175,14 @@ func GetCPUUsageIdleMetricData(clientAuth *model.Auth, instanceID, elementType s
 
 func processTheRawData(result *cloudwatch.GetMetricDataOutput) CpuUsageIdle {
 	var rawData CpuUsageIdle
-	rawData.RawData = make([]struct {
+	rawData.CPU_Idle = make([]struct {
 		Timestamp time.Time
 		Value     float64
 	}, len(result.MetricDataResults[0].Timestamps))
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+		rawData.CPU_Idle[i].Timestamp = *timestamp
+		rawData.CPU_Idle[i].Value = *result.MetricDataResults[0].Values[i]
 	}
 
 	return rawData
