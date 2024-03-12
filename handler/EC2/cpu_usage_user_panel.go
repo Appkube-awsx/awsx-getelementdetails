@@ -20,7 +20,7 @@ type CpuUsageUser struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"CpuUsageUser"`
+	} `json:"CPU_User"`
 }
 
 var AwsxEc2CpuUsageUserCmd = &cobra.Command{
@@ -117,7 +117,7 @@ func GetCPUUsageUserPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CpuUsageUser"] = rawData
+	cloudwatchMetricData["CPU_User"] = rawData
 
 	result := processRawData(rawData)
 
