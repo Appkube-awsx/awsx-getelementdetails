@@ -29,7 +29,7 @@ var AwsxEc2CpuUsageIdleCmd = &cobra.Command{
 	Long:  `command to get cpu usage idle utilization metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("running from child command")
+		fmt.Println("running from child command..")
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
 		if err != nil {
 			log.Printf("Error during authentication: %v\n", err)
