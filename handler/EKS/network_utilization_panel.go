@@ -55,7 +55,6 @@ var AwsxEKSNetworkUtilizationCmd = &cobra.Command{
 	},
 }
 
-
 func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")

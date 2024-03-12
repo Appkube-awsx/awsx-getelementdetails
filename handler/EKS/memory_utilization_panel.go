@@ -19,9 +19,9 @@ import (
 )
 
 type MemoryResult struct {
-	CurrentUsage float64 `json:"currentUsage"`
-	AverageUsage float64 `json:"averageUsage"`
-	MaxUsage     float64 `json:"maxUsage"`
+	CurrentUsage float64 `json:"CurrentUsage"`
+	AverageUsage float64 `json:"AverageUsage"`
+	MaxUsage     float64 `json:"MaxUsage"`
 }
 
 var AwsxEKSMemoryUtilizationCmd = &cobra.Command{

@@ -20,7 +20,7 @@ type memoryResult struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"MemoryRequest"`
 }
 
 var AwsxEKSMemoryRequestsCmd = &cobra.Command{
@@ -56,7 +56,7 @@ var AwsxEKSMemoryRequestsCmd = &cobra.Command{
 	},
 }
 
-func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth,cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
@@ -79,7 +79,7 @@ func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth,cloudWatchC
 		instanceId = cmdbData.InstanceId
 
 	}
-	
+
 	var startTime, endTime *time.Time
 
 	// Parse start time if provided
@@ -113,12 +113,12 @@ func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth,cloudWatchC
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetMemoryRequestMetricData(clientAuth, instanceId, elementType, startTime, endTime,cloudWatchClient)
+	rawData, err := GetMemoryRequestMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["MemoryRequest"] = rawData
 
 	// Debug prints
 	// log.Printf("RawData Result: %+v", rawData)
@@ -135,7 +135,7 @@ func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth,cloudWatchC
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetMemoryRequestMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time,cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetMemoryRequestMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	elmType := "ContainerInsights"
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,

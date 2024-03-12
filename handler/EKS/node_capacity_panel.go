@@ -17,9 +17,9 @@ import (
 )
 
 type NodeCapacityMetrics struct {
-	CPUUsage     float64 `json:"cpu_usage"`
-	MemoryUsage  float64 `json:"memory_usage"`
-	StorageAvail float64 `json:"storage_avail"`
+	CPUUsage     float64 `json:"Cpu_Usage"`
+	MemoryUsage  float64 `json:"Memory_Usage"`
+	StorageAvail float64 `json:"Storage_Avail"`
 }
 
 const (
@@ -130,7 +130,7 @@ func GetNodeCapacityPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	}
 
 	nodeCapacityPanel := &NodeCapacityPanel{
-		RawData:  map[string]*cloudwatch.GetMetricDataOutput{"cpu": cpuUsageRawData, "memory": memoryUsageRawData, "storage": storageAvailRawData},
+		RawData:  map[string]*cloudwatch.GetMetricDataOutput{"Cpu": cpuUsageRawData, "Memory": memoryUsageRawData, "Storage": storageAvailRawData},
 		JsonData: string(jsonData),
 	}
 

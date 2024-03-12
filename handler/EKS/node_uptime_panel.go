@@ -17,8 +17,8 @@ import (
 )
 
 type NodeUptimeDataPoint struct {
-	Timestamp  time.Time `json:"timestamp"`
-	NodeUptime float64   `json:"nodeUptime"`
+	Timestamp  time.Time `json:"Timestamp"`
+	NodeUptime float64   `json:"NodeUptime"`
 }
 
 var AwsxEKSNodeUptimeCmd = &cobra.Command{
