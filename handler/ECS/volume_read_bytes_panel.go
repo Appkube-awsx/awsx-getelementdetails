@@ -2,9 +2,9 @@ package ECS
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
-	"fmt"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
@@ -22,7 +22,6 @@ type ReadBytes struct {
 		Value     float64
 	} `json:"RawData"`
 }
-
 
 var AwsxECSReadBytesCmd = &cobra.Command{
 	Use:   "volume_readbytes_panel",
@@ -79,7 +78,7 @@ func GetECSReadBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 		instanceId = cmdbData.InstanceId
 
 	}
-
+	fmt.Println(instanceId)
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -132,7 +131,6 @@ func GetECSReadBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-
 func GetECSReadBytesMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
@@ -140,7 +138,7 @@ func GetECSReadBytesMetricData(clientAuth *model.Auth, instanceID, elementType s
 	if elementType == "ECS" {
 		elmType = "AWS/" + elementType
 	}
-		input := &cloudwatch.GetMetricDataInput{
+	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
@@ -158,11 +156,13 @@ func GetECSReadBytesMetricData(clientAuth *model.Auth, instanceID, elementType s
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Sum"), 
+					Stat:   aws.String("Sum"),
 				},
 			},
 		},
 	}
+	fmt.Println(instanceID)
+
 	if cloudWatchClient == nil {
 		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
 	}
@@ -208,4 +208,3 @@ func init() {
 	AwsxECSReadBytesCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxECSReadBytesCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
-
