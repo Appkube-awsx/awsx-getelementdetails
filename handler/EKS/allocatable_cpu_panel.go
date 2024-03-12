@@ -22,7 +22,7 @@ type TimeSeriesData struct {
 }
 
 type AllocateResult struct {
-	RawData []TimeSeriesData `json:"RawData"`
+	AllocatableCPU []TimeSeriesData `json:"AllocatableCPU"`
 }
 
 var AwsxEKSAllocatableCpuCmd = &cobra.Command{
@@ -113,7 +113,6 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	// cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	
 
 	// Fetch raw data
 	rawData, err := GetAllocatableCPUMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
@@ -121,31 +120,31 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	
+
 	// Process the raw data if needed
 	result := processCPURawData(rawData)
 	// log.Println(result)
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{
-		"RawData": &cloudwatch.GetMetricDataOutput{
+		"AllocatableCPU": &cloudwatch.GetMetricDataOutput{
 			MetricDataResults: []*cloudwatch.MetricDataResult{
 				{
-					Timestamps: make([]*time.Time, len(result.RawData)),
-					Values:     make([]*float64, len(result.RawData)),
+					Timestamps: make([]*time.Time, len(result.AllocatableCPU)),
+					Values:     make([]*float64, len(result.AllocatableCPU)),
 				},
 			},
 		},
 	}
-	
+
 	// Assign the processed data to cloudwatchMetricData
-	for i, data := range result.RawData {
-		cloudwatchMetricData["RawData"].MetricDataResults[0].Timestamps[i] = &data.Timestamp
-		cloudwatchMetricData["RawData"].MetricDataResults[0].Values[i] = &data.AllocatableCPU
+	for i, data := range result.AllocatableCPU {
+		cloudwatchMetricData["AllocatableCPU"].MetricDataResults[0].Timestamps[i] = &data.Timestamp
+		cloudwatchMetricData["AllocatableCPU"].MetricDataResults[0].Values[i] = &data.AllocatableCPU
 	}
-	
+
 	// log.Printf("CloudWatch Metric Data: %+v", cloudwatchMetricData)
 
 	// Log only the allocatable CPU and its corresponding timestamp
-	for _, data := range result.RawData {
+	for _, data := range result.AllocatableCPU {
 		// log.Println(data)
 		log.Printf("Timestamp: %v, Allocatable CPU: %v", data.Timestamp, data.AllocatableCPU)
 	}
@@ -177,7 +176,7 @@ func GetAllocatableCPUMetricData(clientAuth *model.Auth, instanceId, elementType
 						MetricName: aws.String("node_cpu_limit"),
 						Namespace:  aws.String(elmType),
 					},
-					Period: aws.Int64(60), 
+					Period: aws.Int64(60),
 					Stat:   aws.String("Average"),
 				},
 			},
@@ -194,7 +193,7 @@ func GetAllocatableCPUMetricData(clientAuth *model.Auth, instanceId, elementType
 						MetricName: aws.String("node_cpu_reserved_capacity"),
 						Namespace:  aws.String(elmType),
 					},
-					Period: aws.Int64(60), 
+					Period: aws.Int64(60),
 					Stat:   aws.String("Average"),
 				},
 			},
@@ -213,11 +212,11 @@ func GetAllocatableCPUMetricData(clientAuth *model.Auth, instanceId, elementType
 
 func processCPURawData(result *cloudwatch.GetMetricDataOutput) AllocateResult {
 	var rawData AllocateResult
-	rawData.RawData = make([]TimeSeriesData, len(result.MetricDataResults[0].Timestamps))
+	rawData.AllocatableCPU = make([]TimeSeriesData, len(result.MetricDataResults[0].Timestamps))
 
 	// Assuming the two metrics have the same number of data points
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
+		rawData.AllocatableCPU[i].Timestamp = *timestamp
 		cpuLimit := *result.MetricDataResults[0].Values[i]
 		reservedCapacity := *result.MetricDataResults[1].Values[i]
 
@@ -228,7 +227,7 @@ func processCPURawData(result *cloudwatch.GetMetricDataOutput) AllocateResult {
 		// log.Println(allocatableCPU)
 
 		// Only include the calculated allocatable CPU in the result
-		rawData.RawData[i].AllocatableCPU = allocatableCPU
+		rawData.AllocatableCPU[i].AllocatableCPU = allocatableCPU
 	}
 	// log.Println(rawData)
 	return rawData
