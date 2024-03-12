@@ -20,7 +20,7 @@ type DiskWritePanelData struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"disk writes"`
+	} `json:"Disk_Writes"`
 }
 
 var AwsxEc2DiskWriteCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 		log.Println("Error in getting disk write data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["disk writes"] = rawData
+	cloudwatchMetricData["Disk_Writes"] = rawData
 
 	result := processDiskWritePanelRawData(rawData)
 

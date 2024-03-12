@@ -20,7 +20,7 @@ type DiskReadPanelData struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"disk reads"`
+	} `json:"Disk_Reads"`
 }
 
 var AwsxEc2DiskReadCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 		log.Println("Error in getting disk read data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["disk reads"] = rawData
+	cloudwatchMetricData["Disk_Reads"] = rawData
 
 	result := processDiskReadPanelRawData(rawData)
 
