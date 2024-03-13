@@ -20,8 +20,9 @@ type MemCache struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"Mem_Cache"`
 }
+
 var AwsxEc2MemCachedCmd = &cobra.Command{
 	Use:   "memory_cached_panel",
 	Short: "get memory cache metrics data",
@@ -55,6 +56,7 @@ var AwsxEc2MemCachedCmd = &cobra.Command{
 
 	},
 }
+
 func GetMemCachePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
@@ -113,10 +115,10 @@ func GetMemCachePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	// Fetch raw data
 	rawData, err := GetMemCacheMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting memory cache data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["Mem_Cache"] = rawData
 
 	result := proceedRawData(rawData)
 
@@ -130,7 +132,7 @@ func GetMemCachePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 }
 
 func GetMemCacheMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	
+
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
 	elmType := "CWAgent"

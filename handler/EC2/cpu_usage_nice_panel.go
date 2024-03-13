@@ -17,10 +17,10 @@ import (
 )
 
 type CpuUsageNice struct {
-	RawData []struct {
+	CPU_Nice []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"CPU_Nice"`
 }
 
 var AwsxEc2CpuUsageNiceCmd = &cobra.Command{
@@ -114,10 +114,10 @@ func GetCPUUsageNicePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	// Fetch raw data
 	rawData, err := GetCpuUsageNiceUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting cpu usage nice data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["CPU_Nice"] = rawData
 
 	result := processedRawData(rawData)
 
@@ -134,7 +134,7 @@ func GetCpuUsageNiceUtilizationMetricData(clientAuth *model.Auth, instanceID, el
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
 	elmType := "CWAgent"
-	
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -153,7 +153,7 @@ func GetCpuUsageNiceUtilizationMetricData(clientAuth *model.Auth, instanceID, el
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Average"),
+					Stat:   aws.String("Sum"),
 				},
 			},
 		},
@@ -171,14 +171,14 @@ func GetCpuUsageNiceUtilizationMetricData(clientAuth *model.Auth, instanceID, el
 }
 func processedRawData(result *cloudwatch.GetMetricDataOutput) CpuUsageNice {
 	var rawData CpuUsageNice
-	rawData.RawData = make([]struct {
+	rawData.CPU_Nice = make([]struct {
 		Timestamp time.Time
 		Value     float64
 	}, len(result.MetricDataResults[0].Timestamps))
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+		rawData.CPU_Nice[i].Timestamp = *timestamp
+		rawData.CPU_Nice[i].Value = *result.MetricDataResults[0].Values[i]
 	}
 
 	return rawData

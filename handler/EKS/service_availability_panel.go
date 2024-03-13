@@ -17,8 +17,8 @@ import (
 )
 
 type TimeseriesDataPoint struct {
-	Timestamp    time.Time `json:"timestamp"`
-	Availability float64   `json:"availability"`
+	Timestamp    time.Time `json:"Timestamp"`
+	Availability float64   `json:"Availability"`
 }
 
 var AwsxEKSServiceAvailabilityCmd = &cobra.Command{

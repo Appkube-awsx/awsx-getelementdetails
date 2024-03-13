@@ -20,7 +20,7 @@ type NetworkInPackets struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"Net_InPackets"`
 }
 
 var AwsxEc2NetworkInPacketsCmd = &cobra.Command{
@@ -115,10 +115,10 @@ func GetNetworkInPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 	// Fetch raw data
 	rawData, err := GetNetworkInPackerMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting net inpackets data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["Net_InPackets"] = rawData
 
 	result := processNetworkInRawData(rawData)
 

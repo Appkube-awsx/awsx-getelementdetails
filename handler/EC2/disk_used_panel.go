@@ -20,7 +20,7 @@ type DiskUsedPanelData struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"Disk_Used"`
 }
 
 var AwsxEc2DiskUsedCmd = &cobra.Command{
@@ -115,10 +115,10 @@ func GetDiskUsedPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	// Fetch raw data
 	rawData, err := GetDiskUsedPanelMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting disk used data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["Disk_Used"] = rawData
 
 	result := processDiskUsedPanelRawData(rawData)
 
@@ -135,7 +135,7 @@ func GetDiskUsedPanelMetricData(clientAuth *model.Auth, instanceID, elementType 
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
 	elmType := "CWAgent"
-	
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,

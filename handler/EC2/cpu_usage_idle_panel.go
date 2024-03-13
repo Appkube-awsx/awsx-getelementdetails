@@ -17,10 +17,10 @@ import (
 )
 
 type CpuUsageIdle struct {
-	RawData []struct {
+	CPU_Idle []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"CPU_Idle"`
 }
 
 var AwsxEc2CpuUsageIdleCmd = &cobra.Command{
@@ -29,7 +29,7 @@ var AwsxEc2CpuUsageIdleCmd = &cobra.Command{
 	Long:  `command to get cpu usage idle utilization metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("running from child command")
+		fmt.Println("running from child command..")
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
 		if err != nil {
 			log.Printf("Error during authentication: %v\n", err)
@@ -115,10 +115,10 @@ func GetCPUUsageIdlePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	// Fetch raw data
 	rawData, err := GetCPUUsageIdleMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting cpu usage idle data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["CPU_Idle"] = rawData
 
 	result := processTheRawData(rawData)
 
@@ -156,7 +156,7 @@ func GetCPUUsageIdleMetricData(clientAuth *model.Auth, instanceID, elementType s
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Average"),
+					Stat:   aws.String("Sum"),
 				},
 			},
 		},
@@ -175,14 +175,14 @@ func GetCPUUsageIdleMetricData(clientAuth *model.Auth, instanceID, elementType s
 
 func processTheRawData(result *cloudwatch.GetMetricDataOutput) CpuUsageIdle {
 	var rawData CpuUsageIdle
-	rawData.RawData = make([]struct {
+	rawData.CPU_Idle = make([]struct {
 		Timestamp time.Time
 		Value     float64
 	}, len(result.MetricDataResults[0].Timestamps))
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+		rawData.CPU_Idle[i].Timestamp = *timestamp
+		rawData.CPU_Idle[i].Value = *result.MetricDataResults[0].Values[i]
 	}
 
 	return rawData

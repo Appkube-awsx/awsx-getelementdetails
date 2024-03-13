@@ -2,9 +2,10 @@ package EC2
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
-	"fmt"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
@@ -19,7 +20,7 @@ type NetworkOutBytes struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"Net_Outbytes"`
 }
 
 var AwsxEc2NetworkOutBytesCmd = &cobra.Command{
@@ -114,10 +115,10 @@ func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	// Fetch raw data
 	rawData, err := GetNetworkOutBytesMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting network outbytes data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["Net_Outbytes"] = rawData
 
 	result := processOutbytesRawdata(rawData)
 
@@ -130,7 +131,6 @@ func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-
 func GetNetworkOutBytesMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
@@ -138,7 +138,7 @@ func GetNetworkOutBytesMetricData(clientAuth *model.Auth, instanceID, elementTyp
 	if elementType == "EC2" {
 		elmType = "AWS/" + elementType
 	}
-		input := &cloudwatch.GetMetricDataInput{
+	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
@@ -206,4 +206,3 @@ func init() {
 	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
-

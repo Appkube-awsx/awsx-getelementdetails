@@ -17,10 +17,10 @@ import (
 )
 
 type CpuUsageSys struct {
-	RawData []struct {
+	CPU_Sys []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"CPU_Sys"`
 }
 
 var AwsxEc2CpuSysTimeCmd = &cobra.Command{
@@ -114,10 +114,10 @@ func GetCPUUsageSysPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 	// Fetch raw data
 	rawData, err := GetCpuSysTimeUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting cpu usage system data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["CPU_Sys"] = rawData
 
 	result := processingRawData(rawData)
 
@@ -153,7 +153,7 @@ func GetCpuSysTimeUtilizationMetricData(clientAuth *model.Auth, instanceID, elem
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Average"),
+					Stat:   aws.String("Sum"),
 				},
 			},
 		},
@@ -171,14 +171,14 @@ func GetCpuSysTimeUtilizationMetricData(clientAuth *model.Auth, instanceID, elem
 }
 func processingRawData(result *cloudwatch.GetMetricDataOutput) CpuUsageSys {
 	var rawData CpuUsageSys
-	rawData.RawData = make([]struct {
+	rawData.CPU_Sys = make([]struct {
 		Timestamp time.Time
 		Value     float64
 	}, len(result.MetricDataResults[0].Timestamps))
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+		rawData.CPU_Sys[i].Timestamp = *timestamp
+		rawData.CPU_Sys[i].Value = *result.MetricDataResults[0].Values[i]
 	}
 
 	return rawData

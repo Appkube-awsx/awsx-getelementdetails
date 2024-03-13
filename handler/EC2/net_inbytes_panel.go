@@ -2,9 +2,9 @@ package EC2
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
-	"fmt"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
@@ -20,9 +20,8 @@ type NetworkInBytes struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"Net_Inbytes"`
 }
-
 
 var AwsxEc2NetworkInBytesCmd = &cobra.Command{
 	Use:   "network_inbytes_utilization_panel",
@@ -116,10 +115,10 @@ func GetNetworkInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	// Fetch raw data
 	rawData, err := GetNetworkInBytesMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting network bytes in data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["Net_Inbytes"] = rawData
 
 	result := processInbytesRawdata(rawData)
 
@@ -132,7 +131,6 @@ func GetNetworkInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-
 func GetNetworkInBytesMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
@@ -140,7 +138,7 @@ func GetNetworkInBytesMetricData(clientAuth *model.Auth, instanceID, elementType
 	if elementType == "EC2" {
 		elmType = "AWS/" + elementType
 	}
-		input := &cloudwatch.GetMetricDataInput{
+	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
@@ -208,4 +206,3 @@ func init() {
 	AwsxEc2NetworkInBytesCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxEc2NetworkInBytesCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
-

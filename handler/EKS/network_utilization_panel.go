@@ -17,9 +17,9 @@ import (
 )
 
 type NetworkResult struct {
-	InboundTraffic  float64 `json:"inboundTraffic"`
-	OutboundTraffic float64 `json:"outboundTraffic"`
-	DataTransferred float64 `json:"dataTransferred"`
+	InboundTraffic  float64 `json:"InboundTraffic"`
+	OutboundTraffic float64 `json:"OutboundTraffic"`
+	DataTransferred float64 `json:"DataTransferred"`
 }
 
 var AwsxEKSNetworkUtilizationCmd = &cobra.Command{
@@ -54,7 +54,6 @@ var AwsxEKSNetworkUtilizationCmd = &cobra.Command{
 
 	},
 }
-
 
 func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")

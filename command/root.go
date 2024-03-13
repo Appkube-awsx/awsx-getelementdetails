@@ -274,16 +274,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetCPUUsageIdlePanel(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting network throught metric data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
+				EC2.GetInstanceStatus(clientAuth)
+
 			} else if queryName == "network_inbound_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInBoundPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -872,11 +864,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					log.Println("Error getting lambda functions  data: ", err)
 					return
 				}
-				// if responseType == "frame" {
-				// 	fmt.Println(cloudwatchMetricResp)
-				// } else {
-				// 	fmt.Println(jsonResp)
-				// }
+			} else if queryName == "top_failure_function_panel" && elementType == "Lambda" {
+				Lambda.GetTotalFailureFunctionsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda functions  data: ", err)
+					return
+				}
 			} else if queryName == "success_and_failure_function_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailureData(cmd, clientAuth, nil)
 				if err != nil {
@@ -938,6 +931,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2AlarmandNotificationcmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutBytesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)

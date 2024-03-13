@@ -1,4 +1,4 @@
-package EKS
+package ECS
 
 import (
 	"encoding/json"
@@ -16,17 +16,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type memoryResult struct {
-	RawData []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"MemoryRequest"`
+type ContainerMemoryUsageResult struct {
+	TimeSeries []struct {
+		Timestamp   time.Time
+		MemoryUsage float64
+	}
 }
 
-var AwsxEKSMemoryRequestsCmd = &cobra.Command{
-	Use:   "memory_requests_panel",
-	Short: "get memory_requests metrics data",
-	Long:  `command to get memory_requests metrics data`,
+var AwsxECSContainerMemoryUsageCmd = &cobra.Command{
+	Use:   "container_memory_usage_panel",
+	Short: "get container memory usage metrics data",
+	Long:  `command to get container memory usage metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -41,9 +41,9 @@ var AwsxEKSMemoryRequestsCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetMemoryRequestData(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetContainerMemoryUsageData(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting memory_requests: ", err)
+				log.Println("Error getting container memory usage data : ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -56,7 +56,7 @@ var AwsxEKSMemoryRequestsCmd = &cobra.Command{
 	},
 }
 
-func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetContainerMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
@@ -113,18 +113,14 @@ func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetMemoryRequestMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
+	rawData, err := GetContainerMemoryUsageMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MemoryRequest"] = rawData
+	cloudwatchMetricData["RawData"] = rawData
 
-	// Debug prints
-	// log.Printf("RawData Result: %+v", rawData)
-
-	// Process the raw data if needed
-	result := ProcessMemoryRequestRawData(rawData)
+	result := processContainerMemoryUsageRawData(rawData)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
@@ -135,8 +131,9 @@ func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetMemoryRequestMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "ContainerInsights"
+func GetContainerMemoryUsageMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+
+	elmType := "ECS/ContainerInsights"
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -151,10 +148,10 @@ func GetMemoryRequestMetricData(clientAuth *model.Auth, instanceId, elementType 
 								Value: aws.String(instanceId),
 							},
 						},
-						MetricName: aws.String("pod_memory_request"),
+						MetricName: aws.String("MemoryUtilized"),
 						Namespace:  aws.String(elmType),
 					},
-					Period: aws.Int64(60),
+					Period: aws.Int64(300),
 					Stat:   aws.String("Average"),
 				},
 			},
@@ -171,36 +168,36 @@ func GetMemoryRequestMetricData(clientAuth *model.Auth, instanceId, elementType 
 	return result, nil
 }
 
-func ProcessMemoryRequestRawData(result *cloudwatch.GetMetricDataOutput) memoryResult {
-	var rawData memoryResult
-	rawData.RawData = make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
+func processContainerMemoryUsageRawData(result *cloudwatch.GetMetricDataOutput) ContainerMemoryUsageResult {
+	var containerMemoryUsageResult ContainerMemoryUsageResult
 
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+	for i := range result.MetricDataResults[0].Timestamps {
+		timestamp := *result.MetricDataResults[0].Timestamps[i]
+		memoryUsage := *result.MetricDataResults[0].Values[i]
+		containerMemoryUsageResult.TimeSeries = append(containerMemoryUsageResult.TimeSeries, struct {
+			Timestamp   time.Time
+			MemoryUsage float64
+		}{Timestamp: timestamp, MemoryUsage: memoryUsage})
 	}
 
-	return rawData
+	return containerMemoryUsageResult
 }
 
 func init() {
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("query", "", "query")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

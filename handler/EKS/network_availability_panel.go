@@ -17,12 +17,12 @@ import (
 )
 
 type NetworkAvailabilityResult struct {
-	Availability float64 `json:"availability"`
+	Availability float64 `json:"Availability"`
 }
 
 type TimeSeriesDataPoint struct {
-	Timestamp    time.Time `json:"timestamp"`
-	Availability float64   `json:"availability"`
+	Timestamp    time.Time `json:"Timestamp"`
+	Availability float64   `json:"Availability"`
 }
 
 var AwsxEKSNetworkAvailabilityCmd = &cobra.Command{

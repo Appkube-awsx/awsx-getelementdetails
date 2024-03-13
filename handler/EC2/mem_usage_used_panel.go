@@ -2,9 +2,9 @@ package EC2
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
-	"fmt"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
@@ -20,8 +20,9 @@ type MemUsageUsed struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"Mem_Used"`
 }
+
 var AwsxEc2MemoryUsageUsedCmd = &cobra.Command{
 	Use:   "memory_usage_used__utilization_panel",
 	Short: "get memory usage used metrics data",
@@ -55,6 +56,7 @@ var AwsxEc2MemoryUsageUsedCmd = &cobra.Command{
 
 	},
 }
+
 func GetMemUsageUsed(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
@@ -111,12 +113,12 @@ func GetMemUsageUsed(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetMemUsageUsedMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient )
+	rawData, err := GetMemUsageUsedMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting memory usage used data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["Mem_Used"] = rawData
 
 	result := processinRawData(rawData)
 
@@ -129,12 +131,11 @@ func GetMemUsageUsed(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-
 func GetMemUsageUsedMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
 	elmType := "CWAgent"
-	
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -170,7 +171,6 @@ func GetMemUsageUsedMetricData(clientAuth *model.Auth, instanceID, elementType s
 	return result, nil
 }
 
-
 func processinRawData(result *cloudwatch.GetMetricDataOutput) MemUsageUsed {
 	var rawData MemUsageUsed
 	rawData.RawData = make([]struct {
@@ -203,4 +203,3 @@ func init() {
 	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
-

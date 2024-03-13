@@ -20,7 +20,7 @@ type CPU_UtilizationResult struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"RawData"`
+	} `json:"CpuUtilizationNodeGraph"`
 }
 
 var AwsxEKSCpuUtilizationNodeGraphCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetCPUUtilizationNodeData(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["CpuUtilizationNodeGraph"] = rawData
 
 	// Debug prints
 	// log.Printf("RawData Result: %+v", rawData)
