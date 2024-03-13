@@ -20,7 +20,7 @@ type CpuUsageSys struct {
 	CPU_Sys []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"CpuUsageSys"`
+	} `json:"CPU_Sys"`
 }
 
 var AwsxEc2CpuSysTimeCmd = &cobra.Command{
@@ -117,7 +117,7 @@ func GetCPUUsageSysPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 		log.Println("Error in getting cpu usage system data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CpuUsageSys"] = rawData
+	cloudwatchMetricData["CPU_Sys"] = rawData
 
 	result := processingRawData(rawData)
 
