@@ -275,7 +275,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStatus(clientAuth)
-
+			} else if queryName == "instance_health_check_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetInstanceHealthCheck(clientAuth)
 			} else if queryName == "network_inbound_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInBoundPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -866,6 +867,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 			} else if queryName == "top_failure_function_panel" && elementType == "Lambda" {
 				Lambda.GetTotalFailureFunctionsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda functions  data: ", err)
+					return
+				}
+			} else if queryName == "top_used_function_panel" && elementType == "Lambda" {
+				Lambda.GetTopUsedFunctionsPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda functions  data: ", err)
 					return
