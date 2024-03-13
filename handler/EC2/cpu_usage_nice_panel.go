@@ -20,7 +20,7 @@ type CpuUsageNice struct {
 	CPU_Nice []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"CPU_Nice"`
+	} `json:"CpuUsageNice"`
 }
 
 var AwsxEc2CpuUsageNiceCmd = &cobra.Command{
@@ -117,7 +117,7 @@ func GetCPUUsageNicePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 		log.Println("Error in getting cpu usage nice data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CPU_Nice"] = rawData
+	cloudwatchMetricData["CpuUsageNice"] = rawData
 
 	result := processedRawData(rawData)
 
@@ -153,7 +153,7 @@ func GetCpuUsageNiceUtilizationMetricData(clientAuth *model.Auth, instanceID, el
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Average"),
+					Stat:   aws.String("Sum"),
 				},
 			},
 		},

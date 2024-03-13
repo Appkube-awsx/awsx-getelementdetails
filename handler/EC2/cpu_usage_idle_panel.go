@@ -20,7 +20,7 @@ type CpuUsageIdle struct {
 	CPU_Idle []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"CPU_Idle"`
+	} `json:"CpuUsageIdle"`
 }
 
 var AwsxEc2CpuUsageIdleCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetCPUUsageIdlePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 		log.Println("Error in getting cpu usage idle data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CPU_Idle"] = rawData
+	cloudwatchMetricData["CpuUsageIdle"] = rawData
 
 	result := processTheRawData(rawData)
 
@@ -156,7 +156,7 @@ func GetCPUUsageIdleMetricData(clientAuth *model.Auth, instanceID, elementType s
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Average"),
+					Stat:   aws.String("Sum"),
 				},
 			},
 		},

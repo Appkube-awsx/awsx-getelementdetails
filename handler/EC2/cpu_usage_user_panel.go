@@ -20,7 +20,7 @@ type CpuUsageUser struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"CPU_User"`
+	} `json:"CpuUsageUser"`
 }
 
 var AwsxEc2CpuUsageUserCmd = &cobra.Command{
@@ -117,7 +117,7 @@ func GetCPUUsageUserPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CPU_User"] = rawData
+	cloudwatchMetricData["CpuUsageUser"] = rawData
 
 	result := processRawData(rawData)
 
@@ -152,7 +152,7 @@ func GetCpuUsageUserMetricData(clientAuth *model.Auth, instanceID, elementType s
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Average"),
+					Stat:   aws.String("Sum"),
 				},
 			},
 		},
