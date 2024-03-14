@@ -20,7 +20,7 @@ type memoryLimitResult struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"MemoryLimits"`
+	} `json:"Memory limits"`
 }
 
 var AwsxEKSMemoryLimitsCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetMemoryLimitsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MemoryLimits"] = rawData
+	cloudwatchMetricData["Memory limits"] = rawData
 
 	result := ProcessMemoryLimitsRawData(rawData)
 

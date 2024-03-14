@@ -20,7 +20,7 @@ type CPULimitsResult struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"CpuLimits"`
+	} `json:"CPU limits"`
 }
 
 var AwsxEKSCpuLimitsCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetCPULimitsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CpuLimits"] = rawData
+	cloudwatchMetricData["Cpu limits"] = rawData
 
 	// Debug prints
 	// log.Printf("RawData Result: %+v", rawData)
