@@ -52,6 +52,9 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "instance_stop_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
 
+			} else if queryName == "instance_error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
+
 			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				cloudwatchMetricResp, _, err := EC2.GetInstanceRunningHoursPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -939,6 +942,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceErrorRateCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)

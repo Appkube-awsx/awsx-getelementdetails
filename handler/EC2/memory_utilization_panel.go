@@ -145,13 +145,13 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 
 	jsonOutput := make(map[string]float64)
 
-	if currentUsage != nil && len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
 		jsonOutput["CurrentUsage"] = *currentUsage.MetricDataResults[0].Values[0]
 	}
-	if averageUsage != nil && len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
 		jsonOutput["AverageUsage"] = *averageUsage.MetricDataResults[0].Values[0]
 	}
-	if maxUsage != nil && len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
 		jsonOutput["MaxUsage"] = *maxUsage.MetricDataResults[0].Values[0]
 	}
 
