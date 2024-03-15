@@ -940,6 +940,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "message_count_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				ApiGateway.GetMessageCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting api message count  data: ", err)
+					return
+				}
 			} else {
 				fmt.Println("query not found")
 			}
