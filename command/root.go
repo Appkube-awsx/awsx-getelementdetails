@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
+	"github.com/Appkube-awsx/awsx-getelementdetails/handler/ApiGateway"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EC2"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/ECS"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EKS"
@@ -275,7 +276,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStatus(clientAuth)
-
+			} else if queryName == "instance_health_check_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetInstanceHealthCheck(clientAuth)
 			} else if queryName == "network_inbound_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInBoundPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -589,6 +591,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+
 			} else if queryName == "cpu_utilization_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetECScpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -870,6 +873,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					log.Println("Error getting lambda functions  data: ", err)
 					return
 				}
+
 			} else if queryName == "success_and_failure_function_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailureData(cmd, clientAuth, nil)
 				if err != nil {
@@ -885,6 +889,50 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaCpuData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda cpu used  data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "4xx_errors_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApi4xxErrorData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting api 4xx errors data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "5xx_errors_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApi5xxErrorData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting api 4xx errors data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "latency_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiLatencyData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting api latency data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "integration_latency_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiIntegrationLatencyData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting api integration latency data: ", err)
 					return
 				}
 				if responseType == "frame" {

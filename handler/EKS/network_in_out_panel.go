@@ -20,7 +20,7 @@ type NetworkInOutResult struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"NetworkInOut"`
+	} `json:"Network in and Network out"`
 }
 
 var AwsxEKSNetworkInOutCmd = &cobra.Command{
@@ -115,7 +115,7 @@ func GetNetworkInOutData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["NetworkInOut"] = rawData
+	cloudwatchMetricData["Network in and Network out"] = rawData
 
 	result := processNetworkInOutRawData(rawData)
 

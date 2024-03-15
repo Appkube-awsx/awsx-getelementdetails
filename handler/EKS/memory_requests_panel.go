@@ -20,7 +20,7 @@ type memoryResult struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"MemoryRequest"`
+	} `json:"Memory requests"`
 }
 
 var AwsxEKSMemoryRequestsCmd = &cobra.Command{
@@ -118,7 +118,7 @@ func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MemoryRequest"] = rawData
+	cloudwatchMetricData["Memory requests"] = rawData
 
 	// Debug prints
 	// log.Printf("RawData Result: %+v", rawData)

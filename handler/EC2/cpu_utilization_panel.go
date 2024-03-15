@@ -118,33 +118,31 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		endTime = &defaultEndTime
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	jsonOutput := make(map[string]float64)
+	//if queryName == "cpu_utilization_panel" {
 	currentUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "SampleCount", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
-	// Check if currentUsage has any MetricDataResults and Values
-	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
-		jsonOutput["CurrentUsage"] = *currentUsage.MetricDataResults[0].Values[0]
-	}
-
+	cloudwatchMetricData["CurrentUsage"] = currentUsage
+	// Get average usage
 	averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
-	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
-		jsonOutput["AverageUsage"] = *averageUsage.MetricDataResults[0].Values[0]
-	}
-
+	cloudwatchMetricData["AverageUsage"] = averageUsage
+	// Get max usage
 	maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
 	}
-	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
-		jsonOutput["MaxUsage"] = *maxUsage.MetricDataResults[0].Values[0]
+	cloudwatchMetricData["MaxUsage"] = maxUsage
+	jsonOutput := map[string]float64{
+		"CurrentUsage": *currentUsage.MetricDataResults[0].Values[0],
+		"AverageUsage": *averageUsage.MetricDataResults[0].Values[0],
+		"MaxUsage":     *maxUsage.MetricDataResults[0].Values[0],
 	}
 
 	jsonString, err := json.Marshal(jsonOutput)

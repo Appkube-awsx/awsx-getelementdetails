@@ -20,7 +20,7 @@ type MemoryUtilizationResult struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"MemoryUtilizationGraph"`
+	} `json:"Memory utilization"`
 }
 
 var AwsxEKSMemoryUtilizationGraphCmd = &cobra.Command{
@@ -115,7 +115,7 @@ func GetMemoryUtilizationGraphData(cmd *cobra.Command, clientAuth *model.Auth, c
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MemoryUtilizationGraph"] = rawData
+	cloudwatchMetricData["Memory utilization"] = rawData
 
 	result := processMemoryUtilizationGraphRawData(rawData)
 
