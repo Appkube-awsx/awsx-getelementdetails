@@ -53,9 +53,6 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "instance_stop_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
 
-			} else if queryName == "instance_error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
-
 			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				cloudwatchMetricResp, _, err := EC2.GetInstanceRunningHoursPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -594,6 +591,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+
 			} else if queryName == "cpu_utilization_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetECScpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -875,12 +873,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					log.Println("Error getting lambda functions  data: ", err)
 					return
 				}
-				//} else if queryName == "top_used_function_panel" && elementType == "Lambda" {
-				//Lambda.GetTopUsedFunctionsPanel(cmd, clientAuth, nil)
-				//if err != nil {
-				//log.Println("Error getting lambda functions  data: ", err)
-				//return
-				//}
+
 			} else if queryName == "success_and_failure_function_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailureData(cmd, clientAuth, nil)
 				if err != nil {
@@ -903,10 +896,43 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "rest_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
-				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayRestAPIData(clientAuth, nil)
+			} else if queryName == "4xx_errors_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApi4xxErrorData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda error  data: ", err)
+					log.Println("Error getting api 4xx errors data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "5xx_errors_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApi5xxErrorData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting api 4xx errors data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "latency_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiLatencyData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting api latency data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "integration_latency_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiIntegrationLatencyData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting api integration latency data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -954,7 +980,6 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceErrorRateCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)
