@@ -740,30 +740,30 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "iam_role_and_policies_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetECSIAMRolesPanel(cmd, clientAuth)
-				if err != nil {
-					log.Println("Error getting memory utilization for ECS: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
-			} else if queryName == "active_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, rawResp, err := ECS.GetActiveServicesPanelData(cmd, clientAuth)
-				if err != nil {
-					log.Println("Error getting active services metrics data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println("Raw Data:")
-					fmt.Println(rawResp)
-				} else {
-					fmt.Println("JSON Data:")
-					fmt.Println(string(jsonResp))
-				}
+				// } else if queryName == "iam_role_and_policies_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				// 	jsonResp, cloudwatchMetricResp, err := ECS.GetECSIAMRolesPanel(cmd, clientAuth)
+				// 	if err != nil {
+				// 		log.Println("Error getting memory utilization for ECS: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
+				// } else if queryName == "active_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				// 	jsonResp, rawResp, err := ECS.GetActiveServicesPanelData(cmd, clientAuth)
+				// 	if err != nil {
+				// 		log.Println("Error getting active services metrics data: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println("Raw Data:")
+				// 		fmt.Println(rawResp)
+				// 	} else {
+				// 		fmt.Println("JSON Data:")
+				// 		fmt.Println(string(jsonResp))
+				// 	}
 			} else if queryName == "error_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaErrorData(cmd, clientAuth, nil)
 				if err != nil {
