@@ -58,6 +58,10 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 
 			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceRunningHourPanel(cmd, clientAuth, nil)
+			} else if queryName == "hosted_services_overview_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetHostedServicesData(cmd)
+			} else if queryName == "error_tracking_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.ListErrorEvents()
 			} else if queryName == "memory_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -381,6 +385,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			// } else if queryName == "incident_response_time_panel" && elementType == "EKS" {
+			// 	jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
+			// 	if err != nil {
+			// 		log.Println("Error getting storage utilization: ", err)
+			// 		return
+			// 	}
+			// 	if responseType == "frame" {
+			// 		fmt.Println(cloudwatchMetricResp)
+			// 	} else {
+			// 		fmt.Println(jsonResp)
+			// 	}
 			} else if queryName == "disk_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetDiskUtilizationData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1029,6 +1044,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskReadCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskWriteCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskUsedCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2hostedServicesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.ListErrorsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskAvailableCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkInboundCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutboundCmd)
@@ -1055,6 +1072,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkThroughputSingleCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeCapacityCmd)
+	// AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSIncidentResponseTimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeDowntimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeEventLogsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeUptimeCmd)
