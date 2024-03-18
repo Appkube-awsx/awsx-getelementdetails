@@ -53,17 +53,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "instance_stop_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
 
+			} else if queryName == "instance_error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
+
+			} else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
+
 			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				cloudwatchMetricResp, _, err := EC2.GetInstanceRunningHoursPanel(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(cloudwatchMetricResp)
-				}
+				EC2.GetInstanceRunningHourPanel(cmd, clientAuth, nil)
+			} else if queryName == "hosted_services_overview_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetHostedServicesData(cmd)
+			} else if queryName == "error_tracking_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.ListErrorEvents()
 			} else if queryName == "memory_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -275,7 +276,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceStatus(clientAuth)
+				EC2.GetInstanceStatus(cmd, clientAuth)
 			} else if queryName == "instance_health_check_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceHealthCheck(clientAuth)
 			} else if queryName == "network_inbound_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
@@ -379,7 +380,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "storage_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetStorageUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
+					log.Println("Error getting storage utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "incident_response_time_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting storage utilization: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -475,6 +487,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "disk_io_performance_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkInOutData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting disk_io_performance panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_node_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPUUtilizationNodeData(cmd, clientAuth, nil)
 				if err != nil {
@@ -537,7 +560,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "network_throughput_single_panel" && elementType == "EKS" {
 				cloudwatchMetricResp, jsonResp, err := EKS.GetNetworkThroughputSinglePanel(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting network_throughput_Panel: ", err)
+					log.Println("Error getting network_throughput_single_Panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -591,7 +614,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-
+			} else if queryName == "node_condition_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeConditionPanel(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting node_condition panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_utilization_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetECScpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -728,6 +761,30 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+				// } else if queryName == "iam_role_and_policies_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				// 	jsonResp, cloudwatchMetricResp, err := ECS.GetECSIAMRolesPanel(cmd, clientAuth)
+				// 	if err != nil {
+				// 		log.Println("Error getting iam role and policies for ECS: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
+				// } else if queryName == "active_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				// 	jsonResp, rawResp, err := ECS.GetActiveServicesPanelData(cmd, clientAuth)
+				// 	if err != nil {
+				// 		log.Println("Error getting active services metrics data: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println("Raw Data:")
+				// 		fmt.Println(rawResp)
+				// 	} else {
+				// 		fmt.Println("JSON Data:")
+				// 		fmt.Println(string(jsonResp))
+				// 	}
 			} else if queryName == "error_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaErrorData(cmd, clientAuth, nil)
 				if err != nil {
@@ -753,7 +810,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "latency_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaLatencyData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda error  data: ", err)
+					log.Println("Error getting latency panel data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -764,7 +821,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "memory_used_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMemoryData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda error  data: ", err)
+					log.Println("Error getting memory used panel data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -775,7 +832,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "total_functions_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaTotalFunctionData(clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda error  data: ", err)
+					log.Println("Error total functions panel data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -786,7 +843,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "idle_functions_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaIdleFunctionData(clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda error  data: ", err)
+					log.Println("Error getting idle functions panel data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -797,7 +854,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "throttles_function_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaThrottlesFunctionData(clientAuth)
 				if err != nil {
-					log.Println("Error getting lambda error  data: ", err)
+					log.Println("Error getting throttles function panel data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -808,7 +865,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "trends_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaTrendsData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda error  data: ", err)
+					log.Println("Error getting trends panel data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -873,11 +930,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					log.Println("Error getting lambda functions  data: ", err)
 					return
 				}
-
+				//} else if queryName == "top_used_function_panel" && elementType == "Lambda" {
+				//Lambda.GetTopUsedFunctionsPanel(cmd, clientAuth, nil)
+				//if err != nil {
+				//log.Println("Error getting lambda functions  data: ", err)
+				//return
+				//}
 			} else if queryName == "success_and_failure_function_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailureData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda request  data: ", err)
+					log.Println("Error getting success and failure function panel data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -896,9 +958,43 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "rest_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayRestAPIData(clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting rest api data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "http_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayHttpApiData(clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting http api data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "websocket_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayWebSocketAPIData(clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting http api data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "4xx_errors_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApi4xxErrorData(cmd, clientAuth, nil)
 				if err != nil {
+					log.Println("Error getting lambda error  data: ", err)
 					log.Println("Error getting api 4xx errors data: ", err)
 					return
 				}
@@ -973,6 +1069,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskReadCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskWriteCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskUsedCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2hostedServicesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.ListErrorsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskAvailableCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkInboundCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutboundCmd)
@@ -980,6 +1078,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceErrorRateCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)
@@ -998,6 +1097,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkThroughputSingleCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeCapacityCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSIncidentResponseTimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeDowntimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeEventLogsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeUptimeCmd)

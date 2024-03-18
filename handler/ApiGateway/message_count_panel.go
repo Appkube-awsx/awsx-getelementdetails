@@ -1,4 +1,4 @@
-package EC2
+package ApiGateway
 
 import (
 	"fmt"
@@ -8,29 +8,24 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
-
-	//"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
 )
 
-var AwsxEc2InstanceStartCmd = &cobra.Command{
+var AwsxApiMessageCountCmd = &cobra.Command{
 
-	Use: "instance_start_count_panel",
+	Use: "message_count_panel",
 
-	Short: "get instance start count metrics data",
+	Short: "get message count metrics data",
 
-	Long: `command to get instance start count metrics data`,
+	Long: `command to get message count data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 
 		fmt.Println("running from child command")
 
-		var authFlag bool
-		var clientAuth *model.Auth
-		var err error
-		authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
 
 		if err != nil {
 
@@ -47,17 +42,16 @@ var AwsxEc2InstanceStartCmd = &cobra.Command{
 		}
 		if authFlag {
 
-			cloudwatchMetricData := GetInstanceStartCountPanel(cmd, clientAuth, nil)
-
-			fmt.Println(cloudwatchMetricData)
+			GetMessageCountPanel(cmd, clientAuth, nil)
 
 		}
 
 	},
 }
 
-func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) map[string][]*cloudwatchlogs.ResultField {
+func GetMessageCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
+
 	filterPattern, _ := cmd.PersistentFlags().GetString("filterPattern")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -71,7 +65,7 @@ func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 			log.Printf("Error parsing start time: %v", err)
 			err := cmd.Help()
 			if err != nil {
-
+				// handle error
 			}
 		}
 		startTime = &parsedStartTime
@@ -94,7 +88,6 @@ func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
-	cloudwatchMetricData := make(map[string][]*cloudwatchlogs.ResultField)
 
 	events, err := filterCloudWatchLogs(clientAuth, startTime, endTime, logGroupName, filterPattern, cloudWatchLogs)
 	if err != nil {
@@ -104,8 +97,6 @@ func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	for _, event := range events {
 		fmt.Println(event)
 	}
-	cloudwatchMetricData["Disk_Used"] = events
-	return cloudwatchMetricData
 }
 
 func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, filterPattern string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.ResultField, error) {
@@ -115,10 +106,9 @@ func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
 		EndTime:      aws.Int64(endTime.Unix() * 1000),
 		QueryString: aws.String(`fields @timestamp, @message
-            | filter eventSource=="ec2.amazonaws.com"
-            | filter eventName=="StartInstances"
-            | stats count(*) as InstanceCount by bin(1mo)
-            | sort @timestamp desc`),
+		| filter eventSource="apigateway.amazonaws.com" 
+		| parse @message /"name":\s*"(?<ApiName>[^"]+)"/
+		| stats count(@message) as MessageCount`),
 	}
 
 	if cloudWatchLogs == nil {
@@ -160,27 +150,27 @@ func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 }
 
 func init() {
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("ebsvolume2Id", "", "ebs volume 2 id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("accountId", "", "aws account number")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("ServiceName", "", "Service Name")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("clusterName", "", "cluster name")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	AwsxApiMessageCountCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
+	AwsxApiMessageCountCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
+	AwsxApiMessageCountCmd.PersistentFlags().String("ebsvolume2Id", "", "ebs volume 2 id")
+	AwsxApiMessageCountCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxApiMessageCountCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxApiMessageCountCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxApiMessageCountCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxApiMessageCountCmd.PersistentFlags().String("accountId", "", "aws account number")
+	AwsxApiMessageCountCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxApiMessageCountCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxApiMessageCountCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxApiMessageCountCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxApiMessageCountCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxApiMessageCountCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxApiMessageCountCmd.PersistentFlags().String("ServiceName", "", "Service Name")
+	AwsxApiMessageCountCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxApiMessageCountCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxApiMessageCountCmd.PersistentFlags().String("clusterName", "", "cluster name")
+	AwsxApiMessageCountCmd.PersistentFlags().String("query", "", "query")
+	AwsxApiMessageCountCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxApiMessageCountCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxApiMessageCountCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxApiMessageCountCmd.PersistentFlags().String("logGroupName", "", "log group name")
 }
