@@ -98,7 +98,7 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		}
 		startTime = &parsedStartTime
 	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
+		defaultStartTime := time.Now().Add(-15 * time.Minute)
 		startTime = &defaultStartTime
 	}
 
@@ -124,6 +124,12 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
+
+	if len(currentUsage.MetricDataResults) == 0 || len(currentUsage.MetricDataResults[0].Values) == 0 {
+		log.Println("No data available for current Usage")
+		return "null", nil, nil
+	}
+
 	cloudwatchMetricData["CurrentUsage"] = currentUsage
 	// Get average usage
 	averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
@@ -131,6 +137,12 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
+
+	if len(averageUsage.MetricDataResults) == 0 || len(averageUsage.MetricDataResults[0].Values) == 0 {
+		log.Println("No data available for average Usage")
+		return "null", nil, nil
+	}
+
 	cloudwatchMetricData["AverageUsage"] = averageUsage
 	// Get max usage
 	maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Maximum", cloudWatchClient)
