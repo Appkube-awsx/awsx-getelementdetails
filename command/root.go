@@ -53,8 +53,11 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "instance_stop_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
 
-				// } else if queryName == "instance_error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				// 	EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
+			} else if queryName == "instance_error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
+
+			} else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
 
 			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceRunningHourPanel(cmd, clientAuth, nil)
@@ -385,17 +388,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			// } else if queryName == "incident_response_time_panel" && elementType == "EKS" {
-			// 	jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
-			// 	if err != nil {
-			// 		log.Println("Error getting storage utilization: ", err)
-			// 		return
-			// 	}
-			// 	if responseType == "frame" {
-			// 		fmt.Println(cloudwatchMetricResp)
-			// 	} else {
-			// 		fmt.Println(jsonResp)
-			// 	}
+				// } else if queryName == "incident_response_time_panel" && elementType == "EKS" {
+				// 	jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
+				// 	if err != nil {
+				// 		log.Println("Error getting storage utilization: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
 			} else if queryName == "disk_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetDiskUtilizationData(cmd, clientAuth, nil)
 				if err != nil {
