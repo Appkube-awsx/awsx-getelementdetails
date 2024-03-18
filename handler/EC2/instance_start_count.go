@@ -8,6 +8,8 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
+
+	//"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
@@ -25,7 +27,10 @@ var AwsxEc2InstanceStartCmd = &cobra.Command{
 
 		fmt.Println("running from child command")
 
-		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		var authFlag bool
+		var clientAuth *model.Auth
+		var err error
+		authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
 
 		if err != nil {
 
@@ -42,14 +47,16 @@ var AwsxEc2InstanceStartCmd = &cobra.Command{
 		}
 		if authFlag {
 
-			GetInstanceStartCountPanel(cmd, clientAuth, nil)
+			cloudwatchMetricData := GetInstanceStartCountPanel(cmd, clientAuth, nil)
+
+			fmt.Println(cloudwatchMetricData)
 
 		}
 
 	},
 }
 
-func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) {
+func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) map[string][]*cloudwatchlogs.ResultField {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 	filterPattern, _ := cmd.PersistentFlags().GetString("filterPattern")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -64,7 +71,7 @@ func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 			log.Printf("Error parsing start time: %v", err)
 			err := cmd.Help()
 			if err != nil {
-				// handle error
+
 			}
 		}
 		startTime = &parsedStartTime
@@ -87,6 +94,7 @@ func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
+	cloudwatchMetricData := make(map[string][]*cloudwatchlogs.ResultField)
 
 	events, err := filterCloudWatchLogs(clientAuth, startTime, endTime, logGroupName, filterPattern, cloudWatchLogs)
 	if err != nil {
@@ -96,6 +104,8 @@ func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	for _, event := range events {
 		fmt.Println(event)
 	}
+	cloudwatchMetricData["Disk_Used"] = events
+	return cloudwatchMetricData
 }
 
 func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, filterPattern string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.ResultField, error) {
@@ -170,8 +180,7 @@ func init() {
 	AwsxEc2InstanceStartCmd.PersistentFlags().String("clusterName", "", "cluster name")
 	AwsxEc2InstanceStartCmd.PersistentFlags().String("query", "", "query")
 	AwsxEc2InstanceStartCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEc2InstanceStartCmd.PersistentFlags().String("endTime", "", "end time")
 	AwsxEc2InstanceStartCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 	AwsxEc2InstanceStartCmd.PersistentFlags().String("logGroupName", "", "log group name")
 }
-

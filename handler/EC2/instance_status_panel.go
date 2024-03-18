@@ -41,9 +41,10 @@ var AwsxEc2InstanceStatusCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-
-			GetInstanceStatus(clientAuth)
-
+			err := GetInstanceStatus(cmd, clientAuth)
+			if err != nil {
+				log.Printf("Error getting instance status: %v", err)
+			}
 		}
 
 	},
@@ -51,7 +52,7 @@ var AwsxEc2InstanceStatusCmd = &cobra.Command{
 
 // GetInstanceStatus retrieves EC2 instance information including instance ID, instance type,
 // availability zone, system check status, and custom alerts.
-func GetInstanceStatus(clientauth *model.Auth) error {
+func GetInstanceStatus(cmd *cobra.Command, clientauth *model.Auth) error {
 	// Initialize EC2 client
 	ec2Client := awsclient.GetClient(*clientauth, awsclient.EC2_CLIENT).(*ec2.EC2)
 
@@ -60,7 +61,6 @@ func GetInstanceStatus(clientauth *model.Auth) error {
 
 	log.Println("Getting AWS EC2 instance list")
 
-	// Retrieve instance status
 	// Retrieve instance status
 	resp, err := ec2Client.DescribeInstances(nil)
 	if err != nil {
@@ -90,38 +90,6 @@ func GetInstanceStatus(clientauth *model.Auth) error {
 	}
 
 	return nil
-}
-
-// getInstanceType retrieves the instance type of the given instance ID.
-func getInstanceType(ec2Client *ec2.EC2, instanceID string) string {
-	params := &ec2.DescribeInstancesInput{
-		InstanceIds: []*string{aws.String(instanceID)},
-	}
-	resp, err := ec2Client.DescribeInstances(params)
-	if err != nil {
-		log.Println("Error retrieving instance type:", err)
-		return "Unknown"
-	}
-	if len(resp.Reservations) == 0 || len(resp.Reservations[0].Instances) == 0 {
-		return "Unknown"
-	}
-	return aws.StringValue(resp.Reservations[0].Instances[0].InstanceType)
-}
-
-// getInstanceState retrieves the state of the given instance ID.
-func getInstanceState(ec2Client *ec2.EC2, instanceID string) string {
-	params := &ec2.DescribeInstancesInput{
-		InstanceIds: []*string{aws.String(instanceID)},
-	}
-	resp, err := ec2Client.DescribeInstances(params)
-	if err != nil {
-		log.Println("Error retrieving instance state:", err)
-		return "Unknown"
-	}
-	if len(resp.Reservations) == 0 || len(resp.Reservations[0].Instances) == 0 {
-		return "Unknown"
-	}
-	return aws.StringValue(resp.Reservations[0].Instances[0].State.Name)
 }
 
 // getSystemChecksStatus retrieves the status of system checks for the instance (passed or failed).
