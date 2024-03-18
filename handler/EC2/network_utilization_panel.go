@@ -96,10 +96,12 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		}
 		startTime = &parsedStartTime
 	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
+		// If start time is not provided, use last 15 minutes
+		defaultStartTime := time.Now().Add(-15 * time.Minute)
 		startTime = &defaultStartTime
 	}
 
+	// Parse end time if provided
 	if endTimeStr != "" {
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
@@ -112,6 +114,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		}
 		endTime = &parsedEndTime
 	} else {
+		// If end time is not provided, use current time
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
@@ -124,6 +127,10 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
 	}
+	if len(inboundTraffic.MetricDataResults) == 0 || len(inboundTraffic.MetricDataResults[0].Values) == 0 {
+		log.Println("No data available for inbound traffic")
+		return "null", nil, nil
+	}
 	cloudwatchMetricData["InboundTraffic"] = inboundTraffic
 
 	// Get Outbound Traffic
@@ -131,6 +138,10 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	if err != nil {
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
+	}
+	if len(outboundTraffic.MetricDataResults) == 0 || len(outboundTraffic.MetricDataResults[0].Values) == 0 {
+		log.Println("No data available for outbound traffic")
+		return "null", nil, nil
 	}
 	cloudwatchMetricData["OutboundTraffic"] = outboundTraffic
 
@@ -152,6 +163,8 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 
 	return string(jsonString), cloudwatchMetricData, nil
 }
+
+
 
 func GetNetworkUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
