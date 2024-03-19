@@ -276,7 +276,15 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceStatus(cmd, clientAuth)
+
+				instanceInfo, err := EC2.GetInstanceStatus(cmd, clientAuth)
+				if err != nil {
+					log.Fatalf("Error getting instance status: %v", err)
+				}
+				for _, info := range instanceInfo {
+					fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t\n",
+						info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert)
+				}
 			} else if queryName == "instance_health_check_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceHealthCheck(cmd, clientAuth)
 			} else if queryName == "network_inbound_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
