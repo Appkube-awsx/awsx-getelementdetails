@@ -37,14 +37,17 @@ var AwsxEc2InstanceHealthCheckCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			GetInstanceHealthCheck(clientAuth)
+			err := GetInstanceHealthCheck(cmd, clientAuth)
+			if err != nil {
+				log.Printf("Error getting instance status: %v", err)
+			}
 		}
 	},
 }
 
 // GetInstanceStatus retrieves EC2 instance information including instance ID, instance type,
-// availability zone, system check status, and custom alerts.
-func GetInstanceHealthCheck(clientauth *model.Auth) error {
+// availability zone, system check status,instance check status,alarams,system check time,instance check time.
+func GetInstanceHealthCheck(cmd *cobra.Command, clientauth *model.Auth) error {
 	// Initialize EC2 client
 	ec2Client := awsclient.GetClient(*clientauth, awsclient.EC2_CLIENT).(*ec2.EC2)
 

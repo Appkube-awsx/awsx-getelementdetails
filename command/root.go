@@ -278,7 +278,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStatus(cmd, clientAuth)
 			} else if queryName == "instance_health_check_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceHealthCheck(clientAuth)
+				EC2.GetInstanceHealthCheck(cmd, clientAuth)
 			} else if queryName == "network_inbound_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInBoundPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -388,17 +388,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "incident_response_time_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting storage utilization: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
+				// } else if queryName == "incident_response_time_panel" && elementType == "EKS" {
+				// 	jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
+				// 	if err != nil {
+				// 		log.Println("Error getting storage utilization: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
 			} else if queryName == "disk_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetDiskUtilizationData(cmd, clientAuth, nil)
 				if err != nil {
@@ -414,17 +414,6 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EKS.GetAllocatableCPUData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting allocatable cpu panel: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
-			} else if queryName == "allocatable_memory_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetAllocatableMemData(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting allocatable memory panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -629,6 +618,29 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeConditionPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting node_condition panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+
+			} else if queryName == "data_transfer_rate_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetEksDataTransferRatePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting data_transfer_rate_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "resource_utilization_patterns_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetResourceUtilizationData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting resource_utilization_panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1108,14 +1120,12 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkThroughputSingleCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeCapacityCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSIncidentResponseTimeCmd)
+	// AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSIncidentResponseTimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeDowntimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeEventLogsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSServiceAvailabilityCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSStorageUtilizationCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableMemCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeConditionCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSCpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSCpuUtilizationGraphCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxCpuReservedCmd)
