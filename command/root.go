@@ -421,6 +421,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "allocatable_memory_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetAllocatableMemData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting allocatable memory panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_limits_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPULimitsData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1103,6 +1114,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSServiceAvailabilityCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSStorageUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableMemCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeConditionCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSCpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSCpuUtilizationGraphCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxCpuReservedCmd)
