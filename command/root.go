@@ -48,18 +48,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "instance_start_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting instance start count data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					for _, event := range cloudwatchMetricResp.RawData {
-						fmt.Println(event)
-					}
-				} else {
-					fmt.Println(jsonResp)
-				}
+				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
 
 			} else if queryName == "instance_stop_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
