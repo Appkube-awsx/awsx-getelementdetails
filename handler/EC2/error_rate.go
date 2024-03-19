@@ -15,42 +15,34 @@ import (
 
 var AwsxEc2InstanceErrorRateCmd = &cobra.Command{
 
-	Use: "instance_error_rate_panel",
-
+	Use:   "instance_error_rate_panel",
 	Short: "get instance error rate metrics data",
-
-	Long: `command to get instance error rate metrics data`,
+	Long:  `command to get instance error rate metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-
 		fmt.Println("running from child command")
 
-		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		authFlag, clientAuth, err := authenticate.AuthenticateCommand(cmd)
 
 		if err != nil {
-
 			log.Printf("Error during authentication: %v\n", err)
-
 			err := cmd.Help()
-
 			if err != nil {
-
 				return
 			}
-
 			return
 		}
+
 		if authFlag {
-
-			GetInstanceErrorRatePanel(cmd, clientAuth, nil)
-
+			cloudwatchMetricData := GetInstanceErrorRatePanel(cmd, clientAuth, nil)
+			fmt.Println(cloudwatchMetricData)
 		}
-
 	},
 }
 
-func GetInstanceErrorRatePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) {
+func GetInstanceErrorRatePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) map[string][]*cloudwatchlogs.ResultField {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
+	// filterPattern, _ := cmd.PersistentFlags().GetString("filterPattern")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -86,15 +78,18 @@ func GetInstanceErrorRatePanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
+	cloudwatchMetricData := make(map[string][]*cloudwatchlogs.ResultField)
 
 	events, err := filterCloudWatchlogs(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
-		log.Println("Error in getting error rate data: ", err)
+		log.Println("Error in getting sample count: ", err)
 		// handle error
 	}
 	for _, event := range events {
 		fmt.Println(event)
 	}
+	cloudwatchMetricData["Instance_Error_Rate"] = events
+	return cloudwatchMetricData
 }
 
 func filterCloudWatchlogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.ResultField, error) {
