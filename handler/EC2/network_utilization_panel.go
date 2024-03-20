@@ -96,10 +96,12 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		}
 		startTime = &parsedStartTime
 	} else {
+		// If start time is not provided, use last 5 minutes
 		defaultStartTime := time.Now().Add(-5 * time.Minute)
 		startTime = &defaultStartTime
 	}
 
+	// Parse end time if provided
 	if endTimeStr != "" {
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
@@ -112,6 +114,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		}
 		endTime = &parsedEndTime
 	} else {
+		// If end time is not provided, use current time
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
@@ -124,7 +127,12 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["InboundTraffic"] = inboundTraffic
+
+	if len(inboundTraffic.MetricDataResults) > 0 && len(inboundTraffic.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["InboundTraffic"] = inboundTraffic
+	} else {
+		log.Println("No data available for inbound traffic")
+	}
 
 	// Get Outbound Traffic
 	outboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "NetworkOut", cloudWatchClient)
@@ -132,11 +140,24 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["OutboundTraffic"] = outboundTraffic
+	if len(outboundTraffic.MetricDataResults) > 0 && len(outboundTraffic.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["OutboundTraffic"] = outboundTraffic
+	} else {
+		log.Println("No data available for outbound traffic")
+	}
 
 	// Calculate Data Transferred (sum of inbound and outbound)
 	dataTransferred := *inboundTraffic.MetricDataResults[0].Values[0] + *outboundTraffic.MetricDataResults[0].Values[0]
 	cloudwatchMetricData["DataTransferred"] = createMetricDataOutput(dataTransferred)
+
+	// jsonOutput := make(map[string]float64)
+
+	// if len(inboundTraffic.MetricDataResults) > 0 && len(inboundTraffic.MetricDataResults[0].Values) > 0 {
+	// 	jsonOutput["InboundTraffic"] = *inboundTraffic.MetricDataResults[0].Values[0]
+	// }
+	// if len(outboundTraffic.MetricDataResults) > 0 && len(outboundTraffic.MetricDataResults[0].Values) > 0 {
+	// 	jsonOutput["OutboundTraffic"] = *outboundTraffic.MetricDataResults[0].Values[0]
+	// }
 
 	jsonOutput := NetworkResult{
 		InboundTraffic:  *inboundTraffic.MetricDataResults[0].Values[0],

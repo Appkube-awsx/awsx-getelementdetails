@@ -104,7 +104,7 @@ func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	for _, event := range events {
 		fmt.Println(event)
 	}
-	cloudwatchMetricData["Disk_Used"] = events
+	cloudwatchMetricData["Instance_Start_Count"] = events
 	return cloudwatchMetricData
 }
 

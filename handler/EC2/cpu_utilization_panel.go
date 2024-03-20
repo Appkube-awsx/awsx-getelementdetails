@@ -98,7 +98,7 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		}
 		startTime = &parsedStartTime
 	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
+		defaultStartTime := time.Now().Add(-15 * time.Minute)
 		startTime = &defaultStartTime
 	}
 
@@ -124,25 +124,47 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CurrentUsage"] = currentUsage
+
+	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["CurrentUsage"] = currentUsage
+	} else {
+		log.Println("No data available for current Usage")
+	}
+
 	// Get average usage
 	averageUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["AverageUsage"] = averageUsage
+
+	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["AverageUsage"] = averageUsage
+	} else {
+		log.Println("No data available for average Usage")
+	}
+
 	// Get max usage
 	maxUsage, err := GetCpuUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MaxUsage"] = maxUsage
-	jsonOutput := map[string]float64{
-		"CurrentUsage": *currentUsage.MetricDataResults[0].Values[0],
-		"AverageUsage": *averageUsage.MetricDataResults[0].Values[0],
-		"MaxUsage":     *maxUsage.MetricDataResults[0].Values[0],
+	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["MaxUsage"] = maxUsage
+	} else {
+		log.Println("No data available for maximum Usage")
+	}
+
+	jsonOutput := make(map[string]float64)
+	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["CurrentUsage"] = *currentUsage.MetricDataResults[0].Values[0]
+	}
+	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["AverageUsage"] = *averageUsage.MetricDataResults[0].Values[0]
+	}
+	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["MaxUsage"] = *maxUsage.MetricDataResults[0].Values[0]
 	}
 
 	jsonString, err := json.Marshal(jsonOutput)

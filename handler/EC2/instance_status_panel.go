@@ -41,18 +41,31 @@ var AwsxEc2InstanceStatusCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			err := GetInstanceStatus(cmd, clientAuth)
+			instanceInfo, err := GetInstanceStatus(cmd, clientAuth)
 			if err != nil {
-				log.Printf("Error getting instance status: %v", err)
+				log.Fatalf("Error getting instance status: %v", err)
+			}
+
+			// Print or utilize the instance information
+			for _, info := range instanceInfo {
+				fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t\n",
+					info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert)
 			}
 		}
 
 	},
 }
 
-// GetInstanceStatus retrieves EC2 instance information including instance ID, instance type,
-// availability zone, system check status, and custom alerts.
-func GetInstanceStatus(cmd *cobra.Command, clientauth *model.Auth) error {
+type InstanceInfo struct {
+	InstanceID         string
+	InstanceType       string
+	AvailabilityZone   string
+	State              string
+	SystemChecksStatus string
+	CustomAlert        bool
+}
+
+func GetInstanceStatus(cmd *cobra.Command, clientauth *model.Auth) ([]InstanceInfo, error) {
 	// Initialize EC2 client
 	ec2Client := awsclient.GetClient(*clientauth, awsclient.EC2_CLIENT).(*ec2.EC2)
 
@@ -64,13 +77,13 @@ func GetInstanceStatus(cmd *cobra.Command, clientauth *model.Auth) error {
 	// Retrieve instance status
 	resp, err := ec2Client.DescribeInstances(nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// Print header
-	fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-10s\n", "Instance ID", "Instance Type", "Availability Zone", "State", "System Checks Status", "Custom Alert")
+	// Define a slice to hold instance information
+	var instances []InstanceInfo
 
-	// Print instance information
+	// Populate instance information slice
 	for _, reservation := range resp.Reservations {
 		for _, instance := range reservation.Instances {
 			instanceID := aws.StringValue(instance.InstanceId)
@@ -84,12 +97,19 @@ func GetInstanceStatus(cmd *cobra.Command, clientauth *model.Auth) error {
 				continue // Skip to the next instance
 			}
 
-			// Print instance details
-			fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-10t\n", instanceID, instanceType, availabilityZone, state, systemChecksStatus, hasCustomAlert)
+			// Append instance information to the slice
+			instances = append(instances, InstanceInfo{
+				InstanceID:         instanceID,
+				InstanceType:       instanceType,
+				AvailabilityZone:   availabilityZone,
+				State:              state,
+				SystemChecksStatus: systemChecksStatus,
+				CustomAlert:        hasCustomAlert,
+			})
 		}
 	}
 
-	return nil
+	return instances, nil
 }
 
 // getSystemChecksStatus retrieves the status of system checks for the instance (passed or failed).

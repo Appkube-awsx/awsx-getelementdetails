@@ -51,7 +51,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
 
 			} else if queryName == "instance_stop_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
+				instanceStopCount, err := EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					return
+				}
+				fmt.Println(instanceStopCount)
+
+			} else if queryName == "instance_stop_count_panel_test" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
 
 			} else if queryName == "instance_error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
@@ -62,9 +69,40 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceRunningHourPanel(cmd, clientAuth, nil)
 			} else if queryName == "hosted_services_overview_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetHostedServicesData(cmd)
+				hostedServicesOverview, err := EC2.GetHostedServicesData(cmd)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				// Print header
+				fmt.Printf("%-15s %-15s %-15s %-10s %-15s %-15s\n",
+					"Service Name", "Health Status", "Response Time", "Error Rate", "Availability", "Throughput")
+
+				// Print service overview
+				for _, service := range hostedServicesOverview {
+					fmt.Printf("%-15s %-15s %-15s %-10s %-15s %-15s\n",
+						service.ServiceName, service.HealthStatus, service.ResponseTime, service.ErrorRate,
+						service.Availability, service.Throughput)
+				}
 			} else if queryName == "error_tracking_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.ListErrorEvents()
+				events, err := EC2.ListErrorEvents()
+				if err != nil {
+					return
+				}
+				for _, event := range events {
+					// Perform further processing on each event
+					fmt.Println("Event ID:", event.EventID)
+					fmt.Println("Timestamp:", event.Timestamp)
+					fmt.Println("Error Code:", event.ErrorCode)
+					fmt.Println("Severity:", event.Severity)
+					fmt.Println("Description:", event.Description)
+					fmt.Println("Source Component:", event.SourceComponent)
+					fmt.Println("Action Taken:", event.ActionTaken)
+					fmt.Println("Resolution Status:", event.ResolutionStatus)
+					fmt.Println("Additional Notes:", event.AdditionalNotes)
+					fmt.Println("---------------------------------------")
+				}
+
 			} else if queryName == "memory_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -276,9 +314,30 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceStatus(cmd, clientAuth)
+
+				instanceInfo, err := EC2.GetInstanceStatus(cmd, clientAuth)
+				if err != nil {
+					log.Fatalf("Error getting instance status: %v", err)
+				}
+				for _, info := range instanceInfo {
+					fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t\n",
+						info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert)
+				}
 			} else if queryName == "instance_health_check_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceHealthCheck(clientAuth)
+				instanceInfo, err := EC2.GetInstanceHealthCheck()
+				if err != nil {
+					return
+				}
+				fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-15s %-5s %-25s %-25s\n",
+					"Instance ID", "Instance Type", "Availability Zone", "State", "System Checks Status",
+					"Instance Checks Status", "Alarm", "System Check Time", "Instance Check Time")
+
+				// Print instance information
+				for _, info := range instanceInfo {
+					fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-15s %-5t %-25s %-25s\n",
+						info.InstanceID, info.InstanceType, info.AvailabilityZone, info.InstanceStatus,
+						info.SystemChecks, info.InstanceChecks, info.SystemCheck, info.InstanceCheck)
+				}
 			} else if queryName == "network_inbound_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInBoundPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -388,17 +447,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "incident_response_time_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting storage utilization: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
+				// } else if queryName == "incident_response_time_panel" && elementType == "EKS" {
+				// 	jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
+				// 	if err != nil {
+				// 		log.Println("Error getting storage utilization: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
 			} else if queryName == "disk_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetDiskUtilizationData(cmd, clientAuth, nil)
 				if err != nil {
@@ -618,6 +677,29 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeConditionPanel(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting node_condition panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+
+			} else if queryName == "data_transfer_rate_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetEksDataTransferRatePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting data_transfer_rate_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "resource_utilization_patterns_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetResourceUtilizationData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting resource_utilization_panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1076,6 +1158,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutboundCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2AlarmandNotificationcmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmd)
+	//AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmdTest)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceErrorRateCmd)
@@ -1097,7 +1180,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkThroughputSingleCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeCapacityCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSIncidentResponseTimeCmd)
+	// AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSIncidentResponseTimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeDowntimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeEventLogsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeUptimeCmd)
