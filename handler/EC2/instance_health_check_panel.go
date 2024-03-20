@@ -6,11 +6,6 @@ import (
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +18,7 @@ var AwsxEc2InstanceHealthCheckCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
 
-		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		var authFlag, _, err = authenticate.AuthenticateCommand(cmd)
 
 		if err != nil {
 			log.Printf("Error during authentication: %v\n", err)
@@ -37,157 +32,98 @@ var AwsxEc2InstanceHealthCheckCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			err := GetInstanceHealthCheck(cmd, clientAuth)
+			check, err := GetInstanceHealthCheck()
 			if err != nil {
 				log.Printf("Error getting instance status: %v", err)
 			}
+			fmt.Println(check)
 		}
 	},
 }
 
-// GetInstanceStatus retrieves EC2 instance information including instance ID, instance type,
-// availability zone, system check status,instance check status,alarams,system check time,instance check time.
-func GetInstanceHealthCheck(cmd *cobra.Command, clientauth *model.Auth) error {
-	// Initialize EC2 client
-	ec2Client := awsclient.GetClient(*clientauth, awsclient.EC2_CLIENT).(*ec2.EC2)
-
-	// Initialize CloudWatch client
-	cloudWatchClient := awsclient.GetClient(*clientauth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-
-	log.Println("Getting AWS EC2 instance list")
-
-	// Retrieve instance status
-	resp, err := ec2Client.DescribeInstances(nil)
-	if err != nil {
-		return err
-	}
-
-	// Print header
-	fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-15s %-5s %-25s %-25s\n", "Instance ID", "Instance Type", "Availability Zone", "State", "System Checks Status", "Instance Checks Status", "Alarm", "System Check Time", "Instance Check Time")
-
-	// Print instance information
-	for _, reservation := range resp.Reservations {
-		for _, instance := range reservation.Instances {
-			instanceID := aws.StringValue(instance.InstanceId)
-			instanceType := aws.StringValue(instance.InstanceType)
-			availabilityZone := aws.StringValue(instance.Placement.AvailabilityZone)
-			state := aws.StringValue(instance.State.Name)
-			systemChecksStatus := getSystemChecksStatus(ec2Client, instanceID)
-			instanceChecksStatus := getInstanceChecksStatus(ec2Client, instanceID)
-			alarmStatus, systemCheckTime, instanceCheckTime := getAlarmAndCheckStatus(cloudWatchClient, instanceID)
-
-			// Print instance details
-			fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-15s %-5t %-25s %-25s\n",
-				instanceID, instanceType, availabilityZone, state, systemChecksStatus,
-				instanceChecksStatus, alarmStatus, systemCheckTime, instanceCheckTime)
-		}
-	}
-
-	return nil
+type InstanceDummyData struct {
+	InstanceID           string
+	InstanceType         string
+	AvailabilityZone     string
+	InstanceStatus       string
+	CpuUtilization       string
+	DiskSpaceUtilization string
+	SystemChecks         string
+	InstanceChecks       string
+	Alarm                string
+	SystemCheck          string
+	InstanceCheck        string
 }
 
-// getInstanceChecksStatus retrieves the status of instance checks for the instance (passed or failed).
-func getInstanceChecksStatus(ec2Client *ec2.EC2, instanceID string) string {
-	params := &ec2.DescribeInstanceStatusInput{
-		InstanceIds: []*string{aws.String(instanceID)},
-	}
-	resp, err := ec2Client.DescribeInstanceStatus(params)
-	if err != nil {
-		log.Println("Error retrieving instance checks status:", err)
-		return "Unknown"
-	}
-	if len(resp.InstanceStatuses) == 0 {
-		return "Unknown"
-	}
-	for _, status := range resp.InstanceStatuses {
-		if aws.StringValue(status.InstanceState.Name) != "running" {
-			return "Failed"
-		}
-	}
-	return "Passed"
-}
-
-// getAlarmAndCheckStatus retrieves the status of alarms and the time of the last system and instance checks.
-func getAlarmAndCheckStatus(cloudWatchClient *cloudwatch.CloudWatch, instanceID string) (bool, string, string) {
-	// Retrieve CloudWatch alarms using DescribeAlarms API
-	resp, err := cloudWatchClient.DescribeAlarms(&cloudwatch.DescribeAlarmsInput{
-		StateValue:      aws.String("ALARM"), // Optionally filter by alarm state
-		AlarmNamePrefix: aws.String(instanceID),
-	})
-	if err != nil {
-		log.Printf("Error retrieving alarms for instance %s: %v", instanceID, err)
-		return false, "Unknown", "Unknown"
-	}
-
-	// If there are any alarms associated with the instance, return true and the time of the last system and instance checks
-	if len(resp.MetricAlarms) > 0 {
-		systemCheckTime, instanceCheckTime := getLastCheckTimes(cloudWatchClient, instanceID)
-		return true, systemCheckTime, instanceCheckTime
-	}
-
-	// Otherwise, return false and "Unknown" for check times
-	return false, "Unknown", "Unknown"
-}
-
-// getLastCheckTimes retrieves the time of the last system and instance checks.
-func getLastCheckTimes(cloudWatchClient *cloudwatch.CloudWatch, instanceID string) (string, string) {
-	// Retrieve CloudWatch metric data for system and instance checks
-	systemCheckData, err := cloudWatchClient.GetMetricData(&cloudwatch.GetMetricDataInput{
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("system-checks"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Namespace:  aws.String("AWS/EC2"),
-						MetricName: aws.String("StatusCheckFailed_System"),
-					},
-					Period: aws.Int64(300), // 5-minute period for system checks
-					Stat:   aws.String("Maximum"),
-				},
-			},
+func GetInstanceHealthCheck() ([]InstanceDummyData, error) {
+	instanceData := []InstanceDummyData{
+		{
+			InstanceID:           "i-1234567890abcdef0",
+			InstanceType:         "t2.micro",
+			AvailabilityZone:     "us-east-1a",
+			InstanceStatus:       "running",
+			CpuUtilization:       "10%",
+			DiskSpaceUtilization: "50%",
+			SystemChecks:         "ok",
+			InstanceChecks:       "ok",
+			Alarm:                "none",
+			SystemCheck:          time.Now().Add(-1 * time.Minute).Format("06-01-02"), // Format as yy-mm-dd
+			InstanceCheck:        time.Now().Add(-2 * time.Minute).Format("06-01-02"), // Format as yy-mm-dd
 		},
-		StartTime: aws.Time(time.Now().Add(-time.Hour)), // Start time: 1 hour ago
-		EndTime:   aws.Time(time.Now()),                 // End time: Now
-		ScanBy:    aws.String("TimestampDescending"),
-	})
-	if err != nil {
-		log.Printf("Error retrieving system check data for instance %s: %v", instanceID, err)
-		return "Unknown", "Unknown"
-	}
-
-	instanceCheckData, err := cloudWatchClient.GetMetricData(&cloudwatch.GetMetricDataInput{
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("instance-checks"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Namespace:  aws.String("AWS/EC2"),
-						MetricName: aws.String("StatusCheckFailed"),
-					},
-					Period: aws.Int64(300), // 5-minute period for instance checks
-					Stat:   aws.String("Maximum"),
-				},
-			},
+		{
+			InstanceID:           "i-0987654321fedcba0",
+			InstanceType:         "t2.medium",
+			AvailabilityZone:     "us-west-2b",
+			InstanceStatus:       "stopped",
+			CpuUtilization:       "0%",
+			DiskSpaceUtilization: "75%",
+			SystemChecks:         "ok",
+			InstanceChecks:       "warning",
+			Alarm:                "none",
+			SystemCheck:          time.Now().Add(-3 * time.Minute).Format(time.RFC3339),
+			InstanceCheck:        time.Now().Add(-4 * time.Minute).Format(time.RFC3339),
 		},
-		StartTime: aws.Time(time.Now().Add(-time.Hour)), // Start time: 1 hour ago
-		EndTime:   aws.Time(time.Now()),                 // End time: Now
-		ScanBy:    aws.String("TimestampDescending"),
-	})
-	if err != nil {
-		log.Printf("Error retrieving instance check data for instance %s: %v", instanceID, err)
-		return "Unknown", "Unknown"
+		{
+			InstanceID:           "i-0987654321fedcba0",
+			InstanceType:         "t2.medium",
+			AvailabilityZone:     "us-west-2b",
+			InstanceStatus:       "stopped",
+			CpuUtilization:       "50%",
+			DiskSpaceUtilization: "85%",
+			SystemChecks:         "ok",
+			InstanceChecks:       "warning",
+			Alarm:                "none",
+			SystemCheck:          time.Now().Add(-3 * time.Minute).Format(time.RFC3339),
+			InstanceCheck:        time.Now().Add(-4 * time.Minute).Format(time.RFC3339),
+		},
+		{
+			InstanceID:           "i-0987654321fedcba0",
+			InstanceType:         "t2.medium",
+			AvailabilityZone:     "us-west-2b",
+			InstanceStatus:       "stopped",
+			CpuUtilization:       "40%",
+			DiskSpaceUtilization: "75%",
+			SystemChecks:         "ok",
+			InstanceChecks:       "warning",
+			Alarm:                "none",
+			SystemCheck:          time.Now().Add(-3 * time.Minute).Format(time.RFC3339),
+			InstanceCheck:        time.Now().Add(-4 * time.Minute).Format(time.RFC3339),
+		},
+		{
+			InstanceID:           "i-0987654321fedcba0",
+			InstanceType:         "t2.medium",
+			AvailabilityZone:     "us-west-2b",
+			InstanceStatus:       "stopped",
+			CpuUtilization:       "30%",
+			DiskSpaceUtilization: "45%",
+			SystemChecks:         "ok",
+			InstanceChecks:       "warning",
+			Alarm:                "none",
+			SystemCheck:          time.Now().Add(-3 * time.Minute).Format(time.RFC3339),
+			InstanceCheck:        time.Now().Add(-4 * time.Minute).Format(time.RFC3339),
+		},
 	}
-
-	// Extract the timestamps of the last system and instance checks
-	var systemCheckTime, instanceCheckTime string
-	if len(systemCheckData.MetricDataResults) > 0 && len(systemCheckData.MetricDataResults[0].Timestamps) > 0 {
-		systemCheckTime = systemCheckData.MetricDataResults[0].Timestamps[0].Format(time.RFC3339)
-	}
-	if len(instanceCheckData.MetricDataResults) > 0 && len(instanceCheckData.MetricDataResults[0].Timestamps) > 0 {
-		instanceCheckTime = instanceCheckData.MetricDataResults[0].Timestamps[0].Format(time.RFC3339)
-	}
-
-	return systemCheckTime, instanceCheckTime
+	return instanceData, nil
 }
 
 func init() {

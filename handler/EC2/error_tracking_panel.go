@@ -26,16 +26,14 @@ var ListErrorsCmd = &cobra.Command{
 	Use:   "listErrors",
 	Short: "List error events",
 	Run: func(cmd *cobra.Command, args []string) {
-		data, err := ListErrorEvents()
+		_, err := ListErrorEvents()
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			return
 		}
-		fmt.Println(string(data))
 	},
 }
 
-// ListErrorEvents retrieves a list of error events.
-func ListErrorEvents() ([]byte, error) {
+func ListErrorEvents() ([]ErrorEvent, error) {
 	// Dummy error events (replace with actual data retrieval)
 	errorEvents := []ErrorEvent{
 		{
@@ -73,14 +71,13 @@ func ListErrorEvents() ([]byte, error) {
 		},
 	}
 
-	// Convert error events to JSON
-	data, err := json.MarshalIndent(errorEvents, "", "  ")
+	// Convert error events to JSON and print them
+	jsonData, err := json.MarshalIndent(errorEvents, "", "  ")
 	if err != nil {
-		return nil, err
+		log.Fatalf("Error marshalling JSON: %v", err)
 	}
-	// fmt.Println(string(data))
-
-	return data, nil
+	fmt.Println(string(jsonData))
+	return errorEvents, nil
 }
 
 func init() {

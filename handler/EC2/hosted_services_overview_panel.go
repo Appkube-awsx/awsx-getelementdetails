@@ -1,15 +1,11 @@
 package EC2
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-
 	"github.com/spf13/cobra"
 )
 
 // ServiceStatus represents the status of a service.
-type ServiceStatus struct {
+type HostedSerivcesOverView struct {
 	ServiceName  string `json:"serviceName"`
 	HealthStatus string `json:"healthStatus"`
 	ResponseTime string `json:"responseTime"`
@@ -28,13 +24,16 @@ var AwsxEc2hostedServicesCmd = &cobra.Command{
 		elementType, _ := cmd.Flags().GetString("elementType")
 
 		if queryName == "hosted_services_overview_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-			GetHostedServicesData(cmd)
+			_, err := GetHostedServicesData(cmd)
+			if err != nil {
+				return
+			}
 		}
 	},
 }
 
-func GetHostedServicesData(cmd *cobra.Command) {
-	serviceStatus := []ServiceStatus{
+func GetHostedServicesData(cmd *cobra.Command) ([]HostedSerivcesOverView, error) {
+	serviceStatus := []HostedSerivcesOverView{
 		{
 			ServiceName:  "WebServer",
 			HealthStatus: "Healthy",
@@ -61,12 +60,7 @@ func GetHostedServicesData(cmd *cobra.Command) {
 		},
 	}
 
-	jsonData, err := json.Marshal(serviceStatus)
-	if err != nil {
-		log.Fatalf("Error marshalling JSON: %v", err)
-	}
-
-	fmt.Println(string(jsonData))
+	return serviceStatus, nil
 }
 
 func init() {
