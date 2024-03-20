@@ -64,7 +64,11 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "hosted_services_overview_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetHostedServicesData(cmd)
 			} else if queryName == "error_tracking_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.ListErrorEvents()
+				data, err := EC2.ListErrorEvents()
+				if err != nil {
+					log.Fatalf("Error: %v", err)
+				}
+				fmt.Println(string(data))
 			} else if queryName == "memory_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
