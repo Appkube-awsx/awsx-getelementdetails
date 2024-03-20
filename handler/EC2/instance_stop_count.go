@@ -42,7 +42,7 @@ var AwsxEc2InstanceStopCmd = &cobra.Command{
 	},
 }
 
-func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) map[string][]*cloudwatchlogs.ResultField {
+func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) map[string][]*cloudwatchlogs.GetQueryResultsOutput {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 	filterPattern, _ := cmd.PersistentFlags().GetString("filterPattern")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -81,7 +81,7 @@ func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		endTime = &defaultEndTime
 	}
 
-	cloudwatchMetricData := make(map[string][]*cloudwatchlogs.ResultField)
+	cloudwatchMetricData := make(map[string][]*cloudwatchlogs.GetQueryResultsOutput)
 
 	events, err := filterCloudWatchLogss(clientAuth, startTime, endTime, logGroupName, filterPattern, cloudWatchLogs)
 	if err != nil {
@@ -95,7 +95,7 @@ func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	return cloudwatchMetricData
 }
 
-func filterCloudWatchLogss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, filterPattern string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.ResultField, error) {
+func filterCloudWatchLogss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName, filterPattern string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	// Construct input parameters
 	params := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String(logGroupName),
@@ -118,32 +118,30 @@ func filterCloudWatchLogss(clientAuth *model.Auth, startTime, endTime *time.Time
 	}
 
 	queryId := queryResult.QueryId
-	queryStatus := ""
-	var queryResults *cloudwatchlogs.GetQueryResultsOutput // Declare queryResults outside the loop
-	for queryStatus != "Complete" {
+	var queryResults []*cloudwatchlogs.GetQueryResultsOutput
+
+	for {
 		// Check query status
 		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
 			QueryId: queryId,
 		}
 
-		queryResults, err = cloudWatchLogs.GetQueryResults(queryStatusInput) // Assign value to queryResults
+		queryResult, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get query results: %v", err)
 		}
 
-		queryStatus = aws.StringValue(queryResults.Status)
-		time.Sleep(1 * time.Second) // Wait for a second before checking status again
-	}
+		queryResults = append(queryResults, queryResult)
 
-	// Query is complete, now process results
-	var results []*cloudwatchlogs.ResultField
-	for _, resultRow := range queryResults.Results {
-		for _, resultField := range resultRow {
-			results = append(results, resultField)
+		if *queryResult.Status != "Complete" {
+			time.Sleep(5 * time.Second) // wait before querying again
+			continue
 		}
+
+		break // exit loop if query is complete
 	}
 
-	return results, nil
+	return queryResults, nil
 }
 
 func init() {
