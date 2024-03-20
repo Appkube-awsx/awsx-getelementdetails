@@ -51,7 +51,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
 
 			} else if queryName == "instance_stop_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
+				instanceStopCount, err := EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					return
+				}
+				fmt.Println(instanceStopCount)
+
+			} else if queryName == "instance_stop_count_panel_test" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
 
 			} else if queryName == "instance_error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
@@ -1151,6 +1158,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutboundCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2AlarmandNotificationcmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmd)
+	//AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmdTest)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceErrorRateCmd)

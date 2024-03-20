@@ -36,13 +36,12 @@ var AwsxEc2InstanceStopCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			cloudwatchMetricData := GetInstanceStopCountPanel(cmd, clientAuth, nil)
-			fmt.Println(cloudwatchMetricData)
+			GetInstanceStopCountPanel(cmd, clientAuth, nil)
 		}
 	},
 }
 
-func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) map[string][]*cloudwatchlogs.GetQueryResultsOutput {
+func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 	filterPattern, _ := cmd.PersistentFlags().GetString("filterPattern")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -84,12 +83,11 @@ func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 
 	logs, err := filterCloudWatchLogss(clientAuth, startTime, endTime, logGroupName, filterPattern, cloudWatchLogs)
 	if err != nil {
-		return nil
+		return nil, nil
 	}
-	result := make(map[string][]*cloudwatchlogs.GetQueryResultsOutput)
-	result[logGroupName] = logs
-	fmt.Println("result:::::::::::", result)
-	return result
+
+	return logs, nil
+
 }
 
 func filterCloudWatchLogss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName, filterPattern string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
