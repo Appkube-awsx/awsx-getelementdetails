@@ -70,6 +70,7 @@ func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
 			log.Printf("Error parsing end time: %v", err)
+			log.Printf("Error parsing end time: %v", err)
 			err := cmd.Help()
 			if err != nil {
 				// handle error
@@ -81,18 +82,14 @@ func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		endTime = &defaultEndTime
 	}
 
-	cloudwatchMetricData := make(map[string][]*cloudwatchlogs.GetQueryResultsOutput)
-
-	events, err := filterCloudWatchLogss(clientAuth, startTime, endTime, logGroupName, filterPattern, cloudWatchLogs)
+	logs, err := filterCloudWatchLogss(clientAuth, startTime, endTime, logGroupName, filterPattern, cloudWatchLogs)
 	if err != nil {
-		log.Println("Error in getting sample count: ", err)
-		// handle error
+		return nil
 	}
-	for _, event := range events {
-		fmt.Println(event)
-	}
-	cloudwatchMetricData["Instance_Stop_Count"] = events
-	return cloudwatchMetricData
+	result := make(map[string][]*cloudwatchlogs.GetQueryResultsOutput)
+	result[logGroupName] = logs
+	fmt.Println("result:::::::::::", result)
+	return result
 }
 
 func filterCloudWatchLogss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName, filterPattern string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
