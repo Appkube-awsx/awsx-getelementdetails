@@ -60,7 +60,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "instance_stop_count_panel_test" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
 
-			} else if queryName == "instance_error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+			} else if queryName == "error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
 
 			} else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
@@ -452,17 +452,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-				} else if queryName == "node_stability_index_panel" && elementType == "EKS" {
-					jsonResp, cloudwatchMetricResp, err := EKS.GetNodeStabilityData(cmd, clientAuth, nil)
-					if err != nil {
-						log.Println("Error getting CPU requests : ", err)
-						return
-					}
-					if responseType == "frame" {
-						fmt.Println(cloudwatchMetricResp)
-					} else {
-						fmt.Println(jsonResp)
-					}
+			} else if queryName == "node_stability_index_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeStabilityData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting CPU requests : ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "memory_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GeteksMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
