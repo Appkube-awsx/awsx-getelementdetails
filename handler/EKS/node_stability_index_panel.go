@@ -118,7 +118,7 @@ func GetNodeStabilityData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["Cpu limits"] = rawData
+	cloudwatchMetricData["NodeStabilityindex"] = rawData
 
 	// Process the raw data if needed
 	result := processNodeStabilityRawData(rawData)
@@ -178,7 +178,7 @@ func processNodeStabilityRawData(result *cloudwatch.GetMetricDataOutput) NodeSta
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
 		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]/60
+		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i] / 60
 	}
 
 	return rawData
