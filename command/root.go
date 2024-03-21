@@ -84,6 +84,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 						service.ServiceName, service.HealthStatus, service.ResponseTime, service.ErrorRate,
 						service.Availability, service.Throughput)
 				}
+			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				instanceStatusData, err := EC2.GetInstanceStatus(cmd, clientAuth)
+				if err != nil {
+					log.Fatalf("Error getting instance status: %v", err)
+				}
+
+				// Print or utilize the instance information
+				for _, info := range instanceStatusData {
+					fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t, Health Percentage: %.2f%%\n",
+						info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert, info.HealthPercentage)
+
+				}
 			} else if queryName == "error_tracking_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				events, err := EC2.ListErrorEvents()
 				if err != nil {
@@ -1209,6 +1221,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceErrorRateCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceHealthCheckCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)

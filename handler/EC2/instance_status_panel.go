@@ -13,49 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxEc2InstanceStatusCmd = &cobra.Command{
-
-	Use: "instance_status_panel",
-
-	Short: "get instance status metrics data",
-
-	Long: `command to get instance status metrics data`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-
-		fmt.Println("running from child command")
-
-		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
-
-		if err != nil {
-
-			log.Printf("Error during authentication: %v\n", err)
-
-			err := cmd.Help()
-
-			if err != nil {
-
-				return
-			}
-
-			return
-		}
-		if authFlag {
-			instanceInfo, err := GetInstanceStatus(cmd, clientAuth)
-			if err != nil {
-				log.Fatalf("Error getting instance status: %v", err)
-			}
-
-			// Print or utilize the instance information
-			for _, info := range instanceInfo {
-				fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t\n",
-					info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert)
-			}
-		}
-
-	},
-}
-
 type InstanceInfo struct {
 	InstanceID         string
 	InstanceType       string
@@ -63,7 +20,10 @@ type InstanceInfo struct {
 	State              string
 	SystemChecksStatus string
 	CustomAlert        bool
+	HealthPercentage   float64
 }
+
+var instanceStatusData []InstanceInfo
 
 func GetInstanceStatus(cmd *cobra.Command, clientauth *model.Auth) ([]InstanceInfo, error) {
 	// Initialize EC2 client
@@ -80,9 +40,6 @@ func GetInstanceStatus(cmd *cobra.Command, clientauth *model.Auth) ([]InstanceIn
 		return nil, err
 	}
 
-	// Define a slice to hold instance information
-	var instances []InstanceInfo
-
 	// Populate instance information slice
 	for _, reservation := range resp.Reservations {
 		for _, instance := range reservation.Instances {
@@ -93,23 +50,38 @@ func GetInstanceStatus(cmd *cobra.Command, clientauth *model.Auth) ([]InstanceIn
 			systemChecksStatus := getSystemChecksStatus(ec2Client, instanceID)
 			hasCustomAlert, err := checkForCustomAlert(cloudWatchClient, instanceID)
 			if err != nil {
-				log.Printf("Error checking custom alert for instance %s: %v", instanceID, err)
+				// log.Printf("Error checking custom alert for instance %s: %v", instanceID, err)
 				continue // Skip to the next instance
 			}
 
+			// Calculate health percentage
+			passedCount, failedCount := 0, 0
+			switch systemChecksStatus {
+			case "Passed":
+				passedCount = 1
+			case "Failed":
+				failedCount = 1
+			}
+			totalInstances := passedCount + failedCount
+			var healthPercentage float64
+			if totalInstances > 0 {
+				healthPercentage = float64(passedCount) / float64(totalInstances) * 100
+			}
+
 			// Append instance information to the slice
-			instances = append(instances, InstanceInfo{
+			instanceStatusData = append(instanceStatusData, InstanceInfo{
 				InstanceID:         instanceID,
 				InstanceType:       instanceType,
 				AvailabilityZone:   availabilityZone,
 				State:              state,
 				SystemChecksStatus: systemChecksStatus,
 				CustomAlert:        hasCustomAlert,
+				HealthPercentage:   healthPercentage,
 			})
 		}
 	}
 
-	return instances, nil
+	return instanceStatusData, nil
 }
 
 // getSystemChecksStatus retrieves the status of system checks for the instance (passed or failed).
@@ -135,14 +107,6 @@ func getSystemChecksStatus(ec2Client *ec2.EC2, instanceID string) string {
 
 // checkForCustomAlert checks if the instance has custom alerts.
 func checkForCustomAlert(cloudWatchClient *cloudwatch.CloudWatch, instanceID string) (bool, error) {
-	// Specify the filters to retrieve alarms associated with the given instance
-	filters := []*cloudwatch.DimensionFilter{
-		{
-			Name:  aws.String("InstanceId"),
-			Value: aws.String(instanceID),
-		},
-	}
-	fmt.Println(filters)
 	// Retrieve CloudWatch alarms using DescribeAlarms API
 	resp, err := cloudWatchClient.DescribeAlarms(&cloudwatch.DescribeAlarmsInput{
 		StateValue:      aws.String("ALARM"), // Optionally filter by alarm state
@@ -153,12 +117,40 @@ func checkForCustomAlert(cloudWatchClient *cloudwatch.CloudWatch, instanceID str
 	}
 
 	// If there are any alarms associated with the instance, return true
-	if len(resp.MetricAlarms) > 0 {
-		return true, nil
-	}
+	return len(resp.MetricAlarms) > 0, nil
+}
 
-	// Otherwise, return false
-	return false, nil
+var AwsxEc2InstanceStatusCmd = &cobra.Command{
+	Use:   "instance_status_panel",
+	Short: "get instance status metrics data",
+	Long:  `command to get instance status metrics data`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+
+		if authFlag {
+			// Call GetInstanceStatus
+			instanceStatusData, err := GetInstanceStatus(cmd, clientAuth)
+			if err != nil {
+				log.Fatalf("Error getting instance status: %v", err)
+			}
+
+			// Print or utilize the instance information
+			for _, info := range instanceStatusData {
+				fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t, Health Percentage: %.2f%%\n",
+					info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert, info.HealthPercentage)
+			}
+		}
+	},
 }
 
 func init() {
