@@ -86,17 +86,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 						service.Availability, service.Throughput)
 				}
 			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				instanceStatusData, err := EC2.GetInstanceStatus(cmd, clientAuth)
+
+				instanceStatus, err := EC2.GetInstanceStatus(cmd, clientAuth)
 				if err != nil {
 					log.Fatalf("Error getting instance status: %v", err)
 				}
 
-				// Print or utilize the instance information
-				for _, info := range instanceStatusData {
-					fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t, Health Percentage: %.2f%%\n",
-						info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert, info.HealthPercentage)
+				// Print instance information
+				fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t, Health Percentage: %.2f%%\n",
+					instanceStatus.InstanceID, instanceStatus.InstanceType, instanceStatus.AvailabilityZone, instanceStatus.State, instanceStatus.SystemChecksStatus, instanceStatus.CustomAlert, instanceStatus.HealthPercentage)
 
-				}
 			} else if queryName == "error_tracking_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				events, err := EC2.ListErrorEvents()
 				if err != nil {
@@ -348,16 +347,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				// } else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 
-				instanceInfo, err := EC2.GetInstanceStatus(cmd, clientAuth)
-				if err != nil {
-					log.Fatalf("Error getting instance status: %v", err)
-				}
-				for _, info := range instanceInfo {
-					fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t\n",
-						info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert)
-				}
+				// 	instanceInfo, err := EC2.GetInstanceStatus(cmd, clientAuth)
+				// 	if err != nil {
+				// 		log.Fatalf("Error getting instance status: %v", err)
+				// 	}
+				// 	for _, info := range instanceInfo {
+				// 		fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t\n",
+				// 			info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert)
+				// 	}
 			} else if queryName == "instance_health_check_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				instanceInfo, err := EC2.GetInstanceHealthCheck()
 				if err != nil {
