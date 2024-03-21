@@ -109,7 +109,7 @@ func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		return nil, nil
 	}
 	processedResults := processQueryResults(results)
-	
+
 	return processedResults, nil
 }
 
@@ -175,12 +175,13 @@ func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*clo
 							continue
 						}
 						log.Printf("Instance Count: %d\n", instanceCount)
-						processedResults = append(processedResults, result)
 
 						// You can perform further processing or store the instance count data as needed
 					}
 				}
 			}
+			processedResults = append(processedResults, result)
+
 		} else {
 			log.Println("Query status is not complete.")
 		}
