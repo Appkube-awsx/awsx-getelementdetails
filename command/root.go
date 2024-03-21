@@ -436,18 +436,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			// } else if queryName == "node_stability_index_panel" && elementType == "EKS" {
-			// 	jsonResp, cloudwatchMetricResp, err := EKS.GetNodeStabilityData(cmd, clientAuth, nil)
-			// 	if err != nil {
-			// 		log.Println("Error getting CPU requests : ", err)
-			// 		return
-			// 	}
-			// 	if responseType == "frame" {
-			// 		fmt.Println(cloudwatchMetricResp)
-			// 	} else {
-			// 		fmt.Println(jsonResp)
-			// 	}
-			}else if queryName == "memory_utilization_panel" && elementType == "EKS" {
+				// } else if queryName == "node_stability_index_panel" && elementType == "EKS" {
+				// 	jsonResp, cloudwatchMetricResp, err := EKS.GetNodeStabilityData(cmd, clientAuth, nil)
+				// 	if err != nil {
+				// 		log.Println("Error getting CPU requests : ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
+			} else if queryName == "memory_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GeteksMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory utilization: ", err)
@@ -1099,6 +1099,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayWebSocketAPIData(clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting http api data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "total_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetTotalApiData(clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting total api data: ", err)
 					return
 				}
 				if responseType == "frame" {
