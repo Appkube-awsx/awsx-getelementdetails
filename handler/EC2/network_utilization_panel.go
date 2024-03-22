@@ -99,17 +99,6 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 			return "", nil, err
 		}
 		startTime = &parsedStartTime
-	} else {
-		// If start time is not provided, use last 5 minutes
-		defaultStartTime := time.Now().Add(-15 * time.Minute)
-		startTime = &defaultStartTime
-	}
-
-	// Check if startTime is within the last 15 minutes
-	fifteenMinutesAgo := time.Now().Add(-15 * time.Minute)
-	if startTime.Before(fifteenMinutesAgo) {
-		log.Println("No data available for the last 15 minutes")
-		return "null", nil, nil
 	}
 
 	// Parse end time if provided
@@ -124,10 +113,24 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 			return "", nil, err
 		}
 		endTime = &parsedEndTime
-	} else {
-		// If end time is not provided, use current time
+	}
+
+	// If start time is not provided, use last 15 minutes
+	if startTime == nil {
+		defaultStartTime := time.Now().Add(-15 * time.Minute)
+		startTime = &defaultStartTime
+	}
+
+	// If end time is not provided, use current time
+	if endTime == nil {
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
+	}
+
+	// If start time is after end time, return null
+	if startTime.After(*endTime) {
+		log.Println("Start time is after end time")
+		return "null", nil, nil
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
@@ -139,14 +142,15 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		return "", nil, err
 	}
 
+	// Check if any metric data is returned for inbound traffic
+	if len(inboundTraffic.MetricDataResults) == 0 || len(inboundTraffic.MetricDataResults[0].Values) == 0 {
+		log.Println("")
+		return "null", nil, nil
+	}
+
 	// Convert inbound traffic from bytes to megabytes
 	inboundTrafficMegabytes := *inboundTraffic.MetricDataResults[0].Values[0] / bytesToMegabytes
-
-	if len(inboundTraffic.MetricDataResults) > 0 && len(inboundTraffic.MetricDataResults[0].Values) > 0 {
-		cloudwatchMetricData["InboundTraffic"] = createMetricDataOutput(inboundTrafficMegabytes)
-	} else {
-		log.Println("No data available for inbound traffic")
-	}
+	cloudwatchMetricData["InboundTraffic"] = createMetricDataOutput(inboundTrafficMegabytes)
 
 	// Get Outbound Traffic
 	outboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "NetworkOut", cloudWatchClient)
@@ -155,14 +159,15 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		return "", nil, err
 	}
 
+	// Check if any metric data is returned for outbound traffic
+	if len(outboundTraffic.MetricDataResults) == 0 || len(outboundTraffic.MetricDataResults[0].Values) == 0 {
+		log.Println("")
+		return "null", nil, nil
+	}
+
 	// Convert outbound traffic from bytes to megabytes
 	outboundTrafficMegabytes := *outboundTraffic.MetricDataResults[0].Values[0] / bytesToMegabytes
-
-	if len(outboundTraffic.MetricDataResults) > 0 && len(outboundTraffic.MetricDataResults[0].Values) > 0 {
-		cloudwatchMetricData["OutboundTraffic"] = createMetricDataOutput(outboundTrafficMegabytes)
-	} else {
-		log.Println("No data available for outbound traffic")
-	}
+	cloudwatchMetricData["OutboundTraffic"] = createMetricDataOutput(outboundTrafficMegabytes)
 
 	// Calculate Data Transferred (sum of inbound and outbound) and convert to megabytes
 	dataTransferred := inboundTrafficMegabytes + outboundTrafficMegabytes
