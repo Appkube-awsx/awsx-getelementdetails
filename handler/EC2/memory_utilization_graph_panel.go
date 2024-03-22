@@ -16,6 +16,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type MemoryGraphUtilizationResult struct {
+	RawData []struct {
+		Timestamp time.Time
+		Value     float64
+	} `json:"Memory utilization"`
+}
+
+
 var AwsxEc2MemoryUtilizationGraphCmd = &cobra.Command{
 	Use:   "memory_utilization_graph_panel",
 	Short: "get memory utilization graph metrics data",
@@ -50,9 +58,11 @@ var AwsxEc2MemoryUtilizationGraphCmd = &cobra.Command{
 
 func GetMemoryUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
+	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
 	if elementId != "" {
 		log.Println("getting cloud-element data from cmdb")
@@ -69,9 +79,6 @@ func GetMemoryUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, 
 		instanceId = cmdbData.InstanceId
 
 	}
-
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
 	var startTime, endTime *time.Time
 
@@ -95,10 +102,6 @@ func GetMemoryUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, 
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
 			log.Printf("Error parsing end time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
 			return "", nil, err
 		}
 		endTime = &parsedEndTime
@@ -106,28 +109,22 @@ func GetMemoryUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, 
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
+
+	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
+
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get average utilization
-	rawData, err := GetMemoryUtilizationGraphMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := GetMemoryUtilizationGraphMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting rawdata: ", err)
 		return "", nil, err
 	}
-	if len(rawData.MetricDataResults) > 0 && len(rawData.MetricDataResults[0].Values) > 0 {
-		cloudwatchMetricData["AverageUsage"] = rawData
-	} else {
-		log.Println("No data found for average usage")
-	}
+	cloudwatchMetricData["Memory utilization"] = rawData
 
+	result := processMemoryUtilizationGraphRawData(rawData)
 
-	jsonOutput := make(map[string]float64)
-
-	if len(rawData.MetricDataResults) > 0 && len(rawData.MetricDataResults[0].Values) > 0 {
-		jsonOutput["AverageUsage"] = *rawData.MetricDataResults[0].Values[0]
-	}
-
-	jsonString, err := json.Marshal(jsonOutput)
+	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
@@ -136,8 +133,7 @@ func GetMemoryUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, 
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetMemoryUtilizationGraphMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
+func GetMemoryUtilizationGraphMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 
 	elmType := "CWAgent"
 	input := &cloudwatch.GetMetricDataInput{
@@ -157,8 +153,8 @@ func GetMemoryUtilizationGraphMetricData(clientAuth *model.Auth, instanceID, ele
 						MetricName: aws.String("mem_used"),
 						Namespace:  aws.String(elmType),
 					},
-					Period: aws.Int64(300),
-					Stat:   aws.String(statistic),
+					Period: aws.Int64(60),
+					Stat:   aws.String("Average"),
 				},
 			},
 		},
@@ -174,6 +170,22 @@ func GetMemoryUtilizationGraphMetricData(clientAuth *model.Auth, instanceID, ele
 
 	return result, nil
 }
+
+func processMemoryUtilizationGraphRawData(result *cloudwatch.GetMetricDataOutput) MemoryGraphUtilizationResult {
+	var rawData MemoryGraphUtilizationResult
+	rawData.RawData = make([]struct {
+		Timestamp time.Time
+		Value     float64
+	}, len(result.MetricDataResults[0].Timestamps))
+
+	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+		rawData.RawData[i].Timestamp = *timestamp
+		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+	}
+
+	return rawData
+}
+
 func init() {
 	AwsxEc2MemoryUtilizationGraphCmd.PersistentFlags().String("elementId", "", "element id")
 	AwsxEc2MemoryUtilizationGraphCmd.PersistentFlags().String("elementType", "", "element type")
