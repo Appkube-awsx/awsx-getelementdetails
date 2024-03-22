@@ -88,8 +88,13 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		}
 		startTime = &parsedStartTime
 	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
+		defaultStartTime := time.Now().Add(-15 * time.Minute)
 		startTime = &defaultStartTime
+	}
+	fifteenMinutesAgo := time.Now().Add(-15 * time.Minute)
+	if startTime.Before(fifteenMinutesAgo) {
+		log.Println("No data available for the last 15 minutes")
+		return "null", nil, nil
 	}
 
 	if endTimeStr != "" {
@@ -119,6 +124,9 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	} else {
 		log.Println("No data found for current usage")
 	}
+	cloudwatchMetricData["CurrentUsage"] = &cloudwatch.GetMetricDataOutput{
+		MetricDataResults: []*cloudwatch.MetricDataResult{{Values: []*float64{aws.Float64(0)}}},
+	}
 
 	// Get average utilization
 	averageUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
@@ -131,6 +139,9 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	} else {
 		log.Println("No data found for average usage")
 	}
+	cloudwatchMetricData["CurrentUsage"] = &cloudwatch.GetMetricDataOutput{
+		MetricDataResults: []*cloudwatch.MetricDataResult{{Values: []*float64{aws.Float64(0)}}},
+	}
 
 	maxUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
@@ -141,6 +152,9 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		cloudwatchMetricData["MaxUsage"] = maxUsage
 	} else {
 		log.Println("No data found for maximum usage")
+	}
+	cloudwatchMetricData["CurrentUsage"] = &cloudwatch.GetMetricDataOutput{
+		MetricDataResults: []*cloudwatch.MetricDataResult{{Values: []*float64{aws.Float64(0)}}},
 	}
 
 	jsonOutput := make(map[string]float64)
@@ -168,6 +182,9 @@ func GetMemoryUtilizationMetricData(clientAuth *model.Auth, instanceID, elementT
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
 	elmType := "CWAgent"
+	if elementType == "EC2" {
+		elmType = "CWAgent"
+	}
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,

@@ -8,6 +8,8 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -31,17 +33,34 @@ var AwsxEc2CustomAlertPanelCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			cloudwatchMetric, _ := GetEc2CustomAlertPanel(cmd, clientAuth)
+			cloudwatchMetric, _ := GetEc2CustomAlertPanel(cmd, clientAuth, nil)
 			fmt.Println(cloudwatchMetric)
 		}
 	},
 }
 
-func GetEc2CustomAlertPanel(cmd *cobra.Command, clientAuth *model.Auth) ([]string, error) {
+func GetEc2CustomAlertPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]string, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return nil, err
+		}
+		logGroupName = cmdbData.LogGroup
+
+	}
+	fmt.Println("working@!!!!",logGroupName)
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
 	var startTime, endTime *time.Time
 
 	// Parse start time if provided

@@ -78,10 +78,15 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
 
 			} else if queryName == "error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
+				cloudwatchMetricData, err := EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
+				fmt.Println(cloudwatchMetricData)
+				if err != nil {
+					return
+				}
+				fmt.Println(cloudwatchMetricData)
 
 			} else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
+				cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth, nil)
 				fmt.Println(cloudwatchMetric)
 
 				//} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
@@ -422,9 +427,9 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
-				fmt.Println(cloudwatchMetric)
+				// } else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				// 	cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
+				// 	fmt.Println(cloudwatchMetric)
 
 			} else if queryName == "alert_and_notification_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, err := EC2.GetAlertsAndNotificationsPanel(cmd, clientAuth)
