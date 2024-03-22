@@ -67,6 +67,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(instanceStopHourCount)
+			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				instanceRunningHour, err := EC2.GetInstanceRunningHour(cmd, clientAuth, nil)
+				if err != nil {
+					return
+				}
+				fmt.Println(instanceRunningHour)
 
 			} else if queryName == "instance_stop_count_panel_test" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
@@ -78,8 +84,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
 				fmt.Println(cloudwatchMetric)
 
-			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceRunningHourPanel(cmd, clientAuth, nil)
+				//} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				//EC2.GetInstanceRunningHourPanel(cmd, clientAuth, nil)
 			} else if queryName == "hosted_services_overview_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				hostedServicesOverview, err := EC2.GetHostedServicesData(cmd)
 				if err != nil {
