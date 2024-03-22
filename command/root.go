@@ -61,6 +61,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(instanceStopCount)
 
+			} else if queryName == "instance_hours_stopped_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				instanceStopHourCount, err := EC2.GetInstanceStoppedCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					return
+				}
+				fmt.Println(instanceStopHourCount)
+
 			} else if queryName == "instance_stop_count_panel_test" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
 
