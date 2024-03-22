@@ -137,7 +137,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData["InboundTraffic"] = createMetricDataOutput(inboundTrafficMegabytes)
 
 	// Get Outbound Traffic
-	outboundTraffic, err := GetNetworkMetricData(clientAuth, instanceId, elementType, startTime, endTime, "pod_network_tx_bytes", cloudWatchClient)
+	outboundTraffic, err := GetNetworkMetricData(clientAuth, instanceId, elementType, startTime, endTime, "pod_network_rx_bytes", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
