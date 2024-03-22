@@ -137,24 +137,37 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData["InboundTraffic"] = createMetricDataOutput(inboundTrafficMegabytes)
 
 	// Get Outbound Traffic
-	outboundTraffic, err := GetNetworkMetricData(clientAuth, instanceId, elementType, startTime, endTime, "pod_network_rx_bytes", cloudWatchClient)
+	outboundTraffic, err := GetNetworkMetricData(clientAuth, instanceId, elementType, startTime, endTime, "pod_network_tx_bytes", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
 	}
+	// Convert outbound traffic to megabytes
+	var outboundTrafficMegabytes float64
+	if len(outboundTraffic.MetricDataResults) > 0 && len(outboundTraffic.MetricDataResults[0].Values) > 0 {
+		outboundTrafficMegabytes = bytesToMegabytes(*outboundTraffic.MetricDataResults[0].Values[0])
+	} else {
+		log.Println("No data available for outbound traffic")
+	}
 	cloudwatchMetricData["OutboundTraffic"] = outboundTraffic
 
 	// Calculate Data Transferred (sum of inbound and outbound)
-	dataTransferred := *inboundTraffic.MetricDataResults[0].Values[0] + *outboundTraffic.MetricDataResults[0].Values[0]
+	var dataTransferred float64
+	if len(inboundTraffic.MetricDataResults) > 0 && len(inboundTraffic.MetricDataResults[0].Values) > 0 &&
+		len(outboundTraffic.MetricDataResults) > 0 && len(outboundTraffic.MetricDataResults[0].Values) > 0 {
+		dataTransferred = *inboundTraffic.MetricDataResults[0].Values[0] + *outboundTraffic.MetricDataResults[0].Values[0]
+	} else {
+		log.Println("Not enough data available to calculate data transferred")
+		dataTransferred = 0
+	}
 	cloudwatchMetricData["DataTransferred"] = createMetricDataOutput(dataTransferred)
 
 	// Convert values to MB
-	outboundTrafficMB := bytesToMegabytes(*outboundTraffic.MetricDataResults[0].Values[0])
 	dataTransferredMB := bytesToMegabytes(dataTransferred)
 
 	jsonOutput := NetworkResultMB{
 		InboundTraffic:  inboundTrafficMegabytes,
-		OutboundTraffic: outboundTrafficMB,
+		OutboundTraffic: outboundTrafficMegabytes,
 		DataTransferred: dataTransferredMB,
 	}
 
