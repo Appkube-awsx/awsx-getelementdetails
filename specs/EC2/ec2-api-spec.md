@@ -22,6 +22,22 @@
   - [net_outpackets_panel](#net_outpackets_panel)
   - [net_inbytes_panel](#net_inbytes_panel)
   - [net_outbytes_panel](#net_outbytes_panel)
+  - [cpu_utilization_graph_panel](#cpu_utilization_graph_panel)
+  - [memory_utilization_graph_panel](#memory_utilization_graph_panel)
+  - [network_traffic_panel](#network_traffic_panel)
+  - [disk_in_out_panel](#disk_in_out_panel)
+  - [instance_status_panel](#instance_status_panel)
+  - [alerts_and_notifications_panel](#alerts_and_notifications_panel)
+  - [instances_health_check_panel](#instances_health_check_panel)
+  - [net_throughput_panel](#net_throughput_panel)
+  - [error_rate_panel](#error_rate_panel)
+  - [mean_time_to_recovery_panel](#mean_time_to_recovery_panel)
+  - [hosted_service_overview_panel](#hosted_service_overview_panel)
+  - [latency_panel](#latency_panel)
+  - [error_tracking_panel](#error_tracking_panel)
+  - [instance_hours_running_panel](#instance_hours_running_panel)
+  - [instance_hours_stopped_panel](#error_rate_panel)
+
 
   
  
@@ -52,6 +68,36 @@ It implements the awsx plugin getElementDetails
 18. net_outpacket_panel
 19. net_inBytes_panel
 20. net_outBytes_panel
+21. cpu_utilization_graph_panel
+22. memory_utilization_graph_panel
+23. network_traffic_panel
+24. disk_in_out_panel
+25. instance_status_panel
+26. alerts_and_notifications_panel
+27. instances_health_check_panel
+28. net_throughput_panel
+29. error_rate_panel
+30. mean_time_to_recovery_panel
+31. hosted_service_overview_panel
+32. latency_panel
+33. error_tracking_panel
+34. instance_hours_running_panel
+35. instance_hours_stopped_panel
+36. instance_start_count_panel
+37. instance_stop_count_panel
+38. network_inbound_data_transfer_panel
+39. network_outbound_data_transfer_panel
+40. custom_alerts_panel
+41. instance_compliance_score_panel
+42. instance_security_patch_status_panel
+43. patching_panel
+44. hardening_panel
+45. instance_authentiication_failures_panel
+46. encryption_compliance_panel
+47. patch_mangement_status_panel
+48. password_policy_compliance_panel
+49. software_version_compliance_panel
+50. access_control_and_permissions_panel
 
 _
 # ui-analysys-and listing-methods
