@@ -137,8 +137,8 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 
 	// Assign the processed data to cloudwatchMetricData
 	for i, data := range result.AllocatableCPU {
-		cloudwatchMetricData["AllocatableCPU"].MetricDataResults[0].Timestamps[i] = &data.Timestamp
-		cloudwatchMetricData["AllocatableCPU"].MetricDataResults[0].Values[i] = &data.AllocatableCPU
+		cloudwatchMetricData["Allocatable CPU"].MetricDataResults[0].Timestamps[i] = &data.Timestamp
+		cloudwatchMetricData["Allocatable CPU"].MetricDataResults[0].Values[i] = &data.AllocatableCPU
 	}
 
 	// log.Printf("CloudWatch Metric Data: %+v", cloudwatchMetricData)

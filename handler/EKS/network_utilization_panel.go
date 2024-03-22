@@ -16,10 +16,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type NetworkResult struct {
+type NetworkResultMB struct {
 	InboundTraffic  float64 `json:"InboundTraffic"`
 	OutboundTraffic float64 `json:"OutboundTraffic"`
 	DataTransferred float64 `json:"DataTransferred"`
+}
+
+// Function to convert bytes to megabytes
+func bytesToMegabytes(bytes float64) float64 {
+	return bytes / (1024 * 1024)
 }
 
 var AwsxEKSNetworkUtilizationCmd = &cobra.Command{
@@ -122,7 +127,14 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["InboundTraffic"] = inboundTraffic
+	// Convert inbound traffic to megabytes
+	var inboundTrafficMegabytes float64
+	if len(inboundTraffic.MetricDataResults) > 0 && len(inboundTraffic.MetricDataResults[0].Values) > 0 {
+		inboundTrafficMegabytes = bytesToMegabytes(*inboundTraffic.MetricDataResults[0].Values[0])
+	} else {
+		log.Println("No data available for inbound traffic")
+	}
+	cloudwatchMetricData["InboundTraffic"] = createMetricDataOutput(inboundTrafficMegabytes)
 
 	// Get Outbound Traffic
 	outboundTraffic, err := GetNetworkMetricData(clientAuth, instanceId, elementType, startTime, endTime, "pod_network_tx_bytes", cloudWatchClient)
@@ -136,10 +148,14 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	dataTransferred := *inboundTraffic.MetricDataResults[0].Values[0] + *outboundTraffic.MetricDataResults[0].Values[0]
 	cloudwatchMetricData["DataTransferred"] = createMetricDataOutput(dataTransferred)
 
-	jsonOutput := NetworkResult{
-		InboundTraffic:  *inboundTraffic.MetricDataResults[0].Values[0],
-		OutboundTraffic: *outboundTraffic.MetricDataResults[0].Values[0],
-		DataTransferred: dataTransferred,
+	// Convert values to MB
+	outboundTrafficMB := bytesToMegabytes(*outboundTraffic.MetricDataResults[0].Values[0])
+	dataTransferredMB := bytesToMegabytes(dataTransferred)
+
+	jsonOutput := NetworkResultMB{
+		InboundTraffic:  inboundTrafficMegabytes,
+		OutboundTraffic: outboundTrafficMB,
+		DataTransferred: dataTransferredMB,
 	}
 
 	jsonString, err := json.Marshal(jsonOutput)
