@@ -31,12 +31,13 @@ var AwsxEc2CustomAlertPanelCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			GetEc2CustomAlertPanel(cmd, clientAuth)
+			cloudwatchMetric, _ := GetEc2CustomAlertPanel(cmd, clientAuth)
+			fmt.Println(cloudwatchMetric)
 		}
 	},
 }
 
-func GetEc2CustomAlertPanel(cmd *cobra.Command, clientAuth *model.Auth) {
+func GetEc2CustomAlertPanel(cmd *cobra.Command, clientAuth *model.Auth) ([]string, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -77,11 +78,10 @@ func GetEc2CustomAlertPanel(cmd *cobra.Command, clientAuth *model.Auth) {
 	events, err := filtercloudWatchLogs(clientAuth, startTime, endTime, logGroupName)
 	if err != nil {
 		log.Println("Error in getting custom alert data: ", err)
-		// handle error
+		return nil, err // Return the error
 	}
-	for _, event := range events {
-		fmt.Println(event)
-	}
+
+	return events, nil // Return the events slice
 }
 
 func filtercloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string) ([]string, error) {

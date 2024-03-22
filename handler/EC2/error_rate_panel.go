@@ -13,11 +13,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxEc2InstanceErrorRateCmd = &cobra.Command{
+var AwsxEc2ErrorRatePanelCmd = &cobra.Command{
 
-	Use:   "instance_error_rate_panel",
-	Short: "get instance error rate metrics data",
-	Long:  `command to get instance error rate metrics data`,
+	Use:   "error_rate_panel",
+	Short: "get error rate panel metrics data",
+	Long:  `command to get error rate panel metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -144,27 +144,27 @@ func filterCloudWatchlogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 }
 
 func init() {
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("ebsvolume2Id", "", "ebs volume 2 id")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("accountId", "", "aws account number")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("ServiceName", "", "Service Name")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("clusterName", "", "cluster name")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxEc2InstanceErrorRateCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("ebsvolume2Id", "", "ebs volume 2 id")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("accountId", "", "aws account number")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("ServiceName", "", "Service Name")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("clusterName", "", "cluster name")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("logGroupName", "", "log group name")
 }

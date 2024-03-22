@@ -5,6 +5,7 @@ import (
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
@@ -103,13 +104,13 @@ func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		endTime = &defaultEndTime
 	}
 
-	logs, err := filterCloudWatchLogss(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
+	results, err := filterCloudWatchLogss(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
 		return nil, nil
 	}
+	processedResults := processQueryResults(results)
 
-	return logs, nil
-
+	return processedResults, nil
 }
 
 func filterCloudWatchLogss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
@@ -160,7 +161,34 @@ func filterCloudWatchLogss(clientAuth *model.Auth, startTime, endTime *time.Time
 
 	return queryResults, nil
 }
+func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
 
+	for _, result := range results {
+		if *result.Status == "Complete" {
+			for _, resultField := range result.Results {
+				for _, data := range resultField {
+					if *data.Field == "InstanceCount" {
+						instanceCount, err := strconv.Atoi(*data.Value)
+						if err != nil {
+							log.Println("Failed to convert InstanceCount to integer:", err)
+							continue
+						}
+						log.Printf("Instance Count: %d\n", instanceCount)
+
+						// You can perform further processing or store the instance count data as needed
+					}
+				}
+			}
+			processedResults = append(processedResults, result)
+
+		} else {
+			log.Println("Query status is not complete.")
+		}
+	}
+
+	return processedResults
+}
 func init() {
 	AwsxEc2InstanceStopCmd.PersistentFlags().String("logGroupName", "", "log group name")
 	AwsxEc2InstanceStopCmd.PersistentFlags().String("filterPattern", "", "filter pattern")

@@ -60,11 +60,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "instance_stop_count_panel_test" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
 
-			} else if queryName == "instance_error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+			} else if queryName == "error_rate_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceErrorRatePanel(cmd, clientAuth, nil)
 
 			} else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
+				cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
+				fmt.Println(cloudwatchMetric)
 
 			} else if queryName == "instance_running_hour_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				EC2.GetInstanceRunningHourPanel(cmd, clientAuth, nil)
@@ -84,6 +85,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 						service.ServiceName, service.HealthStatus, service.ResponseTime, service.ErrorRate,
 						service.Availability, service.Throughput)
 				}
+			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+
+				instanceStatus, err := EC2.GetInstanceStatus(cmd, clientAuth)
+				if err != nil {
+					log.Fatalf("Error getting instance status: %v", err)
+				}
+
+				// Print instance information
+				fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t, Health Percentage: %.2f%%\n",
+					instanceStatus.InstanceID, instanceStatus.InstanceType, instanceStatus.AvailabilityZone, instanceStatus.State, instanceStatus.SystemChecksStatus, instanceStatus.CustomAlert, instanceStatus.HealthPercentage)
+
 			} else if queryName == "error_tracking_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				events, err := EC2.ListErrorEvents()
 				if err != nil {
@@ -124,6 +136,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(cloudwatchMetricResp)
 				} else {
 					// default case. it prints json
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_utilization_graph_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetCpuUtilizationGraphPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "memory_utilization_graph_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationGraphPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "cpu_usage_user_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
@@ -313,16 +347,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				// } else if queryName == "instance_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 
-				instanceInfo, err := EC2.GetInstanceStatus(cmd, clientAuth)
-				if err != nil {
-					log.Fatalf("Error getting instance status: %v", err)
-				}
-				for _, info := range instanceInfo {
-					fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t\n",
-						info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert)
-				}
+				// 	instanceInfo, err := EC2.GetInstanceStatus(cmd, clientAuth)
+				// 	if err != nil {
+				// 		log.Fatalf("Error getting instance status: %v", err)
+				// 	}
+				// 	for _, info := range instanceInfo {
+				// 		fmt.Printf("Instance ID: %s, Instance Type: %s, Availability Zone: %s, State: %s, System Checks Status: %s, Custom Alert: %t\n",
+				// 			info.InstanceID, info.InstanceType, info.AvailabilityZone, info.State, info.SystemChecksStatus, info.CustomAlert)
+				// 	}
 			} else if queryName == "instance_health_check_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				instanceInfo, err := EC2.GetInstanceHealthCheck()
 				if err != nil {
@@ -371,6 +405,10 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
+				fmt.Println(cloudwatchMetric)
+
 			} else if queryName == "alert_and_notification_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, err := EC2.GetAlertsAndNotificationsPanel(cmd, clientAuth)
 				if err != nil {
@@ -405,6 +443,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 			} else if queryName == "cpu_requests_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPURequestData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting CPU requests : ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "node_stability_index_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeStabilityData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting CPU requests : ", err)
 					return
@@ -473,6 +522,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EKS.GetAllocatableCPUData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting allocatable cpu panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "allocatable_memory_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetAllocatableMemData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting allocatable memory panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1073,6 +1133,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "total_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetTotalApiData(clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting total api data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "4xx_errors_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApi4xxErrorData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1132,10 +1203,12 @@ func Execute() {
 }
 
 func init() {
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CustomAlertPanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2MemoryUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkUtilizationCmd)
 	// AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2StorageUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUsageUserCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUsageUserCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUsageIdleCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuSysTimeCmd)
@@ -1152,6 +1225,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskWriteCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskUsedCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2hostedServicesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUtilizationgraphCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2MemoryUtilizationGraphCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.ListErrorsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskAvailableCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkInboundCmd)
@@ -1161,7 +1236,8 @@ func init() {
 	//AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmdTest)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceErrorRateCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2ErrorRatePanelCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceHealthCheckCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)
@@ -1180,6 +1256,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkThroughputSingleCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeCapacityCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeStabilityCmd)
 	// AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSIncidentResponseTimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeDowntimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeEventLogsCmd)
