@@ -48,7 +48,11 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "instance_start_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
+				instanceStartCount, err := EC2.GetInstanceStartCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					return
+				}
+				fmt.Println(instanceStartCount)
 
 			} else if queryName == "instance_stop_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				instanceStopCount, err := EC2.GetInstanceStopCountPanel(cmd, clientAuth, nil)
@@ -430,7 +434,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			}else if queryName == "cpu_utilization_panel" && (elementType == "AWS/EKS" || elementType == "EKS") {
+			} else if queryName == "cpu_utilization_panel" && (elementType == "AWS/EKS" || elementType == "EKS") {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetEKScpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting CPU utilization: ", err)

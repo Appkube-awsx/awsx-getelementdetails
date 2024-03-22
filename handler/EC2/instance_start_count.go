@@ -3,10 +3,13 @@ package EC2
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 
 	//"github.com/aws/aws-sdk-go/aws"
@@ -46,19 +49,36 @@ var AwsxEc2InstanceStartCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-
-			cloudwatchMetricData := GetInstanceStartCountPanel(cmd, clientAuth, nil)
-
-			fmt.Println(cloudwatchMetricData)
+			panel, err := GetInstanceStartCountPanel(cmd, clientAuth, nil)
+			if err != nil {
+				return
+			}
+			fmt.Println(panel)
 
 		}
 
 	},
 }
 
-func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) map[string][]*cloudwatchlogs.ResultField {
+func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
-	filterPattern, _ := cmd.PersistentFlags().GetString("filterPattern")
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return nil, err
+		}
+		logGroupName = cmdbData.LogGroup
+
+	}
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -94,21 +114,16 @@ func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
-	cloudwatchMetricData := make(map[string][]*cloudwatchlogs.ResultField)
-
-	events, err := filterCloudWatchLogs(clientAuth, startTime, endTime, logGroupName, filterPattern, cloudWatchLogs)
+	results, err := filterCloudWatchLogs(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
-		log.Println("Error in getting sample count: ", err)
-		// handle error
+		return nil, nil
 	}
-	for _, event := range events {
-		fmt.Println(event)
-	}
-	cloudwatchMetricData["Instance_Start_Count"] = events
-	return cloudwatchMetricData
+	processedResults := processQueryResultss(results)
+
+	return processedResults, nil
 }
 
-func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, filterPattern string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.ResultField, error) {
+func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	// Construct input parameters
 	params := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String(logGroupName),
@@ -131,56 +146,62 @@ func filterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 	}
 
 	queryId := queryResult.QueryId
-	queryStatus := ""
-	var queryResults *cloudwatchlogs.GetQueryResultsOutput // Declare queryResults outside the loop
-	for queryStatus != "Complete" {
+	var queryResults []*cloudwatchlogs.GetQueryResultsOutput // Declare queryResults outside the loop
+	for {
 		// Check query status
 		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
 			QueryId: queryId,
 		}
 
-		queryResults, err = cloudWatchLogs.GetQueryResults(queryStatusInput) // Assign value to queryResults
+		queryResult, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get query results: %v", err)
 		}
 
-		queryStatus = aws.StringValue(queryResults.Status)
-		time.Sleep(1 * time.Second) // Wait for a second before checking status again
+		queryResults = append(queryResults, queryResult)
+
+		if *queryResult.Status != "Complete" {
+			time.Sleep(5 * time.Second) // wait before querying again
+			continue
+		}
+
+		break // exit loop if query is complete
 	}
 
-	// Query is complete, now process results
-	var results []*cloudwatchlogs.ResultField
-	for _, resultRow := range queryResults.Results {
-		for _, resultField := range resultRow {
-			results = append(results, resultField)
+	return queryResults, nil
+}
+func processQueryResultss(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
+
+	for _, result := range results {
+		if *result.Status == "Complete" {
+			for _, resultField := range result.Results {
+				for _, data := range resultField {
+					if *data.Field == "InstanceCount" {
+						instanceCount, err := strconv.Atoi(*data.Value)
+						if err != nil {
+							log.Println("Failed to convert InstanceCount to integer:", err)
+							continue
+						}
+						log.Printf("Instance Count: %d\n", instanceCount)
+
+						// You can perform further processing or store the instance count data as needed
+					}
+				}
+			}
+			processedResults = append(processedResults, result)
+
+		} else {
+			log.Println("Query status is not complete.")
 		}
 	}
 
-	return results, nil
+	return processedResults
 }
 
 func init() {
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("ebsvolume2Id", "", "ebs volume 2 id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("accountId", "", "aws account number")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("ServiceName", "", "Service Name")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("clusterName", "", "cluster name")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("query", "", "query")
+	AwsxEc2InstanceStartCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	AwsxEc2InstanceStartCmd.PersistentFlags().String("filterPattern", "", "filter pattern")
 	AwsxEc2InstanceStartCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxEc2InstanceStartCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("logGroupName", "", "log group name")
 }
