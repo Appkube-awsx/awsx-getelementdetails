@@ -453,7 +453,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				// } else {
 				fmt.Println(jsonResp)
 			} else if queryName == "storage_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutPacketsPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetStorageUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting storage utilization: ", err)
 					return
