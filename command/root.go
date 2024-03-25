@@ -529,17 +529,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-				// } else if queryName == "incident_response_time_panel" && elementType == "EKS" {
-				// 	jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
-				// 	if err != nil {
-				// 		log.Println("Error getting storage utilization: ", err)
-				// 		return
-				// 	}
-				// 	if responseType == "frame" {
-				// 		fmt.Println(cloudwatchMetricResp)
-				// 	} else {
-				// 		fmt.Println(jsonResp)
-				// 	}
+			} else if queryName == "incident_response_time_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetIncidentResponseTimeData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting storage utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "disk_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetDiskUtilizationData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1302,7 +1302,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNetworkUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeCapacityCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeStabilityCmd)
-	// AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSIncidentResponseTimeCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSIncidentResponseTimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeDowntimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeEventLogsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeUptimeCmd)
