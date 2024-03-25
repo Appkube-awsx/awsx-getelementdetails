@@ -584,6 +584,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "node_failure_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeFailureData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting cpu limits: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_graph_utilization_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPUUtilizationData(cmd, clientAuth, nil)
 				if err != nil {
