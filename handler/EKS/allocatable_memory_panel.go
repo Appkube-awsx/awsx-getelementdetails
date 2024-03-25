@@ -121,27 +121,58 @@ func GetAllocatableMemData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 
 	// Process the raw data if needed
 	result := processMemRawData(rawData)
-	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{
-		"AllocatableMemory": &cloudwatch.GetMetricDataOutput{
-			MetricDataResults: []*cloudwatch.MetricDataResult{
-				{
-					Timestamps: make([]*time.Time, len(result.AllocatableMemory)),
-					Values:     make([]*float64, len(result.AllocatableMemory)),
-				},
-			},
-		},
+	// cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{
+	// 	"AllocatableMemory": &cloudwatch.GetMetricDataOutput{
+	// 		MetricDataResults: []*cloudwatch.MetricDataResult{
+	// 			{
+	// 				Timestamps: make([]*time.Time, len(result.AllocatableMemory)),
+	// 				Values:     make([]*float64, len(result.AllocatableMemory)),
+	// 			},
+	// 		},
+	// 	},
+	// }
+
+	// // Assign the processed data to cloudwatchMetricData
+	// for i, data := range result.AllocatableMemory {
+	// 	cloudwatchMetricData["AllocatableMemory"].MetricDataResults[0].Timestamps[i] = &data.Timestamp
+	// 	cloudwatchMetricData["AllocatableMemory"].MetricDataResults[0].Values[i] = &data.AllocatableMem
+	// }
+
+	timestamps := make([]time.Time, len(result.AllocatableMemory))
+	values := make([]float64, len(result.AllocatableMemory))
+
+	fmt.Println("timeeeeeeeee", timestamps)
+	fmt.Println("timeeeeeeeee", values)
+
+	// Populate the slices with actual data
+	for i, data := range result.AllocatableMemory {
+		// Assigning values directly to slices without taking their addresses
+		timestamps[i] = data.Timestamp
+		values[i] = data.AllocatableMem
+	}
+
+	// Initialize the MetricDataResults slice
+	metricDataResults := make([]*cloudwatch.MetricDataResult, len(result.AllocatableMemory))
+
+	// Populate the MetricDataResults with actual data
+	for i := range result.AllocatableMemory {
+		metricDataResults[i] = &cloudwatch.MetricDataResult{
+			Timestamps: []*time.Time{&timestamps[i]},
+			Values:     []*float64{&values[i]},
+		}
 	}
 
 	// Assign the processed data to cloudwatchMetricData
-	for i, data := range result.AllocatableMemory {
-		cloudwatchMetricData["AllocatableMemory"].MetricDataResults[0].Timestamps[i] = &data.Timestamp
-		cloudwatchMetricData["AllocatableMemory"].MetricDataResults[0].Values[i] = &data.AllocatableMem
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{
+		"AllocatableMemory": {
+			MetricDataResults: metricDataResults,
+		},
 	}
 
 	// Log only the allocatable memory and its corresponding timestamp
-	for _, data := range result.AllocatableMemory {
-		log.Printf("Timestamp: %v, Allocatable Memory: %v", data.Timestamp, data.AllocatableMem)
-	}
+	// for _, data := range result.AllocatableMemory {
+	// 	log.Printf("Timestamp: %v, Allocatable Memory: %v", data.Timestamp, data.AllocatableMem)
+	// }
 	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
