@@ -20,13 +20,13 @@ type Networktrafficbound struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"network_traffics_panel"`
+	} `json:"network_traffic_panel"`
 }
 
 var AwsxEc2NetworkTrafficCmd = &cobra.Command{
-	Use:   "network_out_bound_panel",
-	Short: "get network out bound metrics data",
-	Long:  `command to get network out bound metrics data`,
+	Use:   "network_traffic_panel",
+	Short: "get network traffic metrics data",
+	Long:  `command to get network traffic metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -217,21 +217,6 @@ func GetNetworkTrafficMetricData(clientAuth *model.Auth, instanceID, elementType
 
 	return result, nil
 }
-
-// func processRawdata(result *cloudwatch.GetMetricDataOutput)  Networktrafficbound {
-// 	var rawData  Networktrafficbound
-// 	rawData.RawData = make([]struct {
-// 		Timestamp time.Time
-// 		Value     float64
-// 	}, len(result.MetricDataResults[0].Timestamps))
-
-// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-// 		rawData.RawData[i].Timestamp = *timestamp
-// 		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
-// 	}
-
-// 	return rawData
-// }
 
 func init() {
 	AwsxEc2NetworkTrafficCmd.PersistentFlags().String("elementId", "", "element id")
