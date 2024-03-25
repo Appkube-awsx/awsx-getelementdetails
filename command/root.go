@@ -416,6 +416,21 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "network_traffic_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				_, _, totalNetworkTraffic, err := EC2.GetNetworkTrafficPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network in bytes metrics data: ", err)
+					return
+				}
+	
+				if responseType == "frame" {
+					// Print only the total network traffic value
+					fmt.Printf("{\"NetworkTraffic\": %.2f}\n", totalNetworkTraffic)
+				} else {
+					// Print the output in JSON format
+					formattedTraffic := fmt.Sprintf("%.2f", totalNetworkTraffic)
+					fmt.Printf("{\"NetworkTraffic\": %.2f}\n", formattedTraffic)
+				}
 			} else if queryName == "network_outbound_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutBoundPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -793,17 +808,6 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EKS.GetEksDataTransferRatePanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting data_transfer_rate_panel: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
-			} else if queryName == "resource_utilization_patterns_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetResourceUtilizationData(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting resource_utilization_panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1272,6 +1276,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUtilizationGraphsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2MemoryUtilizationGraphCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.ListErrorsCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkTrafficCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskAvailableCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkInboundCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutboundCmd)
