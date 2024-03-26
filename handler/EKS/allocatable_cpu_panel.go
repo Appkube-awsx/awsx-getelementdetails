@@ -112,8 +112,6 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	// Debug prints
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	// cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-
 	// Fetch raw data
 	rawData, err := GetAllocatableCPUMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
 	if err != nil {
@@ -123,31 +121,40 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 
 	// Process the raw data if needed
 	result := processCPURawData(rawData)
-	// log.Println(result)
-	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{
-		"AllocatableCPU": &cloudwatch.GetMetricDataOutput{
-			MetricDataResults: []*cloudwatch.MetricDataResult{
-				{
-					Timestamps: make([]*time.Time, len(result.AllocatableCPU)),
-					Values:     make([]*float64, len(result.AllocatableCPU)),
-				},
-			},
-		},
+
+	// Collect all timestamps and values separately
+	timestamps := make([]time.Time, len(result.AllocatableCPU))
+	values := make([]float64, len(result.AllocatableCPU))
+
+	// Populate the slices with actual data
+	for i, data := range result.AllocatableCPU {
+		// Assigning values directly to slices without taking their addresses
+		timestamps[i] = data.Timestamp
+		values[i] = data.AllocatableCPU
+	}
+
+	// Initialize the MetricDataResults slice
+	metricDataResults := make([]*cloudwatch.MetricDataResult, len(result.AllocatableCPU))
+
+	// Populate the MetricDataResults with actual data
+	for i := range result.AllocatableCPU {
+		metricDataResults[i] = &cloudwatch.MetricDataResult{
+			Timestamps: []*time.Time{&timestamps[i]},
+			Values:     []*float64{&values[i]},
+		}
 	}
 
 	// Assign the processed data to cloudwatchMetricData
-	for i, data := range result.AllocatableCPU {
-		cloudwatchMetricData["Allocatable CPU"].MetricDataResults[0].Timestamps[i] = &data.Timestamp
-		cloudwatchMetricData["Allocatable CPU"].MetricDataResults[0].Values[i] = &data.AllocatableCPU
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{
+		"AllocatableCPU": {
+			MetricDataResults: metricDataResults,
+		},
 	}
 
-	// log.Printf("CloudWatch Metric Data: %+v", cloudwatchMetricData)
-
-	// Log only the allocatable CPU and its corresponding timestamp
-	for _, data := range result.AllocatableCPU {
-		// log.Println(data)
-		log.Printf("Timestamp: %v, Allocatable CPU: %v", data.Timestamp, data.AllocatableCPU)
-	}
+	// Log the timestamps and values
+	// for _, data := range result.AllocatableCPU {
+	// 	log.Printf("Timestamp: %v, Allocatable CPU: %v", data.Timestamp, data.AllocatableCPU)
+	// }
 	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
@@ -156,6 +163,7 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 
 	return string(jsonString), cloudwatchMetricData, nil
 }
+
 
 func GetAllocatableCPUMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	elmType := "ContainerInsights"

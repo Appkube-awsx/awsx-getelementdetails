@@ -23,7 +23,6 @@ type CpuUtilizationsResult struct {
 	} `json:"cpu utilization graph"`
 }
 
-
 var AwsxEc2CpuUtilizationGraphsCmd = &cobra.Command{
 	Use:   "cpu_utilization_graph_panel",
 	Short: "get cpu utilization graph metrics data",
@@ -81,10 +80,7 @@ func GetCpuUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 
 	}
 
-
-
 	var startTime, endTime *time.Time
-
 
 	if startTimeStr != "" {
 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
@@ -125,7 +121,7 @@ func GetCpuUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 		log.Println("Error in getting rawdata: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["Memory utilization"] = rawData
+	cloudwatchMetricData["CPU Utilization"] = rawData
 
 	result := processCpuUtilizationGraphRawData(rawData)
 
@@ -142,7 +138,7 @@ func GetCpuUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 func GetCpuUtilizationGraphMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 
 	elmType := "AWS/EC2"
-	 
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -211,7 +207,3 @@ func init() {
 	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
-
-
-
-

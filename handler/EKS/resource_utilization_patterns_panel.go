@@ -118,7 +118,7 @@ func GetResourceUtilizationData(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CPU Utilization"] = rawData
+	cloudwatchMetricData["Resource Utilization Patterns"] = rawData
 
 	result := processResourceUtilizationRawData(rawData)
 
