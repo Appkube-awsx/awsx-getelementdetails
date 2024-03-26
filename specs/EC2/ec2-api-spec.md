@@ -947,12 +947,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementT
 | 10    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="mem_cached_panel"  | This will get th1e specific EC2 instance mem cached panel data in hybrid structure |
 | 11   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="mem_usage_total_panel"  | This will get th1e specific EC2 instance mem usage total panel data in hybrid structure |
 | 12   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="mem_usage_used_panell"  | This will get th1e specific EC2 instance mem usage used panel data in hybrid structure |
-| 13   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="disk_writes_panel"  | This will get th1e specific EC2 instance disk writes panel data in hybrid structure |
-| 14   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="disk_reads_panel"  | This will get th1e specific EC2 instance disk reads panel data in hybrid structure |
-| 11   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="disk_available_panel"  | This will get th1e specific EC2 instance disk available panel data in hybrid structure |
-| 11   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="mem_usage_total_panel"  | This will get th1e specific EC2 instance disk used panel data in hybrid structure |
-| 11   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="mem_usage_total_panel"  | This will get th1e specific EC2 instance mem usage total panel data in hybrid structure |
-| 11   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="mem_usage_total_panel"  | This will get th1e specific EC2 instance mem usage total panel data in hybrid structure |
+| 13   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="disk_reads_panel"  | This will get th1e specific EC2 instance disk reads panel data in hybrid structure |
+| 14   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="disk_writes_panel"  | This will get th1e specific EC2 instance disk writes panel data in hybrid structure |
+| 15   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="disk_used_panel"  | This will get th1e specific EC2 instance disk used panel data in hybrid structure |
+| 16   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="disk_available_panel"  | This will get th1e specific EC2 instance disk available panel data in hybrid structure |
+| 17   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="net_inpackets_panel"  | This will get th1e specific EC2 instance net inpackets panel data in hybrid structure |
+| 18   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="net_outpackets_panel"  | This will get th1e specific EC2 instance net outpackets panel data in hybrid structure |
+| 19   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="net_inbytes_panel"  | This will get th1e specific EC2 instance net inbytes panel data in hybrid structure |
+| 20   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="net_outbytes_panel"  | This will get th1e specific EC2 instance net outbytes panel in hybrid structure |
+| 21   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="cpu_utilization_graph_panel"  | This will get th1e specific EC2 instance cpu utilization graph panel in hybrid structure |
+| 22   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="memory_utilization_graph_panel"  | This will get th1e specific EC2 instance memory utilization graph panel in hybrid structure |
+| 23   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="network_traffic_panel"  | This will get th1e specific EC2 instance network traffic panel in hybrid structure |
+| 24   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900000" --elementType=EC2 --query="disk_io_panel"  | This will get th1e specific EC2 instance disk io panel in hybrid structure |
 
 
 
