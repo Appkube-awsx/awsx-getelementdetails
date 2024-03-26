@@ -10,6 +10,7 @@ import (
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/ECS"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EKS"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/Lambda"
+	"github.com/Appkube-awsx/awsx-getelementdetails/handler/RDS"
 	"github.com/spf13/cobra"
 )
 
@@ -422,7 +423,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					log.Println("Error getting network in bytes metrics data: ", err)
 					return
 				}
-	
+
 				if responseType == "frame" {
 					// Print only the total network traffic value
 					fmt.Printf("{\"NetworkTraffic\": %.2f}\n", totalNetworkTraffic)
@@ -592,6 +593,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPULimitsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting cpu limits: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "node_recovery_time_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetNodeRecoveryTime(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting node recovery time panel: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1237,6 +1249,39 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "cpu_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSCpuUtilizationPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting cpu utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSNetworkUtilizationPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_traffic_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSNetworkTrafficPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else {
 				fmt.Println("query not found")
 			}
@@ -1327,6 +1372,9 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaSuccessFailureCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSCpuUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkUtilizationCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
