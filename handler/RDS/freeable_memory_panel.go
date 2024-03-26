@@ -166,3 +166,24 @@ func processedRawMemoryData(result *cloudwatch.GetMetricDataOutput) []MemoryUsag
 
 	return processedData
 }
+
+
+func init() {
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("query", "", "query")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+}
+

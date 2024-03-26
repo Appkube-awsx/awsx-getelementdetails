@@ -15,15 +15,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type StorageSpace struct {
+type DiskQueueDepth struct {
 	Timestamp time.Time
 	Value     float64
 }
 
-var AwsxRDSFreeStorageSpaceCmd = &cobra.Command{
-	Use:   "free_storage_space_panel",
-	Short: "get free storage space metrics data",
-	Long:  `command to get free storage space metrics data`,
+var AwsxRDSDiskQueueDepthCmd = &cobra.Command{
+	Use:   "disk_queue_depth_panel",
+	Short: "get disk queue depth metrics data",
+	Long:  `command to get disk queue depth metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -38,9 +38,9 @@ var AwsxRDSFreeStorageSpaceCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err, _ := GetRDSFreeStorageSpacePanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err, _ := GetRDSDiskQueueDepthPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting free storage space data: ", err)
+				log.Println("Error getting disk queue depth data: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -54,7 +54,7 @@ var AwsxRDSFreeStorageSpaceCmd = &cobra.Command{
 	},
 }
 
-func GetRDSFreeStorageSpacePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetRDSDiskQueueDepthPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -101,26 +101,26 @@ func GetRDSFreeStorageSpacePanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	// Fetch raw data for free storage space metric
-	rawStorageSpaceData, err := GetStorageSpaceMetricData(clientAuth, elementType, startTime, endTime, "FreeStorageSpace", cloudWatchClient)
+	// Fetch raw data for disk queue depth metric
+	rawDiskQueueDepthData, err := GetDiskQueueDepthMetricData(clientAuth, elementType, startTime, endTime, "DiskQueueDepth", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting free storage space data: ", err)
+		log.Println("Error in getting disk queue depth data: ", err)
 		return "", "", nil, err
 	}
-	cloudwatchMetricData["FreeStorageSpace"] = rawStorageSpaceData
+	cloudwatchMetricData["DiskQueueDepth"] = rawDiskQueueDepthData
 
-	// Process raw storage space data
-	resultStorageSpace := processedRawStorageSpaceData(rawStorageSpaceData)
-	jsonStorageSpace, err := json.Marshal(resultStorageSpace)
+	// Process raw disk queue depth data
+	resultDiskQueueDepth := processedRawDiskQueueDepthData(rawDiskQueueDepthData)
+	jsonDiskQueueDepth, err := json.Marshal(resultDiskQueueDepth)
 	if err != nil {
-		log.Println("Error in marshalling json for free storage space data: ", err)
+		log.Println("Error in marshalling json for disk queue depth data: ", err)
 		return "", "", nil, err
 	}
 
-	return string(jsonStorageSpace), string(jsonStorageSpace), cloudwatchMetricData, nil
+	return string(jsonDiskQueueDepth), string(jsonDiskQueueDepth), cloudwatchMetricData, nil
 }
 
-func GetStorageSpaceMetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetDiskQueueDepthMetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace AWS/RDS from %v to %v", elementType, startTime, endTime)
 
 	input := &cloudwatch.GetMetricDataInput{
@@ -136,7 +136,7 @@ func GetStorageSpaceMetricData(clientAuth *model.Auth, elementType string, start
 						Namespace:  aws.String("AWS/RDS"),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Average"), // Use "Average" for storage space metrics
+					Stat:   aws.String("Average"), // Use "Average" for disk queue depth metrics
 				},
 			},
 		},
@@ -153,12 +153,12 @@ func GetStorageSpaceMetricData(clientAuth *model.Auth, elementType string, start
 	return result, nil
 }
 
-func processedRawStorageSpaceData(result *cloudwatch.GetMetricDataOutput) []StorageSpace {
-	var processedData []StorageSpace
+func processedRawDiskQueueDepthData(result *cloudwatch.GetMetricDataOutput) []DiskQueueDepth {
+	var processedData []DiskQueueDepth
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
 		value := *result.MetricDataResults[0].Values[i]
-		processedData = append(processedData, StorageSpace{
+		processedData = append(processedData, DiskQueueDepth{
 			Timestamp: *timestamp,
 			Value:     value,
 		})
@@ -169,21 +169,21 @@ func processedRawStorageSpaceData(result *cloudwatch.GetMetricDataOutput) []Stor
 
 
 func init() {
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("query", "", "query")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
 

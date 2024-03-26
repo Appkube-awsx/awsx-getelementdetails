@@ -1322,6 +1322,50 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			}else if queryName == "disk_queue_depth_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDiskQueueDepthPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting disk queue depth data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "replication_slot_disk_usage" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSReplicationSlotDiskUsagePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iopslogvolume data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_receive_throughput_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSNetworkReceiveThroughputPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network receive throughput data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_transmit_throughput_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSNetworkTransmitThroughputPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network receive throughput data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else {
 				fmt.Println("query not found")
 			}
@@ -1417,6 +1461,12 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSFreeStorageSpaceCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSFreeableMemoryCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDiskQueueDepthCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSReplicationSlotDiskUsageCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkReceiveThroughputCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTransmitThroughputCmd)
+
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
