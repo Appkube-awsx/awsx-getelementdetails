@@ -1293,6 +1293,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "freeable_memory_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSFreeableMemoryPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting freeable memory data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "free_storage_space_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSFreeStorageSpacePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting free storage space data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else {
 				fmt.Println("query not found")
 			}
@@ -1386,6 +1408,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSCpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSFreeStorageSpaceCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSFreeableMemoryCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
