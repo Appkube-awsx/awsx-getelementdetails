@@ -1334,7 +1334,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "cpu_utilization_graph_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err:= RDS.GetRDSCPUUtilizationGraphPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSCPUUtilizationGraphPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network utilization graph: ", err)
 					return
@@ -1344,8 +1344,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "alert_and_notification_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, err := RDS.GetAlertsAndNotificationsPanell(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting network inbound metric data: ", err)
+					return
+				}
+				// if responseType == "frame" {
+				// 	fmt.Println(cloudwatchMetricResp)
+				// } else {
+				fmt.Println(jsonResp)
 			} else if queryName == "iops_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err,_:= RDS.GetRDSIopsPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSIopsPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting iops data: ", err)
 					return
