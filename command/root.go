@@ -1289,6 +1289,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "cpu_credit_usage_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUCreditUsagePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting index size: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_credit_balance_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUCreditBalancePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting index size: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "network_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSNetworkUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
