@@ -1333,6 +1333,21 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "instance_health_check_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				instanceInfo, err := RDS.GetDBInstanceHealthCheck()
+				if err != nil {
+					return
+				}
+				fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-15s %-5s %-25s %-25s\n",
+					"Instance ID", "Instance Type", "Availability Zone", "State", "System Checks Status",
+					"Instance Checks Status", "Alarm", "System Check Time", "Instance Check Time")
+
+				// Print instance information
+				for _, info := range instanceInfo {
+					fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-15s %-5t %-25s %-25s\n",
+						info.InstanceID, info.InstanceType, info.AvailabilityZone, info.InstanceStatus,
+						info.SystemChecks, info.InstanceChecks, info.SystemCheck, info.InstanceCheck)
+				}
 			} else if queryName == "cpu_utilization_graph_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSCPUUtilizationGraphPanel(cmd, clientAuth, nil)
 				if err != nil {
