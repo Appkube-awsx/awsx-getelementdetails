@@ -1097,6 +1097,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "concurrency_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaConcurrencyData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda concurrency data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "failure_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaFailureData(cmd, clientAuth, nil)
 				if err != nil {
