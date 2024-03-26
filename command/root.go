@@ -1250,16 +1250,38 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "cpu_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-					jsonResp, cloudwatchMetricResp, err := RDS.GetRDSCpuUtilizationPanel(cmd, clientAuth, nil)
-					if err != nil {
-						log.Println("Error getting cpu utilization: ", err)
-						return
-					}
-					if responseType == "frame" {
-						fmt.Println(cloudwatchMetricResp)
-					} else {
-						fmt.Println(jsonResp)
-					}
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSCpuUtilizationPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting cpu utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSNetworkUtilizationPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_traffic_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSNetworkTrafficPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else {
 				fmt.Println("query not found")
 			}
@@ -1350,6 +1372,9 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaSuccessFailureCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSCpuUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkUtilizationCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
