@@ -1322,6 +1322,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "iops_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err,_:= RDS.GetRDSIopsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting iops data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "freeable_memory_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSFreeableMemoryPanel(cmd, clientAuth, nil)
 				if err != nil {
