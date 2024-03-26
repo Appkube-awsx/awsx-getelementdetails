@@ -1292,7 +1292,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "cpu_credit_usage_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUCreditUsagePanel(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting index size: ", err)
+					log.Println("Error getting credit usage: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1303,7 +1303,29 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "cpu_credit_balance_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUCreditBalancePanel(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting index size: ", err)
+					log.Println("Error getting credit balance: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_surplus_credit_balance_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUSurplusCreditBalance(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting surplus credit balance: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_surplus_credits_charged_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUSurplusCreditCharged(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting surplus credits charged: ", err)
 					return
 				}
 				if responseType == "frame" {
