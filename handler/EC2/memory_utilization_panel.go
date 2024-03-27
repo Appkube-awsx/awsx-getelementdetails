@@ -36,6 +36,7 @@ var AwsxEc2MemoryUtilizationCmd = &cobra.Command{
 			jsonResp, cloudwatchMetricResp, err := GetMemoryUtilizationPanel(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting memory utilization: ", err)
+				fmt.Println("null")
 				return
 			}
 			if responseType == "frame" {
@@ -91,11 +92,6 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		defaultStartTime := time.Now().Add(-15 * time.Minute)
 		startTime = &defaultStartTime
 	}
-	fifteenMinutesAgo := time.Now().Add(-15 * time.Minute)
-	if startTime.Before(fifteenMinutesAgo) {
-		log.Println("No data available for the last 15 minutes")
-		return "null", nil, nil
-	}
 
 	if endTimeStr != "" {
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
@@ -108,10 +104,26 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 			return "", nil, err
 		}
 		endTime = &parsedEndTime
-	} else {
+	}
+
+	// If start time is not provided, use last 15 minutes
+	if startTime == nil {
+		defaultStartTime := time.Now().Add(-15 * time.Minute)
+		startTime = &defaultStartTime
+	}
+
+	// If end time is not provided, use current time
+	if endTime == nil {
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
+
+	// If start time is after end time, return null
+	if startTime.After(*endTime) {
+		log.Println("Start time is after end time")
+		return "null", nil, nil
+	}
+
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	currentUsage, err := GetMemoryUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "SampleCount", cloudWatchClient)
@@ -151,7 +163,8 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
 		cloudwatchMetricData["MaxUsage"] = maxUsage
 	} else {
-		log.Println("No data found for maximum usage")
+		log.Println("")
+		return "null", nil, nil
 	}
 	cloudwatchMetricData["CurrentUsage"] = &cloudwatch.GetMetricDataOutput{
 		MetricDataResults: []*cloudwatch.MetricDataResult{{Values: []*float64{aws.Float64(0)}}},
