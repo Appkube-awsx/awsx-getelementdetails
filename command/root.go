@@ -440,7 +440,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "latency_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetLatencyPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp := EC2.LatencyPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting latency metric data: ", err)
 					return
@@ -1128,6 +1128,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 			} else if queryName == "max_memory_used_graph_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMaxMemoryData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting lambda max memory used graph data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cold_start_duration_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaColdStartData(cmd, clientAuth,nil)
 				if err != nil {
 					log.Println("Error getting lambda max memory used graph data: ", err)
 					return
