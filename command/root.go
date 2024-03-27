@@ -1170,6 +1170,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "invocation_trend_panel" && elementType == "Lambda" {
+				jsonResp, err:= Lambda.GetInvocationTrendData(cmd, clientAuth , nil)
+				if err != nil {
+					log.Println("Error getting lambda max memory used graph data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+
 			} else if queryName == "failure_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaFailureData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1182,11 +1190,11 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "error_messages_count_panel" && elementType == "Lambda" {
-				Lambda.GetLambdaErrorMessageCountPanel(cmd, clientAuth, nil)
+				jsonResp, err := Lambda.GetErrorMessageCountData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda functions  data: ", err)
 					return
 				}
+				fmt.Println(jsonResp)
 			} else if queryName == "throttling_trends_panel" && elementType == "Lambda" {
 				Lambda.GetThrottlingTrendsPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -1422,7 +1430,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "read_iops_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSReadIOPSPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSReadIOPSPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting read iops: ", err)
 					return

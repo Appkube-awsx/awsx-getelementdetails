@@ -2,6 +2,7 @@ package Lambda
 
 import (
 	"fmt"
+	// "github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"log"
 	"strconv"
@@ -15,14 +16,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxLambdaErrorMessageCmd = &cobra.Command{
+var AwsxLambdaInvocationTrendCmd = &cobra.Command{
 
-	Use:   "error_message_count_panel",
-	Short: "Get error message count metrics data",
-	Long:  `Command to get error message count metrics data`,
+	Use:   "invocation_trend_panel",
+	Short: "Get invocation trend metrics data",
+	Long:  `Command to get invocation trend metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Running error message panel command")
+		fmt.Println("Running invocation trend panel command")
 
 		var authFlag bool
 		var clientAuth *model.Auth
@@ -47,7 +48,7 @@ var AwsxLambdaErrorMessageCmd = &cobra.Command{
 	},
 }
 
-func GetErrorMessageCountData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func GetInvocationTrendData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
     logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
@@ -60,6 +61,11 @@ func GetErrorMessageCountData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 			apiUrl = config.CmdbUrl
 		}
 		log.Println("cmdb url: " + apiUrl)
+		// cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// logGroupName = cmdbData.LogGroup
 
 	}
 
@@ -98,7 +104,7 @@ func GetErrorMessageCountData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 		endTime = &defaultEndTime
 	}
 
-	results, err := filterCloudWatchLog(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
+	results, err := filterCloudWatchLogss(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
 		return nil, nil
 	}
@@ -111,14 +117,14 @@ func GetErrorMessageCountData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 }
 
 
-func filterCloudWatchLog(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func filterCloudWatchLogss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	params := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String(logGroupName),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
 		EndTime:      aws.Int64(endTime.Unix() * 1000),
-		QueryString: aws.String(`fields @timestamp, @message, errorMessage
-		| filter eventSource == "lambda.amazonaws.com" and ispresent(errorMessage)
-		| stats count(errorMessage) as errorCount by bin(1month)`),
+		QueryString: aws.String(`fields @timestamp, eventSource
+		| filter eventSource = "lambda.amazonaws.com" 
+		| stats count() as InvocationCount by bin(1h)`),
 	}
 
 	if cloudWatchLogs == nil {
@@ -156,20 +162,22 @@ func filterCloudWatchLog(clientAuth *model.Auth, startTime, endTime *time.Time, 
 	return queryResults, nil
 }
 
-func processQueryResult(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
 	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
 
 	for _, result := range results {
 		if *result.Status == "Complete" {
 			for _, resultField := range result.Results {
 				for _, data := range resultField {
-					if *data.Field == "errorCount" {
-						errorCount, err := strconv.Atoi(*data.Value)
+					if *data.Field == "InvocationCount" {
+						invocationCount, err := strconv.Atoi(*data.Value)
 						if err != nil {
-							log.Println("Failed to convert errorCount to integer:", err)
+							log.Println("Failed to convert InvocationCount to integer:", err)
 							continue
 						}
-						log.Printf("Error Count: %d\n", errorCount)
+						log.Printf("Invocation Count: %d\n", invocationCount)
+
+						// You can perform further processing or store the invocation count data as needed
 					}
 				}
 			}
@@ -183,8 +191,8 @@ func processQueryResult(results []*cloudwatchlogs.GetQueryResultsOutput) []*clou
 }
 
 func init() {
-	AwsxLambdaErrorMessageCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxLambdaErrorMessageCmd.PersistentFlags().String("functionName", "", "Lambda function name")
-	AwsxLambdaErrorMessageCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxLambdaErrorMessageCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxLambdaInvocationTrendCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	AwsxLambdaInvocationTrendCmd.PersistentFlags().String("functionName", "", "Lambda function name")
+	AwsxLambdaInvocationTrendCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxLambdaInvocationTrendCmd.PersistentFlags().String("endTime", "", "end time")
 }
