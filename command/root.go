@@ -1116,7 +1116,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "max_memory_used_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp,err:= Lambda.GetLambdaMaxMemoryData(cmd,clientAuth)
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMaxMemoryData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting lambda max memory used data: ", err)
 					return
@@ -1501,6 +1501,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "db_load_non_cpu_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadNonCPU(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting database workload overview data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "db_load_cpu_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadCPU(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting database workload overview data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else {
 				fmt.Println("query not found")
 			}
@@ -1602,6 +1624,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkReceiveThroughputCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTransmitThroughputCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadNonCPUCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadCPUCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
