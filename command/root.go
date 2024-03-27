@@ -1422,7 +1422,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "read_iops_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSReadIOPSPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSReadIOPSPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting read iops: ", err)
 					return
@@ -1581,7 +1581,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "db_load_non_cpu_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadNonCPU(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting database workload overview data: ", err)
+					log.Println("Error getting database non-cpu load data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1592,7 +1592,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "db_load_cpu_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadCPU(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting database workload overview data: ", err)
+					log.Println("Error getting database cpu load data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "latency_analysis_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSLatencyAnalysisData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting latency analysis data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1705,6 +1716,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadNonCPUCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadCPUCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSStorageUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSLatencyAnalysisCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
