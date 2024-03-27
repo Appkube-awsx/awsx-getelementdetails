@@ -1127,7 +1127,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "max_memory_used_graph_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp,err:= Lambda.GetLambdaMaxMemoryData(cmd,clientAuth)
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMaxMemoryData(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting lambda max memory used graph data: ", err)
 					return
@@ -1366,7 +1366,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "awrite_iopslog_volume_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+			} else if queryName == "write_iopslog_volume_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSWriteIOPSLogVolumePanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting write iops: ", err)
