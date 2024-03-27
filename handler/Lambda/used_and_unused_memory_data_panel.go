@@ -21,9 +21,9 @@ type UnusedMemoryData struct {
 }
 
 var LambdaMemoryMetricsCmd = &cobra.Command{
-	Use:   "unused_memory_data_panel",
-	Short: "Get Lambda unused memory data",
-	Long:  `Command to get Lambda Unused memory data`,
+	Use:   "used_and_unused_memory_data_panel",
+	Short: "Get Lambda used and unused memory data",
+	Long:  `Command to get Lambda Used and Unused memory data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("Running Lambda memory metrics command")
