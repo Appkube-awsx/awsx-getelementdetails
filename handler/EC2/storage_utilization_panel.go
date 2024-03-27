@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
@@ -141,10 +142,37 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData["EBS2VolumeUtilization"] = ebs2VolumeUsage
 
 	// Calculate average of all three volumes
+	rootVolumeAvg := calculateAverage(rootVolumeUsage)
+	ebs1VolumeAvg := calculateAverage(ebs1VolumeUsage) / 2 // Divide by 2
+	ebs2VolumeAvg := calculateAverage(ebs2VolumeUsage) / 2 // Divide by 2
+
+	// Format average utilizations to have two decimal places
+	rootVolumeAvgStr := strconv.FormatFloat(rootVolumeAvg, 'f', 2, 64)
+	ebs1VolumeAvgStr := strconv.FormatFloat(ebs1VolumeAvg, 'f', 2, 64)
+	ebs2VolumeAvgStr := strconv.FormatFloat(ebs2VolumeAvg, 'f', 2, 64)
+
+	// Convert formatted strings back to float64
+	rootVolumeAvgFloat, err := strconv.ParseFloat(rootVolumeAvgStr, 64)
+	if err != nil {
+		log.Println("Error converting string to float64: ", err)
+		return "", nil, err
+	}
+	ebs1VolumeAvgFloat, err := strconv.ParseFloat(ebs1VolumeAvgStr, 64)
+	if err != nil {
+		log.Println("Error converting string to float64: ", err)
+		return "", nil, err
+	}
+	ebs2VolumeAvgFloat, err := strconv.ParseFloat(ebs2VolumeAvgStr, 64)
+	if err != nil {
+		log.Println("Error converting string to float64: ", err)
+		return "", nil, err
+	}
+
+	// Create JSON output
 	averageStorageResult := StorageResult{
-		RootVolumeUtilization: calculateAverage(rootVolumeUsage),
-		EBS1VolumeUtilization: calculateAverage(ebs1VolumeUsage) / 2, // Divide by 2
-		EBS2VolumeUtilization: calculateAverage(ebs2VolumeUsage) / 2, // Divide by 2
+		RootVolumeUtilization: rootVolumeAvgFloat,
+		EBS1VolumeUtilization: ebs1VolumeAvgFloat,
+		EBS2VolumeUtilization: ebs2VolumeAvgFloat,
 	}
 
 	jsonString, err := json.Marshal(averageStorageResult)
@@ -155,6 +183,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 
 	return string(jsonString), cloudwatchMetricData, nil
 }
+
 
 func GetStorageUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
