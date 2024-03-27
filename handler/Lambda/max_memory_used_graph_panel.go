@@ -42,7 +42,7 @@ var AwsxLambdaMaxMemoryGraphCmd = &cobra.Command{
 			return
 		}
 
-		jsonResp, cloudwatchMetricResp, err := GetLambdaMaxMemoryGraphData(cmd, clientAuth)
+		jsonResp, cloudwatchMetricResp, err := GetLambdaMaxMemoryGraphData(cmd, clientAuth, nil)
 		if err != nil {
 			log.Println("Error getting lambda max memory used data: ", err)
 			return
@@ -56,7 +56,7 @@ var AwsxLambdaMaxMemoryGraphCmd = &cobra.Command{
 	},
 }
 
-func GetLambdaMaxMemoryGraphData(cmd *cobra.Command, clientAuth *model.Auth) (string, *map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaMaxMemoryGraphData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, *map[string]*cloudwatch.GetMetricDataOutput, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -91,7 +91,7 @@ func GetLambdaMaxMemoryGraphData(cmd *cobra.Command, clientAuth *model.Auth) (st
 	fmt.Println("getting function", functionName)
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := GetLambdaMaxMemoryGraphMetricData(clientAuth, startTime, endTime, functionName)
+	rawData, err := GetLambdaMaxMemoryGraphMetricData(clientAuth, startTime, endTime, cloudWatchClient, functionName)
 	if err != nil {
 		log.Printf("Error in getting lambda memory metric data for function %s: %v\n", functionName, err)
 		return "", nil, err
@@ -109,7 +109,7 @@ func GetLambdaMaxMemoryGraphData(cmd *cobra.Command, clientAuth *model.Auth) (st
 	return string(jsonString), &cloudwatchMetricData, nil
 }
 
-func GetLambdaMaxMemoryGraphMetricData(clientAuth *model.Auth, startTime, endTime *time.Time, functionName string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaMaxMemoryGraphMetricData(clientAuth *model.Auth, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch, functionName string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -134,7 +134,9 @@ func GetLambdaMaxMemoryGraphMetricData(clientAuth *model.Auth, startTime, endTim
 		},
 	}
 
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err

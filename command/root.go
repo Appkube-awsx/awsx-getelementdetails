@@ -1105,7 +1105,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "used_and_unused_memory_data_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaUnusedMemoryPanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaUnusedMemoryPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda used and unused memory data: ", err)
 					return
@@ -1116,9 +1116,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "max_memory_used_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMaxMemoryData(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMaxMemoryData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda max memory used data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "max_memory_used_graph_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMaxMemoryGraphData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda max memory used graph data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1130,17 +1141,6 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaNumberOfCallsPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda max memory used data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
-			} else if queryName == "max_memory_used_graph_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMaxMemoryGraphData(cmd, clientAuth)
-				if err != nil {
-					log.Println("Error getting lambda max memory used graph data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1399,10 +1399,21 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "write_iopslog_volume_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSWriteIOPSLogVolumePanel(cmd, clientAuth, nil)
+			} else if queryName == "write_iops_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSWriteIOPSPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting write iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "read_iops_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSReadIOPSPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
 					return
 				}
 				if responseType == "frame" {

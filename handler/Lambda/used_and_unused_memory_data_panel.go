@@ -39,7 +39,7 @@ var LambdaMemoryMetricsCmd = &cobra.Command{
 			return
 		}
 
-		jsonResp, cloudwatchMetricResp, err := GetLambdaUnusedMemoryPanel(cmd, clientAuth)
+		jsonResp, cloudwatchMetricResp, err := GetLambdaUnusedMemoryPanel(cmd, clientAuth, nil)
 		if err != nil {
 			log.Fatalf("Error getting Lambda memory metric data: %v", err)
 		}
@@ -52,7 +52,7 @@ var LambdaMemoryMetricsCmd = &cobra.Command{
 	},
 }
 
-func GetLambdaUnusedMemoryPanel(cmd *cobra.Command, clientAuth *model.Auth) (string, *map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaUnusedMemoryPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, *map[string]*cloudwatch.GetMetricDataOutput, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 	functionName := "List-Org-Github"
@@ -65,7 +65,7 @@ func GetLambdaUnusedMemoryPanel(cmd *cobra.Command, clientAuth *model.Auth) (str
 
 	cloudwatchMetricData := make(map[string]*cloudwatch.GetMetricDataOutput)
 
-	rawData, err := GetLambdaMemoryMetricData(clientAuth, startTime, endTime, functionName)
+	rawData, err := GetLambdaMemoryMetricData(clientAuth, startTime, endTime, cloudWatchClient, functionName)
 	if err != nil {
 		return "", nil, err
 	}
@@ -80,7 +80,7 @@ func GetLambdaUnusedMemoryPanel(cmd *cobra.Command, clientAuth *model.Auth) (str
 	return string(jsonString), &cloudwatchMetricData, nil
 }
 
-func GetLambdaMemoryMetricData(clientAuth *model.Auth, startTime, endTime time.Time, functionName string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaMemoryMetricData(clientAuth *model.Auth, startTime, endTime time.Time, cloudWatchClient *cloudwatch.CloudWatch, functionName string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		StartTime: &startTime,
 		EndTime:   &endTime,
@@ -122,7 +122,9 @@ func GetLambdaMemoryMetricData(clientAuth *model.Auth, startTime, endTime time.T
 		},
 	}
 
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+	cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err
