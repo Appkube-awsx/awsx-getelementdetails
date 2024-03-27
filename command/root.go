@@ -440,7 +440,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "latency_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				jsonResp, cloudwatchMetricResp := EC2.LatencyPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := EC2.GetLatencyPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting latency metric data: ", err)
 					return
