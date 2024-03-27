@@ -1344,6 +1344,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "storage_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSStorageUtilizationPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting credit usage: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_credit_balance_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUCreditBalancePanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -1659,6 +1670,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadNonCPUCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadCPUCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSStorageUtilizationCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
