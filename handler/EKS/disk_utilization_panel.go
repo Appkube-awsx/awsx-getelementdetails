@@ -115,14 +115,14 @@ func GetDiskUtilizationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		log.Println("Error in getting raw size data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawSizeData"] = rawSizeData
+	cloudwatchMetricData["DiskUtilization"] = rawSizeData
 
 	rawUtilizationData, err := GetDiskUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw utilization data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawUtilizationData"] = rawUtilizationData
+	cloudwatchMetricData["DiskUtilizationData"] = rawUtilizationData
 
 	result := processDiskUtilizationData(rawSizeData, rawUtilizationData)
 
