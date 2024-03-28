@@ -418,19 +418,15 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "network_traffic_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				_, _, totalNetworkTraffic, err := EC2.GetNetworkTrafficPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err, _ := EC2.GetNetworkTrafficPanel(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting network in bytes metrics data: ", err)
+					log.Println("Error getting network inbound metric data: ", err)
 					return
 				}
-
 				if responseType == "frame" {
-					// Print only the total network traffic value
-					fmt.Printf("{\"NetworkTraffic\": %.2f}\n", totalNetworkTraffic)
+					fmt.Println(cloudwatchMetricResp)
 				} else {
-					// Print the output in JSON format
-					formattedTraffic := fmt.Sprintf("%.2f", totalNetworkTraffic)
-					fmt.Printf("{\"NetworkTraffic\": %.2f}\n", formattedTraffic)
+					fmt.Println(jsonResp)
 				}
 			} else if queryName == "network_outbound_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkOutBoundPanel(cmd, clientAuth, nil)
@@ -443,20 +439,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "latency_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetLatencyPanel(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting latency metric data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
-				// } else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				// 	cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
-				// 	fmt.Println(cloudwatchMetric)
+			// } else if queryName == "latency_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+			// 	jsonResp, cloudwatchMetricResp := EC2.LatencyPanel(cmd, clientAuth, nil)
+			// 	if err != nil {
+			// 		log.Println("Error getting latency metric data: ", err)
+			// 		return
+			// 	}
+			// 	if responseType == "frame" {
+			// 		fmt.Println(cloudwatchMetricResp)
+			// 	} else {
+			// 		fmt.Println(jsonResp)
+			// 	}
+			// 	// } else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+			// 	// 	cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
+			// 	// 	fmt.Println(cloudwatchMetric)
 
 			} else if queryName == "alert_and_notification_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, err := EC2.GetAlertsAndNotificationsPanel(cmd, clientAuth)
@@ -816,17 +812,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 
-			} else if queryName == "data_transfer_rate_panel" && elementType == "EKS" {
-				jsonResp, cloudwatchMetricResp, err := EKS.GetEksDataTransferRatePanel(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting data_transfer_rate_panel: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
+				// } else if queryName == "data_transfer_rate_panel" && elementType == "EKS" {
+				// 	jsonResp, cloudwatchMetricResp, err := EKS.GetEksDataTransferRatePanel(cmd, clientAuth, nil)
+				// 	if err != nil {
+				// 		log.Println("Error getting data_transfer_rate_panel: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
 			} else if queryName == "cpu_utilization_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetECScpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -1042,6 +1038,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "functions_by_region_panel" && elementType == "Lambda" {
+				log.Printf("ClientAuth: %+v\n", clientAuth)
+				jsonResp, cloudwatchMetricResp, totalFunctions,_ := Lambda.GetLambdaFunctionsByRegion(clientAuth)
+				if err != nil {
+					log.Println("Error total functions panel data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+					fmt.Println("Function By Region:", totalFunctions)
+				} else {
+					fmt.Println(jsonResp)
+					fmt.Println("Function By Region:", totalFunctions)
+				}
 			} else if queryName == "idle_functions_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaIdleFunctionData(clientAuth, nil)
 				if err != nil {
@@ -1108,6 +1118,80 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "used_and_unused_memory_data_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaUnusedMemoryPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda used and unused memory data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "max_memory_used_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMaxMemoryData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda max memory used data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "max_memory_used_graph_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaMaxMemoryGraphData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda max memory used graph data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "number_of_calls_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaNumberOfCallsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda max memory used data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cold_start_duration_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaColdStartData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda max memory used graph data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "execution_time_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaExecutionTimePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda max memory used graph data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "invocation_trend_panel" && elementType == "Lambda" {
+				jsonResp, err := Lambda.GetInvocationTrendData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda max memory used graph data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+
 			} else if queryName == "failure_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaFailureData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1120,17 +1204,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "error_messages_count_panel" && elementType == "Lambda" {
-				Lambda.GetLambdaErrorMessageCountPanel(cmd, clientAuth, nil)
+				jsonResp, err := Lambda.GetErrorMessageCountData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda functions  data: ", err)
 					return
 				}
+				fmt.Println(jsonResp)
 			} else if queryName == "throttling_trends_panel" && elementType == "Lambda" {
-				Lambda.GetThrottlingTrendsPanel(cmd, clientAuth, nil)
+				jsonResp, err := Lambda.GetThrottlingTrendsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda functions  data: ", err)
 					return
 				}
+				fmt.Println(jsonResp)
 			} else if queryName == "function_panel" && elementType == "Lambda" {
 				Lambda.GetFunctionPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -1149,7 +1234,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				//log.Println("Error getting lambda functions  data: ", err)
 				//return
 				//}
-			} else if queryName == "success_and_failure_function_panel" && elementType == "Lambda" {
+			} else if queryName == "success_and_failed_function_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailureData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting success and failure function panel data: ", err)
@@ -1215,6 +1300,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "failed_event_details" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, err := ApiGateway.GetFailedEventData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting total api data: ", err)
+					return
+				}
+					fmt.Println(jsonResp)
+				
 			} else if queryName == "4xx_errors_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApi4xxErrorData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1271,6 +1364,105 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "database_connections_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetDatabaseConnectionsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting database connections: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "index_size_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetIndexSizePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting index size: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_credit_usage_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUCreditUsagePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting credit usage: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "storage_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSStorageUtilizationPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting credit usage: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_credit_balance_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUCreditBalancePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting credit balance: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_surplus_credit_balance_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUSurplusCreditBalance(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting surplus credit balance: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_surplus_credits_charged_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUSurplusCreditCharged(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting surplus credits charged: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "write_iops_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSWriteIOPSPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting write iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "read_iops_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSReadIOPSPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "network_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSNetworkUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -1286,6 +1478,53 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSNetworkTrafficPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "instance_health_check_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				instanceInfo, err := RDS.GetDBInstanceHealthCheck()
+				if err != nil {
+					return
+				}
+				fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-15s %-5s %-25s %-25s\n",
+					"Instance ID", "Instance Type", "Availability Zone", "State", "System Checks Status",
+					"Instance Checks Status", "Alarm", "System Check Time", "Instance Check Time")
+
+				// Print instance information
+				for _, info := range instanceInfo {
+					fmt.Printf("%-20s %-15s %-15s %-15s %-20s %-15s %-5t %-25s %-25s\n",
+						info.InstanceID, info.InstanceType, info.AvailabilityZone, info.InstanceStatus,
+						info.SystemChecks, info.InstanceChecks, info.SystemCheck, info.InstanceCheck)
+				}
+			} else if queryName == "cpu_utilization_graph_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSCPUUtilizationGraphPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network utilization graph: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "alert_and_notification_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, err := RDS.GetAlertsAndNotificationsPanell(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting network inbound metric data: ", err)
+					return
+				}
+				// if responseType == "frame" {
+				// 	fmt.Println(cloudwatchMetricResp)
+				// } else {
+				fmt.Println(jsonResp)
+			} else if queryName == "iops_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSIopsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting iops data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -1315,6 +1554,117 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "disk_queue_depth_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDiskQueueDepthPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting disk queue depth data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "replication_slot_disk_usage" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSReplicationSlotDiskUsagePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iopslogvolume data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_receive_throughput_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSNetworkReceiveThroughputPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network receive throughput data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_transmit_throughput_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSNetworkTransmitThroughputPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network receive throughput data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "database_workload_overview_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting database workload overview data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "db_load_non_cpu_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadNonCPU(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting database non-cpu load data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "db_load_cpu_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadCPU(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting database cpu load data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "latency_analysis_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSLatencyAnalysisData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting latency analysis data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "transaction_logs_generation_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetTransactionLogsGenerationPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "transaction_logs_disk_usage_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetTransactionLogsDiskUsagePanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+
 			} else {
 				fmt.Println("query not found")
 			}
@@ -1354,7 +1704,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUtilizationGraphsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2MemoryUtilizationGraphCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.ListErrorsCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkTrafficCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2NetworkTrafficCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2DiskAvailableCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkInboundCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutboundCmd)
@@ -1405,11 +1755,22 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaSuccessFailureCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaNumberOfCallsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSCpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSFreeStorageSpaceCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSFreeableMemoryCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDiskQueueDepthCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSReplicationSlotDiskUsageCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkReceiveThroughputCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTransmitThroughputCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadNonCPUCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSDBLoadCPUCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSStorageUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSLatencyAnalysisCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")

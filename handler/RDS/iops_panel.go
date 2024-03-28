@@ -1,4 +1,4 @@
-package EC2
+package RDS
 
 import (
 	"encoding/json"
@@ -15,21 +15,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type NetworkTraffic struct {
-	Inbound []struct {
+type IOPS struct {
+	WriteIOPS []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"network_inbound"`
-	Outbound []struct {
+	} `json:"read_iops"`
+	ReadIOPS []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"network_outbound"`
+	} `json:"write_iops"`
 }
 
-var AwsxEC2NetworkTrafficCmd = &cobra.Command{
-	Use:   "network_traffic_panel",
-	Short: "get network traffic metrics data",
-	Long:  `command to get network traffic metrics data`,
+var AwsxRDSIopsCmd = &cobra.Command{
+	Use:   "iops_panel",
+	Short: "get iops metrics data",
+	Long:  `command to get iops metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -44,9 +44,9 @@ var AwsxEC2NetworkTrafficCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err, _ := GetNetworkTrafficPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err, _ := GetRDSIopsPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting network traffic data: ", err)
+				log.Println("Error getting iops data: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -60,7 +60,7 @@ var AwsxEC2NetworkTrafficCmd = &cobra.Command{
 	},
 }
 
-func GetNetworkTrafficPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetRDSIopsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -108,22 +108,22 @@ func GetNetworkTrafficPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data for inbound and outbound metrics separately
-	rawInboundData, err := GetNetworkMetricData(clientAuth, elementType, startTime, endTime, "NetworkIn", cloudWatchClient)
+	rawReadIopsData, err := GetIopsMetricData(clientAuth, elementType, startTime, endTime, "ReadIOPS", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting network inbound data: ", err)
 		return "", "", nil, err
 	}
-	cloudwatchMetricData["Inbound Traffic"] = rawInboundData
+	cloudwatchMetricData["Inbound Traffic"] = rawReadIopsData
 
-	rawOutboundData, err := GetNetworkMetricData(clientAuth, elementType, startTime, endTime, "NetworkOut", cloudWatchClient)
+	rawWriteIopsData, err := GetIopsMetricData(clientAuth, elementType, startTime, endTime, "WriteIOPS", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting network outbound data: ", err)
 		return "", "", nil, err
 	}
-	cloudwatchMetricData["Outbound Traffic"] = rawOutboundData
+	cloudwatchMetricData["Outbound Traffic"] = rawWriteIopsData
 
 	// Process raw inbound data
-	resultInbound := processedTheRawData(rawInboundData)
+	resultInbound := processedTheRawData(rawReadIopsData)
 	jsonInbound, err := json.Marshal(resultInbound)
 	if err != nil {
 		log.Println("Error in marshalling json for inbound data: ", err)
@@ -131,7 +131,7 @@ func GetNetworkTrafficPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	}
 
 	// Process raw outbound data
-	resultOutbound := processedTheRawData(rawOutboundData)
+	resultOutbound := processedTheRawData(rawWriteIopsData)
 	jsonOutbound, err := json.Marshal(resultOutbound)
 	if err != nil {
 		log.Println("Error in marshalling json for outbound data: ", err)
@@ -140,7 +140,7 @@ func GetNetworkTrafficPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	return string(jsonInbound), string(jsonOutbound), cloudwatchMetricData, nil
 }
 
-func GetNetworkMetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetIopsMetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace AWS/RDS from %v to %v", elementType, startTime, endTime)
 
 	input := &cloudwatch.GetMetricDataInput{
@@ -153,7 +153,7 @@ func GetNetworkMetricData(clientAuth *model.Auth, elementType string, startTime,
 					Metric: &cloudwatch.Metric{
 						Dimensions: []*cloudwatch.Dimension{},
 						MetricName: aws.String(metricName),
-						Namespace:  aws.String("AWS/EC2"),
+						Namespace:  aws.String("AWS/RDS"),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String("Sum"),
@@ -185,31 +185,30 @@ func processedTheRawData(result *cloudwatch.GetMetricDataOutput) []struct {
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
 		value := *result.MetricDataResults[0].Values[i]
 		// Convert bytes per second to megabytes per second
-		valueMBPS := value / (1024 * 1024)
 		processedData = append(processedData, struct {
 			Timestamp time.Time
 			Value     float64
-		}{Timestamp: *timestamp, Value: valueMBPS})
+		}{Timestamp: *timestamp, Value: value})
 	}
 
 	return processedData
 }
 
 func init() {
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("query", "", "query")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEC2NetworkTrafficCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxRDSIopsCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxRDSIopsCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxRDSIopsCmd.PersistentFlags().String("query", "", "query")
+	AwsxRDSIopsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxRDSIopsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxRDSIopsCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxRDSIopsCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxRDSIopsCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxRDSIopsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxRDSIopsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxRDSIopsCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxRDSIopsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxRDSIopsCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxRDSIopsCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxRDSIopsCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxRDSIopsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

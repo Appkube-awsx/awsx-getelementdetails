@@ -2,25 +2,26 @@
 
 - [awsx-getelementdetails](#awsx-getelementdetails)
 - [ui-analysis-and-listing-methods](#ui-analysis-and-listing-methods)
-   - [cost_panel](#cost-panel)
-   - [total_function_panel](#total-function-panel)
-   - [idle_function_panel](#idle-function-panel)
-   - [error_rate_panel](#error-rate-panel)
-   - [throttles_fun_panel](#throttles-fun-panel)
-   - [total_function_cost_panel](#total-function-cost-panel)
-   - [top_errors_products_panel](#top-errors-products-panel)
-   - [top_used_function_panel](#top-used-function-panel)
-   - [function_panel](#function-panel)
-   - [errors_panel](#errors-panel)
-   - [throttles_panel](#throttles-panel)
-   - [latency_panel](#latency-panel)
-   - [trends_panel](#trends-panel)
-   - [failure_function_panel](#failure-function-panel)
-   - [cpu_used_panel](#cpu-used-panel)
-   - [net_received_panel](#net-received-panel)
-  - [request_panel](#request-panel)
-  - [memory_used_panel](#memory-used-panel)
-  - [top_failure_function_panel](#top-failure-function-panel)
+   - [execution_time_panel](#execution-time-panel)
+   - [cold_start_duration_panel](#cold-start-duration-panel)
+   - [throttling_panel](#throttling-panel)
+   - [concurrency_panel](#concurrency-panel)
+   - [max_memory_used_graph_panel](#max-memory-used-graph-panel)
+   - [max_memory_used_panel](#max-memory-used-panel)
+   - [avg_unused_and_used_allocated_memory_panel](#avg-unused-and-used-allocated-memory-panel)
+   - [idle_functions_by_products_panel](#idle-functions-by-products-panel)
+   - [idle_functions_by_services_panel](#idle-functions-by-services-panel)
+   - [idle_functions_by_region_panel](#idle-functions-by-region-panel)
+   - [dead_letter_errors_trends_panel](#dead-letter-errors-trends-panel)
+   - [error_and_warning_events_panel](#error-and-warning-events-panel)
+   - [throttling_trends_panel](#throttling-trends-panel)
+   - [success_and_failed_function_panel](#success-and-failed-function-panel)
+   - [error_messages_count_panel](#error-messages-count-panel)
+   - [number_of_calls_panel](#number-of-calls-panel)
+  - [invocation_trend_panel](#invocation-trend-panel)
+  - [location_of_callers_panel](#location-of-callers-panel)
+  - [function_caller_details_panel](#function-caller-details-panel)
+  - [number_of_threats_and_severity_level_panel](#number-of-threats_and_severity_level_panel)
   
 
 
@@ -30,62 +31,63 @@ It implements the awsx plugin getElementDetails
  
 # ui analysis and listing methods
 ![Alt text](lambda_screen1.png)
-1. cost_panel
-2. total_function_panel
-3. idle_function_panel
-4. error_rate_panel
-5. throttles_fun_panel
-6. total_function_cost_panel
-7. top_errors_products_panel
-8. top_used_function_panel
-9.  function_panel
-10. error_panel
-11. throttles_panel
-12. latency_panel
-13. trends_panel
-14. failure_function_panel
-15. cpu_used_panel
-16. net_received_panel
-17. request_panel
-18. memory_used_panel
-19. top_failure_function_panel
+1. execution_time_panel
+2. cold_start_duration_panel
+3. throttling_panel
+4. concurrency_panel
+5. max_memory_used_graph_panel
+6. max_memory_used_panel
+7. avg_unused_and_used_allocated_memory_panel
+8. idle_functions_by_products_panel
+9.  idle_functions_by_services_panel
+10. idle_functions_by_region_panel
+11. dead_letter_errors_trends_panel
+12. error_and_warning_events_panel
+13. throttling_trends_panel
+14. success_and_failed_function_panel
+15. error_messages_count_panel
+16. number_of_calls_panel
+17. invocation_trend_panel
+18. location_of_callers_panel
+19. function_caller_details_panel
+20. number_of_threats_and_severity_level_panel
 
 
 _
 # ui-analysys-and listing-methods
-## cost panel
+## execution time panel
 
-![Alt text](lambda_screen.png)
-1. cost_panel
+![Alt text](lambda_screen1.png)
+1. execution_time_panel
 
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="cost_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="execution_time_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
  
 
 **called from maincommand**
 
-awsx --vaultUrl=<afreenxxxx1309> elementId=9387 --query="cost_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --vaultUrl=<afreenxxxx1309> elementId=9387 --query="execution_time_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&&query=cost_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&&query=execution_time_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-1 Cost data 
+1 Execution Time
 
-	$43,833
+	-output in tablular  form
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Cost panel - Write a custom cli for cost data , where we shall write a program for finding actual cost.
+- execution time panel - Write a custom cli for execution time data , where we shall write a program for finding actual execution time.
 
  **Pseudo Code:**  
  
@@ -93,232 +95,152 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementI
 
 
 # ui-analysys-and listing-methods
-## total function panel
+## cold start duration panel
 
-![Alt text](lambda_screen.png)
+![Alt text](lambda_screen1.png)
 
-2. total_function_panel
+2. cold_start_duration_panel
 
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="total_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="cold_start_duration_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="total_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="cold_start_duration_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=total_function_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=cold_start_duration_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-2.  total functions
+2.  cold start duration 
 
-   5,40,579
+   -graph form
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- total function  - Write a custom function  for lambda, where we shall write a program to find total function.
+- cold start duration - Write a custom function  for lambda, where we shall write a program to find timeserires data for cold start duration.
 
  **Pseudo Code:** 
 
  
  
  # ui-analysys-and listing-methods
- ## idle function panel
+ ## throttling panel
 
-![Alt text](lambda_screen.png)
-3. idle_function_panel 
+![Alt text](lambda_screen1.png)
+3. throttling_panel 
 
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="idle_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="throttling_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="idle_function_panel" --elementType="Lambda" --responseType=frame --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="throttling_panel" --elementType="Lambda" --responseType=frame --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elemetId=9387&elementType=Lambda&query=idle_function_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elemetId=9387&elementType=Lambda&query=throttling_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-3.  Idle Function
+3.  throttling panel
 
-   12,06,777
+   -graph form
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- idle function panel - Write a custom cli for idle function, where we shall write a program for count the functions.
+- throttling panel - Write a custom cli for throttling panel, where we shall write a program for finding timeseries data for throttling panel.
 
  **Pseudo Code:**  
  
  
 
  # ui-analysys-and listing-methods
- ## error rate panel
+ ## concurrency panel
 
-![Alt text](lambda_screen.png)
-4. error_rate_panel 
+![Alt text](lambda_screen1.png)
+4. concurrency_panel
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="error_rate_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="concurrency_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387--query="error_rate_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387--query="concurrency_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elemetId=9387&elementType=Lambda&query=error_rate_panel&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elemetId=9387&elementType=Lambda&query=concurrency_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-4.Error Rate
+4.concurrency_panel
 
-    $43,833
-
+    -graph form
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Error Rate panel - Write a custom cli for error rate , where we shall write a program for error rate.
+- concurrency panel - Write a custom cli for concurrency panel , where we shall write a program for finding timeseries data for concurrency.
 
 
  **Pseudo Code:**
  
  
- # ui-analysys-and listing-methods
- ## throttles fun panel
+# ui-analysys-and listing-methods
+## max memory used graph panel
 
-![Alt text](lambda_screen.png)
-5. throttles_fun_panel
+![Alt text](lambda_screen1.png)
+5. max_memory_used_graph_panel
 
 
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="throttles_fun_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="max_memory_used_graph_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387--query="throttles_fun_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387--query="max_memory_used_graph_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=throttles_fun_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=max_memory_used_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-5. throttles_fun_panel
-
-	10,365
-
-
-
-**Algorithm/ Pseudo Code**
-
-**Algorithm:** 
-- throttles_fun_panel  -Write a custom cli for throttles_fun_panel , where we shall write a program for finding throttles_fun_panel.
-
- **Pseudo Code:** 
-
-
- 
- # ui-analysys-and listing-methods
-## total function cost panel
-
-![Alt text](lambda_screen.png)
-6. total_function_cost_panel
-
-
-**called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="total_function_cost_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
-
-**called from maincommand**
-
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="total_function_cost_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
-
-
-**Called from API**
-
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elemntId=9387&elementType=Lambda&query=total_function_cost_panel&responseType=json
-
-
-**Desired Output in json / graph format:**
-6. total_function_cost_panel
-
-	5,40,579
-
-
-**Algorithm/ Pseudo Code**
-
-**Algorithm:** 
-- total_function_cost_panel  -Write a custom cli for total_function_cost_panel , where we shall write a program for finding total function cost panel.
-
-
- **Pseudo Code:** 
-
-
- 
- # ui-analysys-and listing-methods
-## top_errors_products_panel
-
-![Alt text](lambda_screen.png)
-
-7. top_errors_products_panel
-
-
-**called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="top_errors_products_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
- 
-
-**called from maincommand**
-
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="top_errors_products_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
-
-**Called from API**
-
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=top_errors_products_panel&responseType=json
-
-
-**Desired Output in json / graph format:**
-7. top_errors_products_panel
+5. max memory used graph 
 
 	-graph form
 
@@ -327,479 +249,601 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementI
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- top_errors_products_panel-Write a custom cli for top errors products panel, where we shall write a program for finding top errors of products.
+- max_memory_used_graph_panel  -Write a custom cli for max memory used graph , where we shall write a program for finding max memory used graph panel.
 
  **Pseudo Code:** 
- 
- # ui-analysys-and listing-methods
-## top used function panel
 
+
+ 
+# ui-analysys-and listing-methods
+## max memory used panel
 
 ![Alt text](lambda_screen1.png)
-8. top_used_function_panel
-
+6. max_memory_used_panel
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="top_used_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="max_memory_used_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
- 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="top_used_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="max_memory_used_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=top_used_function_pan&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elemntId=9387&elementType=Lambda&query=max_memory_used_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-8. Top used function panel
+6. max_memory_used_panel
 
-	-
+	--tabular form
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- max memory used panel  -Write a custom cli for max memory used panel , where we shall write a program for finding max memory used panel.
+
+
+ **Pseudo Code:** 
+
+
+ 
+# ui-analysys-and listing-methods
+## avg unused and used allocated memory panel
+
+![Alt text](lambda_screen1.png)
+
+7. avg_unused_and_used_allocated_memory_panel
+
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="avg_unused_and_used_allocated_memory_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+ 
+
+**called from maincommand**
+
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="avg_unused_and_used_allocated_memory_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=avg_unused_and_used_allocated_memory_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+
+
+**Desired Output in json / graph format:**
+7. avg_unused_and_used_allocated_memory_panel
+
+	-tabular form
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Top used function   -Write a custom cli for top used functions  panel, where we shall write a program for finding top used functions.
+- avg_unused_and_used_allocated_memory_panel-Write a custom cli for avg unused and used allocated memory panel, where we shall write a program for finding avg of used and unused allocated memory.
 
  **Pseudo Code:** 
  
- 
- # ui-analysys-and listing-methods
-##  function panel
+# ui-analysys-and listing-methods
+## idle functions by products panel
 
-![Alt text](lambda_screen1.png)
-9. function_panel
+
+![Alt text](lambda_screen2.png)
+8. idle_functions_by_products_panel
 
 
 
 **called from subcommand**
 
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="idle_functions_by_products_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="idle_functions_by_products_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&7&queryfunction_panel&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=idle_functions_by_products_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z 
 
 
 **Desired Output in json / graph format:**
-9. function 
+8. idle functions by products
 
-	1,86,875
+	-Product1     1,94,661(poduct name and their count)
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- function panel  -Write a custom cli for functions  panel, where we shall write a program for finding  functions.
+- idle functions by products  -Write a custom cli for idle functions by products panel, where we shall write a program for finding idle functions by products.
 
  **Pseudo Code:** 
  
  
+# ui-analysys-and listing-methods
+##  idle_functions_by_services_panel
 
- # ui-analysys-and listing-methods
+![Alt text](lambda_screen2.png)
+9. idle_functions_by_services_panel
 
-##  errors panel
-
-![Alt text](lambda_screen1.png)
-10. errors_panel
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="errors_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="idle_functions_by_services_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="errors_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="idle_functions_by_services_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=errors_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&7&query=idle_functions_by_services_panel&responseType=jsonquery=idle_functions_by_products_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-10. errors panel
+9. idle_functions_by_services_panel
 
-	2,875
+	-Service1     1,94,661(service name and their count)
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- errors panel  -Write a custom cli for errors  panel, where we shall write a program for finding  errors.
+- idle_functions_by_services_panel  -Write a custom cli for idle functions by services panel, where we shall write a program for finding  idle functions by services panels.
 
  **Pseudo Code:** 
  
- # ui-analysys-and listing-methods
- ## throttles panel
-![Alt text](lambda_screen1.png)
-11. throttles_panel
+ 
+
+# ui-analysys-and listing-methods
+
+##  idle functions by region panel
+
+![Alt text](lambda_screen2.png)
+10. idle_functions_by_region_panel
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="throttles_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="idle_functions_by_region_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="throttles_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="idle_functions_by_region_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=throttles_panel&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=idle_functions_by_region_panel&responseType=json&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-11. throttles_panel
+10. idle_functions_by_region_panel
 
-	285
+	---US East(virginia)     1,94,661(region and their count)
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Throttles panel  -Write a custom cli for throttles  panel, where we shall write a program for finding  throttles.
+- -idle functions by region panel  -Write a custom cli foridle functions by region panel, where we shall write a program for finding  idle functions by region panel.
 
  **Pseudo Code:** 
  
- 
- # ui-analysys-and listing-methods
+# ui-analysys-and listing-methods
+## dead letter errors trends panel
 
-##  latency_panel
-
-![Alt text](lambda_screen1.png)
-
-12. latency_panel
-
+![Alt text](lambda_screen3.png)
+11. dead_letter_errors_trends_panel
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="latency_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="dead_letter_errors_trends_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+ 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="latency_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="dead_letter_errors_trends_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=latency_panel&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=dead_letter_errors_trends_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-12. latency panel
+11. dead_letter_errors_trends_panel
 
-	365
+
+	--graph form
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- Latency panel  -Write a custom cli for latency  panel, where we shall write a program for finding  latency.
+- idle functions by region panel  -Write a custom cli for idle functions by region panel, where we shall write a program for finding  idle functions by region panel.
+
+ **Pseudo Code:** 
+ 
+ 
+# ui-analysys-and listing-methods
+##  error and warning events panel
+
+![Alt text](lambda_screen3.png)
+
+12. error_and_warning_events_panel
+
+
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="error_and_warning_events_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**called from maincommand**
+
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="error_and_warning_events_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=error_and_warning_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z 
+
+
+**Desired Output in json / graph format:**
+12. error_and_warning_events_panel
+
+	-graph form
+
+
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- error and warning events panel  -Write a custom cli for error and warning events panel, where we shall write a program for finding timeseries data for  error and warning events panel.
 
  **Pseudo Code:**  
  
  
  
- # ui-analysys-and listing-methods
-##  trends panel
+# ui-analysys-and listing-methods
+##  throttling trends panel
 
-![Alt text](ec2_screen3.png)
-13. trends_panel
+![Alt text](lambda_screen3.png)
+13. throttling_trends_panel
 
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="trends_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="throttling_trends_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="trends_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="throttling_trends_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=trends_panel&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=throttling_trends_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-13.Trends panel
+13.throttling_trends_panel
 
-	123
+	-graph form
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- trends panel  -Write a custom cli for latency  panel, where we shall write a program for finding  latency.
+- throttling trends panel  -Write a custom cli for throttling trends panel, where we shall write a program for finding  throttling trends panel.
 
  **Pseudo Code:**  
  
 
- # ui-analysys-and listing-methods
-##  failure function panel
+# ui-analysys-and listing-methods
+##  success and failed function panel
 
-![Alt text](lambda_screen1.png)
-14. failure_function_panel
+![Alt text](lambda_screen3.png)
+14. success_and_failed_function_panel
 
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="failure_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="success_and_failed_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="failure_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="success_and_failed_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=failure_function_panel&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=success_and_failed_function_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
 
 
 **Desired Output in json / graph format:**
-14. failure function panel
+14. success and failed function
 
-    15
+    -success&Failed
 
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- failure function panel -Write a custom cli for failure function panel  panel, where we shall write a program for finding  failure function panel.
+- success and failed function -Write a custom cli for success and failed function panel, where we shall write a program for finding  success and failed function.
 
  **Pseudo Code:**  
  
  
- # ui-analysys-and listing-methods
-##  cpu used panel
+# ui-analysys-and listing-methods
+##  error messages count panel
 
-![Alt text](lambda_screen1.png)
+![Alt text](lambda_screen3.png)
 
-15. cpu_used_panel
+15. error_messages_count_panel
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="cpu_used_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="error_messages_count_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="cpu_used_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="error_messages_count_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=cpu_used_panel&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=error_messages_count_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z 
 
 
 
 **Desired Output in json / graph format:**
-15. cpu_used panel
+15. error messages count
 
-	-cpu_used_panel
+	-graph form
 	
 
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- cpu used panel  -Write a custom cli for  cpu used panel, where we shall write a program for finding  cpu used panel.
+- error messages count  -Write a custom cli for  error messages count panel, where we shall write a program for finding  error messages count.
 
  **Pseudo Code:**  
  
- # ui-analysys-and listing-methods
-##  net received panel
+# ui-analysys-and listing-methods
+##  number of calls panel
 
-![Alt text](lambda_screen1.png)
-16. net_received_panel
+![Alt text](lambda_screen4.png)
+16. number_of_calls_panel
 
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="net_received_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="number_of_calls_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
  
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="net_received_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="number_of_calls_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=net_received_panel&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=number_of_calls_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z  
 
 
 
 **Desired Output in json / graph format:**
 16. net received panel  
+
+-graph form
 	  
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- net_received_panel -Write a custom cli for net received panel, where we shall write a program for finding  net received panel.
+- number of calls panel -Write a custom cli for number of calls panel, where we shall write a program for finding timeseries data for  number of calls panel.
 
 
  **Pseudo Code:**  
  
  
 # ui-analysys-and listing-methods
-##  request panel
+##  invocation trend panel
 
-![Alt text](lambda_screen1.png)
-17. request_panel
+![Alt text](lambda_screen4.png)
+17. invocation_trend_panel
 
 
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="request_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="invocation_trend_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="request_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="invocation_trend_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=request_panel&responseType=json 
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=invocation_trend_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z  
 
 
 
 **Desired Output in json / graph format:**
-17. request_panel
+17. invocation trend panel
 
-	16522
+	-graph form
 	
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- request panel  -Write a custom cli for  request panel, where we shall write a program for finding  request panel.
+- invocation trend panel -Write a custom cli for invocation trend panel, where we shall write a program for finding  timeseries data for invocation trend panel.
 
  **Pseudo Code:**  
  
 # ui-analysys-and listing-methods
-##  memory used panel
+##  location of callers panel
 
-![Alt text](ec2_screen4.png)
-18. memory_used_panel
-
-
-
-**called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="memory_used_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
- 
-
-**called from maincommand**
-
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="memory_used_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
-
-
-**Called from API**
-
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=memory_used_panel&responseType=json 
-
-
-
-**Desired Output in json / graph format:**
-18. memory_used_panel
-
-	512 MB
-	
-
-**Algorithm/ Pseudo Code**
-
-**Algorithm:** 
-- memory used panel  -Write a custom cli for  request panel, where we shall write a program for finding  request panel.
-
- **Pseudo Code:**  
- 
- # ui-analysys-and listing-methods
-##  top failure function panel
-
-![Alt text](lambda_screen1.png)
-19. top_failure_function_panel
+![Alt text](lambda_screen5.png)
+18. location_of_callers_panel
 
 
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="top_failure_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="location_of_callers_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
+ 
 
 **called from maincommand**
 
-awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="top_failure_function_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="location_of_callers_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=top_failure_function_panel&responseType=json
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=location_of_callers_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z 
+
 
 
 **Desired Output in json / graph format:**
-19. top failure function panel
+18. location_of_callers_panel
 
-	43,833
+	--count
 	
 
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-- top failure function panel  --Write a custom cli for  top failure function panel, where we shall write a program for finding  top failure function panel.
+- location of callers panel  -Write a custom cli for  location of callers panel, where we shall write a program for finding  location of callers panel.
+
+ **Pseudo Code:**  
+ 
+# ui-analysys-and listing-methods
+##  function caller details panel
+
+![Alt text](lambda_screen5.png)
+19. function_caller_details_panel
+
+
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="function_caller_details_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**called from maincommand**
+
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="function_caller_details_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=function_caller_details_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z 
+
+
+**Desired Output in json / graph format:**
+19. function_caller_details_panel
+
+	--tabular form
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- function caller details panel  --Write a custom cli for  function caller details panel, where we shall write a program for finding  function caller details panel.
 
 
  **Pseudo Code:**  
+
+# ui-analysys-and listing-methods
+##  number of threats and severity level panel
+
+![Alt text](lambda_screen5.png)
+20. number_of_threats_and_severity_level_panel
+
+
+
+**called from subcommand**
+
+go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="number_of_threats_and_severity_level_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**called from maincommand**
+
+awsx --zone=us-east-1 --vaultUrl=<afreenxxxx1309> --elementId=9387 --query="number_of_threats_and_severity_level_panel" --elementType="Lambda" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+
+
+**Called from API**
+
+http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementId=9387&elementType=Lambda&query=number_of_threats_and_severity_level_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z 
+
+
+**Desired Output in json / graph format:**
+20. number_of_threats_and_severity_level_panel
+
+	--calculate count in high,medium and low
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:** 
+- number of threats and severity level panel  --Write a custom cli for  number of threats and severity level panel, where we shall write a program for finding  number of threats and severity level panel.
+
+
+ **Pseudo Code:**  
+
+
+ 
 
 
  

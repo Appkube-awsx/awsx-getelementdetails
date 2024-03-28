@@ -15,18 +15,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type MemoryUsage struct {
+type DatabaseWorkloadOverview struct {
 	Timestamp time.Time
 	Value     float64
 }
 
-var AwsxRDSFreeableMemoryCmd = &cobra.Command{
-	Use:   "freeable_memory_panel",
-	Short: "get freeable memory metrics data",
-	Long:  `command to get freeable memory metrics data`,
+var AwsxRDSDBLoadCmd = &cobra.Command{
+	Use:   "db_load_panel",
+	Short: "get database workload overview metrics data",
+	Long:  `Command to get database workload overview metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("running from child command")
+		fmt.Println("Running from child command")
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
 		if err != nil {
 			log.Printf("Error during authentication: %v\n", err)
@@ -38,15 +38,15 @@ var AwsxRDSFreeableMemoryCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err, _ := GetRDSFreeableMemoryPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err, _ := GetRDSDBLoadPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting freeable memory data: ", err)
+				log.Println("Error getting database workload overview data: ", err)
 				return
 			}
 			if responseType == "frame" {
 				fmt.Println(cloudwatchMetricResp)
 			} else {
-				// default case. it prints json
+				// Default case: print JSON
 				fmt.Println(jsonResp)
 			}
 		}
@@ -54,19 +54,19 @@ var AwsxRDSFreeableMemoryCmd = &cobra.Command{
 	},
 }
 
-func GetRDSFreeableMemoryPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetRDSDBLoadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 
 	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
+		log.Println("Getting cloud-element data from CMDB")
 		apiUrl := cmdbApiUrl
 		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
+			log.Println("Using default CMDB URL")
 			apiUrl = config.CmdbUrl
 		}
-		log.Println("cmdb url: " + apiUrl)
+		log.Println("CMDB URL: " + apiUrl)
 	}
 
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -101,26 +101,26 @@ func GetRDSFreeableMemoryPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	// Fetch raw data for freeable memory metric
-	rawMemoryData, err := GetMemoryMetricData(clientAuth, elementType, startTime, endTime, "FreeableMemory", cloudWatchClient)
+	// Fetch raw data for database workload overview metric
+	rawData, err := GetDBLoadMetricData(clientAuth, elementType, startTime, endTime, "DBLoad", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting freeable memory data: ", err)
+		log.Println("Error getting database workload overview data: ", err)
 		return "", "", nil, err
 	}
-	cloudwatchMetricData["FreeableMemory"] = rawMemoryData
+	cloudwatchMetricData["DBLoad"] = rawData
 
-	// Process raw memory data
-	resultMemory := processedRawMemoryData(rawMemoryData)
-	jsonMemory, err := json.Marshal(resultMemory)
+	// Process raw data
+	result := processedRawDatabaseWorkloadOverviewData(rawData)
+	jsonData, err := json.Marshal(result)
 	if err != nil {
-		log.Println("Error in marshalling json for freeable memory data: ", err)
+		log.Println("Error marshalling JSON for database workload overview data: ", err)
 		return "", "", nil, err
 	}
 
-	return string(jsonMemory), string(jsonMemory), cloudwatchMetricData, nil
+	return string(jsonData), "", cloudwatchMetricData, nil
 }
 
-func GetMemoryMetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetDBLoadMetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace AWS/RDS from %v to %v", elementType, startTime, endTime)
 
 	input := &cloudwatch.GetMetricDataInput{
@@ -128,7 +128,7 @@ func GetMemoryMetricData(clientAuth *model.Auth, elementType string, startTime, 
 		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Id: aws.String("m1"),
+				Id: aws.String  ("m1"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
 						Dimensions: []*cloudwatch.Dimension{},
@@ -136,7 +136,7 @@ func GetMemoryMetricData(clientAuth *model.Auth, elementType string, startTime, 
 						Namespace:  aws.String("AWS/RDS"),
 					},
 					Period: aws.Int64(60),
-					Stat:   aws.String("Average"), // Use "Average" for memory metrics
+					Stat:   aws.String("Average"),
 				},
 			},
 		},
@@ -153,12 +153,12 @@ func GetMemoryMetricData(clientAuth *model.Auth, elementType string, startTime, 
 	return result, nil
 }
 
-func processedRawMemoryData(result *cloudwatch.GetMetricDataOutput) []MemoryUsage {
-	var processedData []MemoryUsage
+func processedRawDatabaseWorkloadOverviewData(result *cloudwatch.GetMetricDataOutput) []DatabaseWorkloadOverview {
+	var processedData []DatabaseWorkloadOverview
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
 		value := *result.MetricDataResults[0].Values[i]
-		processedData = append(processedData, MemoryUsage{
+		processedData = append(processedData, DatabaseWorkloadOverview{
 			Timestamp: *timestamp,
 			Value:     value,
 		})
@@ -167,23 +167,22 @@ func processedRawMemoryData(result *cloudwatch.GetMetricDataOutput) []MemoryUsag
 	return processedData
 }
 
-
 func init() {
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSFreeableMemoryCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("query", "", "query")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxRDSDBLoadCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
 

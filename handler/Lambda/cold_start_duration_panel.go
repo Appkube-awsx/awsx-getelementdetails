@@ -14,17 +14,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type ThrottleData struct {
+type ColdStartData struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
 	} `json:"RawData"`
 }
 
-var AwsxLambdaThrottleCmd = &cobra.Command{
-	Use:   "throttle_panel",
-	Short: "get lambda throttle metrics data",
-	Long:  `Command to get lambda throttle metrics data`,
+var AwsxLambdaColdStartCmd = &cobra.Command{
+	Use:   "cold_start_duration_panel",
+	Short: "get lambda cold start duration metrics data",
+	Long:  `Command to get lambda cold start duration metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("Running from child command")
@@ -44,9 +44,9 @@ var AwsxLambdaThrottleCmd = &cobra.Command{
 			return
 		}
 
-		jsonResp, cloudwatchMetricResp, err := GetLambdaThrottleData(cmd, clientAuth, nil)
+		jsonResp, cloudwatchMetricResp, err := GetLambdaColdStartData(cmd, clientAuth, nil)
 		if err != nil {
-			log.Println("Error getting lambda throttle data: ", err)
+			log.Println("Error getting lambda cold start duration data: ", err)
 			return
 		}
 
@@ -58,9 +58,10 @@ var AwsxLambdaThrottleCmd = &cobra.Command{
 	},
 }
 
-func GetLambdaThrottleData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaColdStartData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]interface{}, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	functionName := "List-Org-Github"
 
 	var startTime, endTime *time.Time
 
@@ -89,38 +90,56 @@ func GetLambdaThrottleData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	cloudwatchMetricData := make(map[string]*cloudwatch.GetMetricDataOutput)
+	cloudwatchMetricData := make(map[string]interface{})
 
 	// Fetch raw data
-	rawData, err := GetLambdaThrottleMetricData(clientAuth, startTime, endTime, cloudWatchClient)
+	rawData, err := GetLambdaColdStartMetricData(clientAuth, startTime, endTime,functionName, cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
-	cloudwatchMetricData["Throttling"] = rawData
+
+	// Check if there are data points available
+	if len(rawData.MetricDataResults) > 0 && len(rawData.MetricDataResults[0].Values) > 0 {
+		// Check if there's only one data point
+		if len(rawData.MetricDataResults[0].Values) == 1 {
+			cloudwatchMetricData["Cold Start Duration"] = rawData.MetricDataResults[0].Values[0]
+		} else {
+			// If there are multiple data points, store the entire output
+			cloudwatchMetricData["Cold Start Duration"] = rawData
+		}
+	} else {
+		// No data points available
+		cloudwatchMetricData["Cold Start Duration"] = "No data available for the specified time range and metric"
+	}
 
 	// Generate JSON response
-	jsonString, err := json.Marshal(rawData)
+	jsonString, err := json.Marshal(cloudwatchMetricData)
 	if err != nil {
 		return "", nil, err
 	}
 
-	return string(jsonString), cloudwatchMetricData, err
+	return string(jsonString), cloudwatchMetricData, nil
 }
 
-
-func GetLambdaThrottleMetricData(clientAuth *model.Auth, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaColdStartMetricData(clientAuth *model.Auth, startTime, endTime *time.Time,functionName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Id: aws.String("throttle_query"),
+				Id: aws.String("cold_start_duration"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
-						MetricName: aws.String("Throttles"),
-						Namespace:  aws.String("AWS/Lambda"),
+						MetricName: aws.String("init_duration"),
+						Namespace:  aws.String("LambdaInsights"),
+						Dimensions: []*cloudwatch.Dimension{
+							{
+								Name:  aws.String("function_name"),
+								Value: aws.String(functionName),
+							},
+						},
 					},
-					Period: aws.Int64(300), // 5 minutes
+					Period: aws.Int64(300),
 					Stat:   aws.String("Average"),
 				},
 			},
@@ -135,12 +154,12 @@ func GetLambdaThrottleMetricData(clientAuth *model.Auth, startTime, endTime *tim
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("result", result)
 	return result, nil
 }
 
 func init() {
-	AwsxLambdaThrottleCmd.PersistentFlags().String("startTime", "", "Start time")
-	AwsxLambdaThrottleCmd.PersistentFlags().String("endTime", "", "End time")
-	AwsxLambdaThrottleCmd.PersistentFlags().String("responseType", "", "Response type. json/frame")
+	AwsxLambdaColdStartCmd.PersistentFlags().String("startTime", "", "Start time")
+	AwsxLambdaColdStartCmd.PersistentFlags().String("endTime", "", "End time")
+	AwsxLambdaColdStartCmd.PersistentFlags().String("responseType", "", "Response type. json/frame")
 }

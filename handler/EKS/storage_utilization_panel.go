@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
@@ -122,29 +123,49 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in getting root volume usage: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RootVolumeUsage"] = rootVolumeUsage
+	rootVolumeUsageValue := *rootVolumeUsage.MetricDataResults[0].Values[0]
+	rootVolumeUsageStr := strconv.FormatFloat(rootVolumeUsageValue, 'f', 2, 64)
 
 	// Get EBS Volume 1 Usage
-	ebsVolume1Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_utilization", cloudWatchClient)
+	ebsVolume1Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_inodes", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS volume 1 usage: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["EBSVolume1Usage"] = ebsVolume1Usage
+	ebsVolume1Percentage := (*ebsVolume1Usage.MetricDataResults[0].Values[0] / 10000000.0) // Replace 100.0 with the total space for EBS Volume 1
+	ebsVolume1PercentageStr := strconv.FormatFloat(ebsVolume1Percentage, 'f', 2, 64)
 
 	// Get EBS Volume 2 Usage
-	ebsVolume2Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_utilization", cloudWatchClient)
+	ebsVolume2Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_inodes", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS volume 2 usage: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["EBSVolume2Usage"] = ebsVolume2Usage
+	ebsVolume2Percentage := (*ebsVolume2Usage.MetricDataResults[0].Values[0] / 10999999.0) // Replace 200.0 with the total space for EBS Volume 2
+	ebsVolume2PercentageStr := strconv.FormatFloat(ebsVolume2Percentage, 'f', 2, 64)
+
+	// Convert formatted strings back to float64
+	rootVolumeUsageFloat, err := strconv.ParseFloat(rootVolumeUsageStr, 64)
+	if err != nil {
+		log.Println("Error converting string to float64: ", err)
+		return "", nil, err
+	}
+	ebsVolume1PercentageFloat, err := strconv.ParseFloat(ebsVolume1PercentageStr, 64)
+	if err != nil {
+		log.Println("Error converting string to float64: ", err)
+		return "", nil, err
+	}
+	ebsVolume2PercentageFloat, err := strconv.ParseFloat(ebsVolume2PercentageStr, 64)
+	if err != nil {
+		log.Println("Error converting string to float64: ", err)
+		return "", nil, err
+	}
 
 	// Create JSON output
 	jsonOutput := StorageUtilizationResult{
-		RootVolumeUsage: *rootVolumeUsage.MetricDataResults[0].Values[0],
-		EBSVolume1Usage: *ebsVolume1Usage.MetricDataResults[0].Values[0],
-		EBSVolume2Usage: *ebsVolume2Usage.MetricDataResults[0].Values[0],
+		RootVolumeUsage: rootVolumeUsageFloat,
+		EBSVolume1Usage: ebsVolume1PercentageFloat,
+		EBSVolume2Usage: ebsVolume2PercentageFloat,
 	}
 
 	jsonString, err := json.Marshal(jsonOutput)
@@ -152,9 +173,9 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
 	}
-
 	return string(jsonString), cloudwatchMetricData, nil
 }
+
 
 func GetStorageMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	elmType := "ContainerInsights"

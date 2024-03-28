@@ -2,6 +2,7 @@ package Lambda
 
 import (
 	"fmt"
+	// "github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"log"
 	"strconv"
@@ -15,14 +16,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxLambdaThrottlingTrendsCmd = &cobra.Command{
+var AwsxLambdaInvocationTrendCmd = &cobra.Command{
 
-	Use:   "throttling_trends_panel",
-	Short: "Get throttling trends metrics data",
-	Long:  `Command to get throttling trends metrics data`,
+	Use:   "invocation_trend_panel",
+	Short: "Get invocation trend metrics data",
+	Long:  `Command to get invocation trend metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Running throttling trends panel command")
+		fmt.Println("Running invocation trend panel command")
 
 		var authFlag bool
 		var clientAuth *model.Auth
@@ -38,7 +39,7 @@ var AwsxLambdaThrottlingTrendsCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			panel, err := GetThrottlingTrendsData(cmd, clientAuth, nil)
+			panel, err := GetInvocationTrendData(cmd, clientAuth, nil)
 			if err != nil {
 				return
 			}
@@ -47,10 +48,10 @@ var AwsxLambdaThrottlingTrendsCmd = &cobra.Command{
 	},
 }
 
-func GetThrottlingTrendsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func GetInvocationTrendData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
+    logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 
 	if elementId != "" {
 		log.Println("getting cloud-element data from cmdb")
@@ -60,12 +61,17 @@ func GetThrottlingTrendsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 			apiUrl = config.CmdbUrl
 		}
 		log.Println("cmdb url: " + apiUrl)
+		// cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// logGroupName = cmdbData.LogGroup
 
 	}
 
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	var startTime, endTime time.Time
+	var startTime, endTime *time.Time
 
 	// Parse start time if provided
 	if startTimeStr != "" {
@@ -76,13 +82,11 @@ func GetThrottlingTrendsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 			if err != nil {
 				// handle error
 			}
-			return nil, err 
 		}
-		startTime = parsedStartTime
-
+		startTime = &parsedStartTime
 	} else {
 		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = defaultStartTime
+		startTime = &defaultStartTime
 	}
 
 	if endTimeStr != "" {
@@ -93,32 +97,34 @@ func GetThrottlingTrendsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 			if err != nil {
 				// handle error
 			}
-			return nil, err 
 		}
-		endTime = parsedEndTime
+		endTime = &parsedEndTime
 	} else {
 		defaultEndTime := time.Now()
-		endTime = defaultEndTime
+		endTime = &defaultEndTime
 	}
 
-	results, err := filterCloudWatchLogsss(clientAuth, &startTime, &endTime, logGroupName, cloudWatchLogs)
+	results, err := filterCloudWatchLogss(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
-	processedResults := ProcessQueryResults(results)
+	processedResults := processQueryResults(results)
+
+	
 
 	return processedResults, nil
-
+	
 }
 
-func filterCloudWatchLogsss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+
+func filterCloudWatchLogss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	params := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String(logGroupName),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
 		EndTime:      aws.Int64(endTime.Unix() * 1000),
-		QueryString: aws.String(`fields @timestamp, InvocationCount, errorCount
+		QueryString: aws.String(`fields @timestamp, eventSource
 		| filter eventSource = "lambda.amazonaws.com" 
-		| stats count() as InvocationCount, count(errorCode) as errorCount by bin(1m)`),
+		| stats count() as InvocationCount by bin(1h)`),
 	}
 
 	if cloudWatchLogs == nil {
@@ -156,7 +162,7 @@ func filterCloudWatchLogsss(clientAuth *model.Auth, startTime, endTime *time.Tim
 	return queryResults, nil
 }
 
-func ProcessQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
 	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
 
 	for _, result := range results {
@@ -172,13 +178,6 @@ func ProcessQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*clo
 						log.Printf("Invocation Count: %d\n", invocationCount)
 
 						// You can perform further processing or store the invocation count data as needed
-					} else if *data.Field == "errorCount" {
-						errorCount, err := strconv.Atoi(*data.Value)
-						if err != nil {
-							log.Println("Failed to convert errorCount to integer:", err)
-							continue
-						}
-						log.Printf("Error Count: %d\n", errorCount)
 					}
 				}
 			}
@@ -192,8 +191,8 @@ func ProcessQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*clo
 }
 
 func init() {
-	AwsxLambdaThrottlingTrendsCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxLambdaThrottlingTrendsCmd.PersistentFlags().String("functionName", "", "Lambda function name")
-	AwsxLambdaThrottlingTrendsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxLambdaThrottlingTrendsCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxLambdaInvocationTrendCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	AwsxLambdaInvocationTrendCmd.PersistentFlags().String("functionName", "", "Lambda function name")
+	AwsxLambdaInvocationTrendCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxLambdaInvocationTrendCmd.PersistentFlags().String("endTime", "", "end time")
 }

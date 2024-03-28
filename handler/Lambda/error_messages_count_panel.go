@@ -2,22 +2,69 @@ package Lambda
 
 import (
 	"fmt"
+	"github.com/Appkube-awsx/awsx-common/config"
+	"log"
+	"strconv"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
-	"log"
 )
 
-func GetLambdaErrorMessageCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) {
-	logGroupName := "CloudTrail/DefaultLogGroup"
-	filterPattern, _ := cmd.PersistentFlags().GetString("filterPattern")
+var AwsxLambdaErrorMessageCmd = &cobra.Command{
+
+	Use:   "error_message_count_panel",
+	Short: "Get error message count metrics data",
+	Long:  `Command to get error message count metrics data`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Running error message panel command")
+
+		var authFlag bool
+		var clientAuth *model.Auth
+		var err error
+		authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			panel, err := GetErrorMessageCountData(cmd, clientAuth, nil)
+			if err != nil {
+				return
+			}
+			fmt.Println(panel)
+		}
+	},
+}
+
+func GetErrorMessageCountData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+    logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+
+	}
+
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
 	var startTime, endTime *time.Time
 
 	// Parse start time if provided
@@ -51,23 +98,24 @@ func GetLambdaErrorMessageCountPanel(cmd *cobra.Command, clientAuth *model.Auth,
 		endTime = &defaultEndTime
 	}
 
-	events, err := filterCloudWatchErrorMessageLogs(clientAuth, startTime, endTime, logGroupName, filterPattern, cloudWatchLogs)
+	results, err := filterCloudWatchLog(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
-		log.Println("Error in getting sample count: ", err)
-		// handle error
+		return nil, nil
 	}
+	processedResults := processQueryResults(results)
 
-	for _, event := range events {
-		fmt.Println(event)
-	}
+	
+
+	return processedResults, nil
+	
 }
 
-func filterCloudWatchErrorMessageLogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, filterPattern string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.ResultField, error) {
-	// Construct input parameters
+
+func filterCloudWatchLog(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	params := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String(logGroupName),
-		StartTime:    aws.Int64(startTime.Unix() * 1000), // Convert to milliseconds
-		EndTime:      aws.Int64(endTime.Unix() * 1000),   // Convert to milliseconds
+		StartTime:    aws.Int64(startTime.Unix() * 1000),
+		EndTime:      aws.Int64(endTime.Unix() * 1000),
 		QueryString: aws.String(`fields @timestamp, @message, errorMessage
 		| filter eventSource == "lambda.amazonaws.com" and ispresent(errorMessage)
 		| stats count(errorMessage) as errorCount by bin(1month)`),
@@ -80,56 +128,63 @@ func filterCloudWatchErrorMessageLogs(clientAuth *model.Auth, startTime, endTime
 	queryResult, err := cloudWatchLogs.StartQuery(params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start query: %v", err)
+
 	}
-
 	queryId := queryResult.QueryId
-	queryStatus := ""
-	var queryResults *cloudwatchlogs.GetQueryResultsOutput // Declare queryResults outside the loop
+	var queryResults []*cloudwatchlogs.GetQueryResultsOutput
 
-	for queryStatus != "Complete" {
+	for {
 		// Check query status
 		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
 			QueryId: queryId,
 		}
 
-		queryResults, err = cloudWatchLogs.GetQueryResults(queryStatusInput) // Assign value to queryResults
+		queryResult, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get query results: %v", err)
 		}
 
-		queryStatus = aws.StringValue(queryResults.Status)
-		time.Sleep(1 * time.Second) // Wait for a second before checking status again
-	}
+		queryResults = append(queryResults, queryResult)
 
-	// Query is complete, now process results
-	var results []*cloudwatchlogs.ResultField
-	for _, resultRow := range queryResults.Results {
-		for _, resultField := range resultRow {
-			results = append(results, resultField)
+		if *queryResult.Status != "Complete" {
+			time.Sleep(5 * time.Second) // wait before querying again
+			continue
+		}
+
+		break // exit loop if query is complete
+	}
+	return queryResults, nil
+}
+
+func processQueryResult(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
+
+	for _, result := range results {
+		if *result.Status == "Complete" {
+			for _, resultField := range result.Results {
+				for _, data := range resultField {
+					if *data.Field == "errorCount" {
+						errorCount, err := strconv.Atoi(*data.Value)
+						if err != nil {
+							log.Println("Failed to convert errorCount to integer:", err)
+							continue
+						}
+						log.Printf("Error Count: %d\n", errorCount)
+					}
+				}
+			}
+			processedResults = append(processedResults, result)
+		} else {
+			log.Println("Query status is not complete.")
 		}
 	}
 
-	return results,nil
+	return processedResults
 }
 
-// func init() {
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("elementId", "", "element id")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("elementType", "", "element type")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("query", "", "query")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("vaultToken", "", "vault token")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("zone", "", "aws region")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("accessKey", "", "aws access key")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("externalId", "", "aws external id")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("instanceId", "", "instance id")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("startTime", "", "start time")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("endTime", "", "endcl time")
-// 	AwsxLambdaErrorCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-// }
-
-
-// go run awsx-getelementdetails.go  --query="error_messages_count_panel" --elementType="Lambda"  --responseType=json --startTime=2024-02-05T05:30:00Z --endTime=2024-03-06T23:59:59Z  --elementId="9387"
+func init() {
+	AwsxLambdaErrorMessageCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	AwsxLambdaErrorMessageCmd.PersistentFlags().String("functionName", "", "Lambda function name")
+	AwsxLambdaErrorMessageCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxLambdaErrorMessageCmd.PersistentFlags().String("endTime", "", "end time")
+}
