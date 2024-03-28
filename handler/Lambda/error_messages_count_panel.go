@@ -38,7 +38,7 @@ var AwsxLambdaErrorMessageCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			panel, err := GetInvocationTrendData(cmd, clientAuth, nil)
+			panel, err := GetErrorMessageCountData(cmd, clientAuth, nil)
 			if err != nil {
 				return
 			}
