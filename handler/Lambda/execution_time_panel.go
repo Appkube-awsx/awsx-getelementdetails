@@ -39,7 +39,7 @@ var LambdaExecutionTimeCmd = &cobra.Command{
 			return
 		}
 
-		jsonResp, cloudwatchMetricResp, err := GetLambdaExecutionTimePanel(cmd, clientAuth)
+		jsonResp, cloudwatchMetricResp, err := GetLambdaExecutionTimePanel(cmd, clientAuth, nil)
 		if err != nil {
 			log.Fatalf("Error getting Lambda execution time metric data: %v", err)
 		}
@@ -52,7 +52,7 @@ var LambdaExecutionTimeCmd = &cobra.Command{
 	},
 }
 
-func GetLambdaExecutionTimePanel(cmd *cobra.Command, clientAuth *model.Auth) (string, *map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaExecutionTimePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, *map[string]*cloudwatch.GetMetricDataOutput, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 	functionName := "List-Org-Github"
@@ -65,7 +65,7 @@ func GetLambdaExecutionTimePanel(cmd *cobra.Command, clientAuth *model.Auth) (st
 
 	cloudwatchMetricData := make(map[string]*cloudwatch.GetMetricDataOutput)
 
-	rawData, err := GetLambdaExecutionTimeMetricData(clientAuth, startTime, endTime, functionName)
+	rawData, err := GetLambdaExecutionTimeMetricData(clientAuth, startTime, endTime, cloudWatchClient, functionName)
 	if err != nil {
 		return "", nil, err
 	}
@@ -80,7 +80,7 @@ func GetLambdaExecutionTimePanel(cmd *cobra.Command, clientAuth *model.Auth) (st
 	return string(jsonString), &cloudwatchMetricData, nil
 }
 
-func GetLambdaExecutionTimeMetricData(clientAuth *model.Auth, startTime, endTime time.Time, functionName string) (*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaExecutionTimeMetricData(clientAuth *model.Auth, startTime, endTime time.Time, cloudWatchClient *cloudwatch.CloudWatch, functionName string) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		StartTime: &startTime,
 		EndTime:   &endTime,
@@ -122,7 +122,9 @@ func GetLambdaExecutionTimeMetricData(clientAuth *model.Auth, startTime, endTime
 		},
 	}
 
-	cloudWatchClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
 		return nil, err
@@ -150,7 +152,7 @@ func processExecutionTimeRawData(result *cloudwatch.GetMetricDataOutput, functio
 		// initDuration := *result.MetricDataResults[1].Values[i]
 
 		executionTimeData.FunctionName = functionName
-		executionTimeData.ResponseTime = duration 
+		executionTimeData.ResponseTime = duration
 		executionTimeData.Duration = duration
 
 		executionTimeDataList = append(executionTimeDataList, executionTimeData)

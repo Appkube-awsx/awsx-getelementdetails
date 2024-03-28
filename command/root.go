@@ -1160,7 +1160,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "execution_time_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaExecutionTimePanel(cmd, clientAuth)
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaExecutionTimePanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda max memory used graph data: ", err)
 					return
@@ -1171,7 +1171,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "invocation_trend_panel" && elementType == "Lambda" {
-				jsonResp, err:= Lambda.GetInvocationTrendData(cmd, clientAuth , nil)
+				jsonResp, err := Lambda.GetInvocationTrendData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda max memory used graph data: ", err)
 					return
