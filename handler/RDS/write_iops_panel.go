@@ -22,9 +22,9 @@ type WriteIOPS struct {
 }
 
 var AwsxRDSWriteIOPSCmd = &cobra.Command{
-	Use:   "write_iops_log_volume_panel",
-	Short: "Get write IOPS log volume metrics data",
-	Long:  `Command to get write IOPS log volume metrics data`,
+	Use:   "write_iops_panel",
+	Short: "Get write IOPS metrics data",
+	Long:  `Command to get write IOPS metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Running from child command")
@@ -40,10 +40,10 @@ var AwsxRDSWriteIOPSCmd = &cobra.Command{
 		if authFlag {
 			jsonResp, _, err := GetRDSWriteIOPSPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting write IOPS log volume data: ", err)
+				log.Println("Error getting write IOPS data: ", err)
 				return
 			}
-			fmt.Println("Write IOPS Log Volume Data:")
+			fmt.Println("Write IOPS Data:")
 			fmt.Println(jsonResp)
 		}
 
@@ -86,7 +86,7 @@ func GetRDSWriteIOPSPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 
 	rawWriteIOPSData, err := GetWriteIOPSMetricData(clientAuth, instanceID, startTime, endTime, cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting write IOPS log volume data: ", err)
+		log.Println("Error in getting write IOPS data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["WriteIOPS"] = rawWriteIOPSData
@@ -109,7 +109,7 @@ func GetWriteIOPSMetricData(clientAuth *model.Auth, instanceID string, startTime
 		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Id: aws.String("WriteIOPS"),
+				Id: aws.String("writeIOPS"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
 						Dimensions: []*cloudwatch.Dimension{},
