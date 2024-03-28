@@ -1196,11 +1196,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(jsonResp)
 			} else if queryName == "throttling_trends_panel" && elementType == "Lambda" {
-				Lambda.GetThrottlingTrendsPanel(cmd, clientAuth, nil)
+				jsonResp, err := Lambda.GetThrottlingTrendsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda functions  data: ", err)
 					return
 				}
+				fmt.Println(jsonResp)
 			} else if queryName == "function_panel" && elementType == "Lambda" {
 				Lambda.GetFunctionPanel(cmd, clientAuth, nil)
 				if err != nil {
