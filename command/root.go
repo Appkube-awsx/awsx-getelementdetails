@@ -439,20 +439,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "latency_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetLatencyPanel(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting latency metric data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
-				// } else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				// 	cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
-				// 	fmt.Println(cloudwatchMetric)
+			// } else if queryName == "latency_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+			// 	jsonResp, cloudwatchMetricResp := EC2.LatencyPanel(cmd, clientAuth, nil)
+			// 	if err != nil {
+			// 		log.Println("Error getting latency metric data: ", err)
+			// 		return
+			// 	}
+			// 	if responseType == "frame" {
+			// 		fmt.Println(cloudwatchMetricResp)
+			// 	} else {
+			// 		fmt.Println(jsonResp)
+			// 	}
+			// 	// } else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+			// 	// 	cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
+			// 	// 	fmt.Println(cloudwatchMetric)
 
 			} else if queryName == "alert_and_notification_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, err := EC2.GetAlertsAndNotificationsPanel(cmd, clientAuth)
@@ -1037,6 +1037,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(cloudwatchMetricResp)
 				} else {
 					fmt.Println(jsonResp)
+				}
+			} else if queryName == "functions_by_region_panel" && elementType == "Lambda" {
+				log.Printf("ClientAuth: %+v\n", clientAuth)
+				jsonResp, cloudwatchMetricResp, totalFunctions,_ := Lambda.GetLambdaFunctionsByRegion(clientAuth)
+				if err != nil {
+					log.Println("Error total functions panel data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+					fmt.Println("Function By Region:", totalFunctions)
+				} else {
+					fmt.Println(jsonResp)
+					fmt.Println("Function By Region:", totalFunctions)
 				}
 			} else if queryName == "idle_functions_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaIdleFunctionData(clientAuth, nil)
