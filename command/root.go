@@ -959,6 +959,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "top_events_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, err := ECS.GetECSTopEventsData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting top events data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
 				// } else if queryName == "iam_role_and_policies_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				// 	jsonResp, cloudwatchMetricResp, err := ECS.GetECSIAMRolesPanel(cmd, clientAuth)
 				// 	if err != nil {
