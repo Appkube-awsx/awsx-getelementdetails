@@ -439,20 +439,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			// } else if queryName == "latency_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-			// 	jsonResp, cloudwatchMetricResp := EC2.LatencyPanel(cmd, clientAuth, nil)
-			// 	if err != nil {
-			// 		log.Println("Error getting latency metric data: ", err)
-			// 		return
-			// 	}
-			// 	if responseType == "frame" {
-			// 		fmt.Println(cloudwatchMetricResp)
-			// 	} else {
-			// 		fmt.Println(jsonResp)
-			// 	}
-			// 	// } else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-			// 	// 	cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
-			// 	// 	fmt.Println(cloudwatchMetric)
+				// } else if queryName == "latency_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				// 	jsonResp, cloudwatchMetricResp := EC2.LatencyPanel(cmd, clientAuth, nil)
+				// 	if err != nil {
+				// 		log.Println("Error getting latency metric data: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(cloudwatchMetricResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
+				// 	// } else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				// 	// 	cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth)
+				// 	// 	fmt.Println(cloudwatchMetric)
 
 			} else if queryName == "alert_and_notification_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, err := EC2.GetAlertsAndNotificationsPanel(cmd, clientAuth)
@@ -1040,7 +1040,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 			} else if queryName == "functions_by_region_panel" && elementType == "Lambda" {
 				log.Printf("ClientAuth: %+v\n", clientAuth)
-				jsonResp, cloudwatchMetricResp, totalFunctions,_ := Lambda.GetLambdaFunctionsByRegion(clientAuth)
+				jsonResp, cloudwatchMetricResp, totalFunctions, _ := Lambda.GetLambdaFunctionsByRegion(clientAuth)
 				if err != nil {
 					log.Println("Error total functions panel data: ", err)
 					return
@@ -1273,16 +1273,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					log.Println("Error getting total api data: ", err)
 					return
 				}
-					fmt.Println(jsonResp)
-				
+				fmt.Println(jsonResp)
+
 			} else if queryName == "successful_event_details_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, err := ApiGateway.GetSuccessEventData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting successful api data: ", err)
 					return
 				}
-					fmt.Println(jsonResp)
-				
+				fmt.Println(jsonResp)
+
 			} else if queryName == "http_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayHttpApiData(clientAuth, nil)
 				if err != nil {
@@ -1322,8 +1322,15 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					log.Println("Error getting total api data: ", err)
 					return
 				}
-					fmt.Println(jsonResp)
-				
+				fmt.Println(jsonResp)
+			} else if queryName == "error_logs_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, err := ApiGateway.GetErrorLogsData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting total api data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+
 			} else if queryName == "4xx_errors_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApi4xxErrorData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1799,7 +1806,6 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSStorageUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSLatencyAnalysisCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.ApiResponseTimeCmd)
-
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
