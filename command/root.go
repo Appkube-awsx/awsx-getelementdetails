@@ -1394,7 +1394,19 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "cpu_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+			} else if queryName == "uptime_percentage_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+                responseType, _ := cmd.PersistentFlags().GetString("responseType")
+                jsonResp, uptimeMetricResp, err := ApiGateway.GetApiUptimeData(cmd, clientAuth, nil)
+                if err != nil {
+                    log.Println("Error getting API uptime data: ", err)
+                    return
+                }
+                if responseType == "frame" {
+                    fmt.Println(uptimeMetricResp)
+                } else {
+                    fmt.Println(jsonResp)
+                }
+            } else if queryName == "cpu_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSCpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting cpu utilization: ", err)
