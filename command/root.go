@@ -1267,6 +1267,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "top_events_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, err := ApiGateway.GetTopEventsData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting total api data: ", err)
+					return
+				}
+					fmt.Println(jsonResp)
+				
 			} else if queryName == "http_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayHttpApiData(clientAuth, nil)
 				if err != nil {
