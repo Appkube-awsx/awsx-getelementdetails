@@ -1475,6 +1475,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "maintenance_schedule_overview_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				events, err := RDS.ListScheduleOverview()
+				if err != nil {
+					return
+				}
+				for _, event := range events {
+					// Perform further processing on each event
+					fmt.Println("maintenance_type:", event.MaintenanceType)
+					fmt.Println("description:", event.Description)
+					fmt.Println("start_time:", event.StartTime)
+					fmt.Println("end_time:", event.EndTime)
+					fmt.Println("---------------------------------------")
+				}
+
 			} else if queryName == "cpu_credit_usage_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetCPUCreditUsagePanel(cmd, clientAuth, nil)
 				if err != nil {
