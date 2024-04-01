@@ -47,7 +47,7 @@ var AwsxResourceUpdatedPanelCmd = &cobra.Command{
 	},
 }
 
-func GetECSResourceUpdatedEvents(cmd *cobra.Command, clientAuth *model.Auth) ([]*cloudwatchlogs.ResultField, error) {
+func GetECSResourceUpdatedEvents(cmd *cobra.Command, clientAuth *model.Auth) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -89,7 +89,7 @@ func parseTimerange(startTimeStr, endTimeStr string) (*time.Time, *time.Time, er
 	return startTime, endTime, nil
 }
 
-func FilterUpdatedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string) ([]*cloudwatchlogs.ResultField, error) {
+func FilterUpdatedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	cloudWatchLogs := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
 
 	queryString := `fields @timestamp, eventName
@@ -109,7 +109,7 @@ func FilterUpdatedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, 
 	}
 
 	queryId := queryResult.QueryId
-	var queryResults []*cloudwatchlogs.ResultField
+	var queryResults []*cloudwatchlogs.GetQueryResultsOutput
 
 	for {
 		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
@@ -129,7 +129,8 @@ func FilterUpdatedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, 
 		// Flatten and append each element individually
 		for _, res := range result.Results {
 			for _, r := range res {
-				queryResults = append(queryResults, r)
+				queryResults = append(queryResults)
+				fmt.Println(r)
 			}
 		}
 

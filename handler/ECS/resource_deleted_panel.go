@@ -49,7 +49,7 @@ var AwsxResourceDeletedPanelCmd = &cobra.Command{
 	},
 }
 
-func GetECSResourceDeletedEvents(cmd *cobra.Command, clientAuth *model.Auth) ([]*cloudwatchlogs.ResultField, error) {
+func GetECSResourceDeletedEvents(cmd *cobra.Command, clientAuth *model.Auth) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
@@ -109,11 +109,11 @@ func parseTimeRange(startTimeStr, endTimeStr string) (*time.Time, *time.Time, er
 	return startTime, endTime, nil
 }
 
-func FilterDeletedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string) ([]*cloudwatchlogs.ResultField, error) {
+func FilterDeletedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	cloudWatchLogs := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
 
 	queryString := `fields @timestamp, eventName
-	| filter eventSource = "ecs.amazonaws.com" and (eventName = "DeleteCluster" or eventName = "DeregisterContainerInstance" or eventName = "DeleteService" or eventName = "DeleteTaskSet" or eventName = "DeregisterTaskDefinition" or eventName = "DeleteTask")
+	| filter eventSource = "ecs.amazonaws.com" and (eventName = "DeleteCluster" or eventName = "DeregisterContainerInstance" or eventName = "DeleteService" or eventName = "DeleteTaskSet" or eventName = "DeregisterTaskDefinition" or eventName = "StopTask")
 	| stats count(*) as EventCount by eventName`
 
 	params := &cloudwatchlogs.StartQueryInput{
@@ -129,7 +129,7 @@ func FilterDeletedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, 
 	}
 
 	queryId := queryResult.QueryId
-	var queryResults []*cloudwatchlogs.ResultField
+	var queryResults []*cloudwatchlogs.GetQueryResultsOutput
 
 	for {
 		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
@@ -149,10 +149,11 @@ func FilterDeletedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, 
 		// Flatten and append each element individually
 		for _, res := range result.Results {
 			for _, r := range res {
-				queryResults = append(queryResults, r)
+				queryResults = append(queryResults)
+				fmt.Println(r)
+
 			}
 		}
-
 		break
 	}
 	return queryResults, nil
