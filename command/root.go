@@ -959,6 +959,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "available_memory_over_time_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetAvailableMemoryOverTimeData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting volume write bytes data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "top_events_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, err := ECS.GetECSTopEventsData(cmd, clientAuth, nil)
 				if err != nil {
