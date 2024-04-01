@@ -966,6 +966,23 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
+
+			} else if queryName == "registration_events_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, err := ECS.GetRegistrationEventsData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting registration events data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+
+			} else if queryName == "deregistration_events_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, err := ECS.GetDeRegistrationEventsData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting deregistration events data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+
 				// } else if queryName == "iam_role_and_policies_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				// 	jsonResp, cloudwatchMetricResp, err := ECS.GetECSIAMRolesPanel(cmd, clientAuth)
 				// 	if err != nil {
