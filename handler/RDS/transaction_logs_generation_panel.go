@@ -122,7 +122,7 @@ func GetTransactionLogsGenerationPanel(cmd *cobra.Command, clientAuth *model.Aut
 
 	cloudwatchMetricData["Transaction_Logs_Generation"] = rawData
 
-	result := processRawData(rawData)
+	result := processTransactionLogRawData(rawData)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {

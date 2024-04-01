@@ -122,7 +122,7 @@ func GetTransactionLogsDiskUsagePanel(cmd *cobra.Command, clientAuth *model.Auth
 
 	cloudwatchMetricData["Transaction_Logs_Disk_Usage"] = rawData
 
-	result := processRawData(rawData)
+	result := processTransactionLogsDiskRawData(rawData)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
