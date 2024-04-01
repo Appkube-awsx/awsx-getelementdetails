@@ -175,8 +175,8 @@ func GetTransactionLogsGenerationMetricData(clientAuth *model.Auth, instanceID, 
 	return result, nil
 }
 
-func processTransactionLogRawData(result *cloudwatch.GetMetricDataOutput) DBResult {
-	var rawData DBResult
+func processTransactionLogRawData(result *cloudwatch.GetMetricDataOutput) TransactionLogsGenerationResult {
+	var rawData TransactionLogsGenerationResult
 	rawData.RawData = make([]struct {
 		Timestamp time.Time
 		Value     float64

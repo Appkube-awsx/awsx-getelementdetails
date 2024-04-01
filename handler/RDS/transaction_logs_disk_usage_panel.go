@@ -156,10 +156,9 @@ func GetTransactionLogsDiskUsageMetricData(clientAuth *model.Auth, instanceID, e
 						MetricName: aws.String("TransactionLogsDiskUsage"),
 						Namespace:  aws.String(elmType),
 					},
-					Period: aws.Int64(300),        
-					Stat:   aws.String("Average"), 
+					Period: aws.Int64(300),
+					Stat:   aws.String("Average"),
 				},
-				
 			},
 		},
 	}
@@ -175,8 +174,8 @@ func GetTransactionLogsDiskUsageMetricData(clientAuth *model.Auth, instanceID, e
 	return result, nil
 }
 
-func processTransactionLogsDiskRawData(result *cloudwatch.GetMetricDataOutput) DBResult {
-	var rawData DBResult
+func processTransactionLogsDiskRawData(result *cloudwatch.GetMetricDataOutput) TransactionLogsDiskResult {
+	var rawData TransactionLogsDiskResult
 	rawData.RawData = make([]struct {
 		Timestamp time.Time
 		Value     float64
