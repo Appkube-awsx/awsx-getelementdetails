@@ -983,41 +983,51 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(jsonResp)
 			} else if queryName == "resource_deleted_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-                jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth)
-                if err != nil {
-                    log.Println("Error getting resource deleted panel: ", err)
-                    return
-                }
-                fmt.Println(jsonResp)
-            } else if queryName == "resource_created_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-                jsonResp, err := ECS.GetECSResourceCreatedEvents(cmd, clientAuth)
-                if err != nil {
-                    log.Println("Error getting resouce created panel: ", err)
-                    return
-                }
-                fmt.Println(jsonResp)
-            } else if queryName == "failed_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-                jsonResp, err := ECS.GetECSFailedTasksEvents(cmd, clientAuth)
-                if err != nil {
-                    log.Println("Error getting resouce created panel: ", err)
-                    return
-                }
-                fmt.Println(jsonResp)
-            } else if queryName == "failed_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-                jsonResp, err := ECS.GetECSFailedServiceEvents(cmd, clientAuth)
-                if err != nil {
-                    log.Println("Error getting resouce created panel: ", err)
-                    return
-                }
-                fmt.Println(jsonResp)
-            }  else if queryName == "resource_update_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-                jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth)
-                if err != nil {
-                    log.Println("Error getting resource updated panel: ", err)
-                    return
-                }
-                fmt.Println(jsonResp)
-
+				jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting resource deleted panel: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "resource_created_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, err := ECS.GetECSResourceCreatedEvents(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting resouce created panel: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "failed_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, err := ECS.GetECSFailedTasksEvents(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting resouce created panel: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "failed_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, err := ECS.GetECSFailedServiceEvents(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting resouce created panel: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "resource_update_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting resource updated panel: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "container_memory_usage_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetContainerMemoryUsageData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory usage for ECS: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 				// } else if queryName == "iam_role_and_policies_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				// 	jsonResp, cloudwatchMetricResp, err := ECS.GetECSIAMRolesPanel(cmd, clientAuth)
 				// 	if err != nil {
@@ -1495,7 +1505,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "downtime_incident_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
-				jsonResp, cloudwatchMetricResp:= ApiGateway.GetDowntimeIncidentsData(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp := ApiGateway.GetDowntimeIncidentsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting total api data: ", err)
 					return
