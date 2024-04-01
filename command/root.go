@@ -1274,6 +1274,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "successful_and_failed_events_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				responseType, _ := cmd.PersistentFlags().GetString("responseType")
+				jsonResp, uptimeMetricResp, err := ApiGateway.GetApiSuccessFailedData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting API uptime data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(uptimeMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "top_events_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, err := ApiGateway.GetTopEventsData(cmd, clientAuth, nil)
 				if err != nil {
