@@ -169,8 +169,8 @@ func GetCPUCreditBalanceMetricData(clientAuth *model.Auth, instanceID, elementTy
 	return result, nil
 }
 
-func CpuCreditBalanceRawData(result *cloudwatch.GetMetricDataOutput) DBResult {
-	var rawData DBResult
+func CpuCreditBalanceRawData(result *cloudwatch.GetMetricDataOutput) CpuCreditBalanceResult {
+	var rawData CpuCreditBalanceResult
 	rawData.RawData = make([]struct {
 		Timestamp time.Time
 		Value     float64
