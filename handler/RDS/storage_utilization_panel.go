@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
@@ -42,7 +43,7 @@ var AwsxRDSStorageUtilizationCmd = &cobra.Command{
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
 			jsonResp, cloudwatchMetricResp, err := GetRDSStorageUtilizationPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting cpu utilization: ", err)
+				log.Println("Error getting storage utilization: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -142,9 +143,9 @@ func GetRDSStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, c
 
 	// Calculate average of all three volumes
 	averageStorageResult := StorageUtlizationResult{
-		RootVolumeUtilization: calculateAverage(rootVolumeUsage),
-		EBS1VolumeUtilization: calculateAverage(ebs1VolumeUsage) / 2, // Divide by 2
-		EBS2VolumeUtilization: calculateAverage(ebs2VolumeUsage) / 2, // Divide by 2
+		RootVolumeUtilization: round(calculateAverage(rootVolumeUsage)/1000000000, 2),
+		EBS1VolumeUtilization: round(calculateAverage(ebs1VolumeUsage)/2000000000, 2),
+		EBS2VolumeUtilization: round(calculateAverage(ebs2VolumeUsage)/2000000000, 2),
 	}
 
 	jsonString, err := json.Marshal(averageStorageResult)
@@ -160,7 +161,7 @@ func GetRDSStorageUtilizationMetricData(clientAuth *model.Auth, instanceID, elem
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
 
 	elmType := "AWS/RDS"
-	
+
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -169,8 +170,7 @@ func GetRDSStorageUtilizationMetricData(clientAuth *model.Auth, instanceID, elem
 				Id: aws.String("m1"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-						},
+						Dimensions: []*cloudwatch.Dimension{},
 						MetricName: aws.String(metricName),
 						Namespace:  aws.String(elmType),
 					},
@@ -201,6 +201,11 @@ func calculateAverage(result *cloudwatch.GetMetricDataOutput) float64 {
 		return sum / float64(len(result.MetricDataResults[0].Values))
 	}
 	return 0
+}
+
+func round(val float64, places int) float64 {
+	precision := math.Pow(10, float64(places))
+	return math.Round(val*precision) / precision
 }
 
 func init() {
