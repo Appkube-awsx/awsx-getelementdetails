@@ -1407,18 +1407,42 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "uptime_percentage_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
-                responseType, _ := cmd.PersistentFlags().GetString("responseType")
-                jsonResp, uptimeMetricResp, err := ApiGateway.GetApiUptimeData(cmd, clientAuth, nil)
-                if err != nil {
-                    log.Println("Error getting API uptime data: ", err)
-                    return
-                }
-                if responseType == "frame" {
-                    fmt.Println(uptimeMetricResp)
-                } else {
-                    fmt.Println(jsonResp)
-                }
-            } else if queryName == "cpu_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				responseType, _ := cmd.PersistentFlags().GetString("responseType")
+				jsonResp, uptimeMetricResp, err := ApiGateway.GetApiUptimeData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting API uptime data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(uptimeMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cache_hit_count_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				responseType, _ := cmd.PersistentFlags().GetString("responseType")
+				jsonResp, uptimeMetricResp, err := ApiGateway.GetApiCacheHitsData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting cache hit data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(uptimeMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cache_miss_count_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				responseType, _ := cmd.PersistentFlags().GetString("responseType")
+				jsonResp, uptimeMetricResp, err := ApiGateway.GetApiCacheMissData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting cache miss data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(uptimeMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "cpu_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSCpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting cpu utilization: ", err)
@@ -1850,6 +1874,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSTransactionLogsGenCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSWriteIOPSCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.ApiResponseTimeCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCacheHitsCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCacheMissCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
