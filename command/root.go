@@ -1003,7 +1003,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
                     return
                 }
                 fmt.Println(jsonResp)
-            } else if queryName == "resource_update_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+            } else if queryName == "failed_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+                jsonResp, err := ECS.GetECSFailedServiceEvents(cmd, clientAuth)
+                if err != nil {
+                    log.Println("Error getting resouce created panel: ", err)
+                    return
+                }
+                fmt.Println(jsonResp)
+            }  else if queryName == "resource_update_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
                 jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth)
                 if err != nil {
                     log.Println("Error getting resource updated panel: ", err)
