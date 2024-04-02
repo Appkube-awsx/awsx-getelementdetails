@@ -1028,7 +1028,21 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
-			} else if queryName == "active_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+			} else if queryName == "active_connection_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, err := ECS.GetECSActiveConnectionEvents(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting resouce created panel: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "new_connection_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, err := ECS.GetECSNewConnectionEvents(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting resouce created panel: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			}else if queryName == "active_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, err := ECS.GetECSActiveTaskEvents(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting active tasks panel: ", err)
