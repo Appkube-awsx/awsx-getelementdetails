@@ -149,7 +149,7 @@ func FilterDeletedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, 
 		// Flatten and append each element individually
 		for _, res := range result.Results {
 			for _, r := range res {
-				queryResults = append(queryResults)
+				queryResults = append(queryResults, result)
 				fmt.Println(r)
 
 			}

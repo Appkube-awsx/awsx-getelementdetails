@@ -102,18 +102,14 @@ func FilterCreatedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, 
 			continue
 		}
 
-		// Flatten and append each element individually
-		for _, res := range result.Results {
-			for _, r := range res {
-				queryResults = append(queryResults)
-				fmt.Println(r)
-			}
-		}
+		queryResults = append(queryResults, result)
 
 		break
 	}
+
 	return queryResults, nil
 }
+
 
 func init() {
 	AwsxResourceCreatedPanelCmd.PersistentFlags().String("logGroupName", "", "log group name")

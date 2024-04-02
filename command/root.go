@@ -994,7 +994,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(jsonResp)
 			} else if queryName == "resource_deleted_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth)
+				jsonResp, err := ECS.GetECSResourceDeletedEvents(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting resource deleted panel: ", err)
 					return
