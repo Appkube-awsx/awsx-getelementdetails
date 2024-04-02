@@ -14,8 +14,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type MetricResult struct {
-	Value float64 `json:"Value"`
+type ApiLatency struct {
+	RawData []struct {
+		Timestamp time.Time
+		Value     float64
+	} `json:"Latency "`
 }
 
 var AwsxApiLatencyCmd = &cobra.Command{
@@ -50,7 +53,7 @@ var AwsxApiLatencyCmd = &cobra.Command{
 	},
 }
 
-func GetApiLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]float64, error) {
+func GetApiLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	ApiName := "dev-hrms"
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -85,20 +88,20 @@ func GetApiLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 	// Debug prints
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	cloudwatchMetricData := map[string]float64{}
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := GetApiLatencyMetricValue(clientAuth, startTime, endTime, ApiName, cloudWatchClient)
+	metricValue, err := GetApiLatencyMetricValue(clientAuth, ApiName, startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting latency metric value: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["Latency"] = metricValue
-
+	result := processLatencyRawData(metricValue)
 	// Debug prints
-	log.Printf("Latency Metric Value: %f", metricValue)
+	//log.Printf("Latency Metric Value: %f", metricValue)
 
-	jsonString, err := json.Marshal(MetricResult{Value: metricValue})
+	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
@@ -107,7 +110,7 @@ func GetApiLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetApiLatencyMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, ApiName string, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
+func GetApiLatencyMetricValue(clientAuth *model.Auth, ApiName string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
@@ -124,7 +127,7 @@ func GetApiLatencyMetricValue(clientAuth *model.Auth, startTime, endTime *time.T
 						},
 					},
 					Period: aws.Int64(300), 
-					Stat:   aws.String("Average"),
+					Stat:   aws.String("Sum"),
 				},
 				ReturnData: aws.Bool(true),
 			},
@@ -139,24 +142,23 @@ func GetApiLatencyMetricValue(clientAuth *model.Auth, startTime, endTime *time.T
 
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
+     return result, nil
+}
 
-	if len(result.MetricDataResults) == 0 || len(result.MetricDataResults[0].Values) == 0 {
-		return 0, fmt.Errorf("no data available for the specified time range")
-	}
+func processLatencyRawData(result *cloudwatch.GetMetricDataOutput) ApiLatency {
+	var rawData ApiLatency
+	rawData.RawData = make([]struct {
+		Timestamp time.Time
+		Value     float64
+	}, len(result.MetricDataResults[0].Timestamps))
 
-	// If there is only one value, return it
-	if len(result.MetricDataResults[0].Values) == 1 {
-		return aws.Float64Value(result.MetricDataResults[0].Values[0]), nil
+	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+		rawData.RawData[i].Timestamp = *timestamp
+		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
 	}
-
-	// If there are multiple values, calculate the average
-	var sum float64
-	for _, v := range result.MetricDataResults[0].Values {
-		sum += aws.Float64Value(v)
-	}
-	return sum / float64(len(result.MetricDataResults[0].Values)), nil
+	return rawData
 }
 
 func init() {
