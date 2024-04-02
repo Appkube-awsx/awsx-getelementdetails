@@ -37,7 +37,7 @@ var AwsxResourceDeletedPanelCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			deletedEvents, err := GetECSResourceDeletedEvents(cmd, clientAuth)
+			deletedEvents, err := GetECSResourceDeletedEvents(cmd, clientAuth, nil)
 			if err != nil {
 				log.Fatalf("Error retrieving ECS resource deletion events: %v", err)
 				return
@@ -49,7 +49,7 @@ var AwsxResourceDeletedPanelCmd = &cobra.Command{
 	},
 }
 
-func GetECSResourceDeletedEvents(cmd *cobra.Command, clientAuth *model.Auth) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func GetECSResourceDeletedEvents(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
@@ -77,7 +77,7 @@ func GetECSResourceDeletedEvents(cmd *cobra.Command, clientAuth *model.Auth) ([]
 		return nil, err
 	}
 
-	deletedEvents, err := FilterDeletedEvents(clientAuth, startTime, endTime, logGroupName)
+	deletedEvents, err := FilterDeletedEvents(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
 		return nil, err
 	}
@@ -109,9 +109,10 @@ func parseTimeRange(startTimeStr, endTimeStr string) (*time.Time, *time.Time, er
 	return startTime, endTime, nil
 }
 
-func FilterDeletedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
-	cloudWatchLogs := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
-
+func FilterDeletedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+	if cloudWatchLogs == nil {
+		cloudWatchLogs = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
+	}
 	queryString := `fields @timestamp, eventName
 	| filter eventSource = "ecs.amazonaws.com" and (eventName = "DeleteCluster" or eventName = "DeregisterContainerInstance" or eventName = "DeleteService" or eventName = "DeleteTaskSet" or eventName = "DeregisterTaskDefinition" or eventName = "StopTask")
 	| stats count(*) as EventCount by eventName`

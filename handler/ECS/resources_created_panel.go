@@ -7,6 +7,8 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -35,7 +37,7 @@ var AwsxResourceCreatedPanelCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			createdEvents, err := GetECSResourceCreatedEvents(cmd, clientAuth)
+			createdEvents, err := GetECSResourceCreatedEvents(cmd, clientAuth, nil)
 			if err != nil {
 				log.Fatalf("Error retrieving ECS resource creation events: %v", err)
 				return
@@ -47,17 +49,35 @@ var AwsxResourceCreatedPanelCmd = &cobra.Command{
 	},
 }
 
-func GetECSResourceCreatedEvents(cmd *cobra.Command, clientAuth *model.Auth) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func GetECSResourceCreatedEvents(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return nil, err
+		}
+		logGroupName = cmdbData.LogGroup
+		fmt.Println("HELLPPP", logGroupName)
+
+	}
 
 	startTime, endTime, err := parseTimerange(startTimeStr, endTimeStr)
 	if err != nil {
 		return nil, err
 	}
 
-	createdEvents, err := FilterCreatedEvents(clientAuth, startTime, endTime, logGroupName)
+	createdEvents, err := FilterCreatedEvents(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +85,10 @@ func GetECSResourceCreatedEvents(cmd *cobra.Command, clientAuth *model.Auth) ([]
 	return createdEvents, nil
 }
 
-func FilterCreatedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
-	cloudWatchLogs := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
-
+func FilterCreatedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+	if cloudWatchLogs == nil {
+		cloudWatchLogs = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
+	}
 	queryString := `fields @timestamp, eventName
 	| filter eventSource = "ecs.amazonaws.com" and (eventName = "CreateCluster" or eventName = "RegisterContainerInstance" or eventName = "CreateService" or eventName = "RegisterTaskDefinition" or eventName = "CreateTask" or eventName = "RunTask")
 	| stats count(*) as EventCount by eventName`
@@ -109,7 +130,6 @@ func FilterCreatedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, 
 
 	return queryResults, nil
 }
-
 
 func init() {
 	AwsxResourceCreatedPanelCmd.PersistentFlags().String("logGroupName", "", "log group name")

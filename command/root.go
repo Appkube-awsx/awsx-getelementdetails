@@ -994,14 +994,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(jsonResp)
 			} else if queryName == "resource_deleted_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, err := ECS.GetECSResourceDeletedEvents(cmd, clientAuth)
+				jsonResp, err := ECS.GetECSResourceDeletedEvents(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting resource deleted panel: ", err)
 					return
 				}
 				fmt.Println(jsonResp)
 			} else if queryName == "resource_created_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, err := ECS.GetECSResourceCreatedEvents(cmd, clientAuth)
+				jsonResp, err := ECS.GetECSResourceCreatedEvents(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting resouce created panel: ", err)
 					return
@@ -1042,7 +1042,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
-			}else if queryName == "active_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+			} else if queryName == "active_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, err := ECS.GetECSActiveTaskEvents(cmd, clientAuth)
 				if err != nil {
 					log.Println("Error getting active tasks panel: ", err)
@@ -1050,7 +1050,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(jsonResp)
 			} else if queryName == "resource_update_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth)
+				jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting resource updated panel: ", err)
 					return
