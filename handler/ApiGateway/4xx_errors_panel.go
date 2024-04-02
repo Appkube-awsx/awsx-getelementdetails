@@ -15,7 +15,10 @@ import (
 )
 
 type Api4xxResult struct {
-	Value float64 `json:"Value"`
+	RawData []struct {
+		Timestamp time.Time
+		Value     float64
+	} `json:"4xx Errors"`
 }
 
 var AwsxApi4xxErrorCmd = &cobra.Command{
@@ -50,7 +53,7 @@ var AwsxApi4xxErrorCmd = &cobra.Command{
 	},
 }
 
-func GetApi4xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]float64, error) {
+func GetApi4xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	ApiName := "dev-hrms"
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -85,89 +88,79 @@ func GetApi4xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	// Debug prints
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	cloudwatchMetricData := map[string]float64{}
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := GetApi4xxErrorMetricValue(clientAuth, startTime, endTime, ApiName, cloudWatchClient)
+	metricValue, err := GetApi4xxErrorMetricValue(clientAuth, ApiName, startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting 4xx error metric value: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["4XXError"] = metricValue
 
-	// Debug prints
-	log.Printf("4XXError Metric Value: %f", metricValue)
+	result := process4xxErrorRawData(metricValue)
 
-	jsonString, err := json.Marshal(MetricResult{Value: metricValue})
+
+	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
 	}
 
-	return string(jsonString), cloudwatchMetricData, nil
+	return string(jsonString), cloudwatchMetricData,nil
 }
 
-func GetApi4xxErrorMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, ApiName string, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
-    input := &cloudwatch.GetMetricDataInput{
-        MetricDataQueries: []*cloudwatch.MetricDataQuery{
-            {
-                Id: aws.String("error_4xx"),
-                MetricStat: &cloudwatch.MetricStat{
-                    Metric: &cloudwatch.Metric{
-                        Namespace:  aws.String("AWS/ApiGateway"),
-                        MetricName: aws.String("4XXError"),
-                        Dimensions: []*cloudwatch.Dimension{
-                            {
-                                Name:  aws.String("ApiName"),
-                                Value: aws.String(ApiName),
-                            },
-                        },
-                    },
-                    Period: aws.Int64(300),
-                    Stat:   aws.String("Sum"), // Use Sum statistic to get total count
-                },
-                ReturnData: aws.Bool(true),
-            },
-        },
-        StartTime: startTime,
-        EndTime:   endTime,
-    }
+func GetApi4xxErrorMetricValue(clientAuth *model.Auth, ApiName string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	input := &cloudwatch.GetMetricDataInput{
+		MetricDataQueries: []*cloudwatch.MetricDataQuery{
+			{
+				Id: aws.String("error_4xx"),
+				MetricStat: &cloudwatch.MetricStat{
+					Metric: &cloudwatch.Metric{
+						Namespace:  aws.String("AWS/ApiGateway"),
+						MetricName: aws.String("4XXError"),
+						Dimensions: []*cloudwatch.Dimension{
+							{
+								Name:  aws.String("ApiName"),
+								Value: aws.String(ApiName),
+							},
+						},
+					},
+					Period: aws.Int64(300),
+					Stat:   aws.String("Sum"), // Use Sum statistic to get total count
+				},
+				ReturnData: aws.Bool(true),
+			},
+		},
+		StartTime: startTime,
+		EndTime:   endTime,
+	}
 
-    if cloudWatchClient == nil {
-        cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-    }
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 
-    result, err := cloudWatchClient.GetMetricData(input)
-    if err != nil {
-        return 0, err
-    }
+	result, err := cloudWatchClient.GetMetricData(input)
+	if err != nil {
+		return nil, err
+	}
 
-    // Print all data points
-    // for _, queryResult := range result.MetricDataResults {
-    //     log.Println("Data points retrieved:")
-    //     for i, timestamp := range queryResult.Timestamps {
-    //         log.Printf("Timestamp: %s, Value: %f", *timestamp, aws.Float64Value(queryResult.Values[i]))
-    //     }
-    // }
-
-    if len(result.MetricDataResults) == 0 || len(result.MetricDataResults[0].Values) == 0 {
-        return 0, fmt.Errorf("no data available for the specified time range")
-    }
-
-    // If there is only one value, return it
-    if len(result.MetricDataResults[0].Values) == 1 {
-        return aws.Float64Value(result.MetricDataResults[0].Values[0]), nil
-    }
-
-    // If there are multiple values, calculate the sum
-    var sum float64
-    for _, v := range result.MetricDataResults[0].Values {
-        sum += aws.Float64Value(v)
-    }
-    return sum, nil
+	return result, nil
 }
+func process4xxErrorRawData(result *cloudwatch.GetMetricDataOutput) Api4xxResult {
+	var rawData Api4xxResult
+	rawData.RawData = make([]struct {
+		Timestamp time.Time
+		Value     float64
+	}, len(result.MetricDataResults[0].Timestamps))
 
+	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+		rawData.RawData[i].Timestamp = *timestamp
+		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+	}
 
+	return rawData
+}
 
 func init() {
 	AwsxApi4xxErrorCmd.PersistentFlags().String("elementId", "", "element id")

@@ -15,7 +15,10 @@ import (
 )
 
 type Api5xxResult struct {
-	Value float64 `json:"Value"`
+	RawData []struct {
+		Timestamp time.Time
+		Value     float64
+	} `json:"5xx Errors"`
 }
 
 var AwsxApi5xxErrorCmd = &cobra.Command{
@@ -50,7 +53,7 @@ var AwsxApi5xxErrorCmd = &cobra.Command{
 	},
 }
 
-func GetApi5xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]float64, error) {
+func GetApi5xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	ApiName := "dev-hrms"
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -85,7 +88,7 @@ func GetApi5xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	// Debug prints
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	cloudwatchMetricData := map[string]float64{}
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
 	metricValue, err := GetApi5xxErrorMetricValue(clientAuth, startTime, endTime, ApiName, cloudWatchClient)
@@ -96,9 +99,11 @@ func GetApi5xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	cloudwatchMetricData["5XXError"] = metricValue
 
 	// Debug prints
-	log.Printf("5XXError Metric Value: %f", metricValue)
+	// log.Printf("5XXError Metric Value: %f", metricValue)
 
-	jsonString, err := json.Marshal(MetricResult{Value: metricValue})
+	result := process5xxErrorRawData(metricValue)
+
+	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
@@ -107,7 +112,7 @@ func GetApi5xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetApi5xxErrorMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, ApiName string, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
+func GetApi5xxErrorMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, ApiName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
@@ -139,24 +144,39 @@ func GetApi5xxErrorMetricValue(clientAuth *model.Auth, startTime, endTime *time.
 
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	if len(result.MetricDataResults) == 0 || len(result.MetricDataResults[0].Values) == 0 {
-		return 0, fmt.Errorf("no data available for the specified time range")
+	// if len(result.MetricDataResults) == 0 || len(result.MetricDataResults[0].Values) == 0 {
+	// 	return 0, fmt.Errorf("no data available for the specified time range")
+	// }
+
+	// // If there is only one value, return it
+	// if len(result.MetricDataResults[0].Values) == 1 {
+	// 	return aws.Float64Value(result.MetricDataResults[0].Values[0]), nil
+	// }
+
+	// // If there are multiple values, calculate the sum
+	// var sum float64
+	// for _, v := range result.MetricDataResults[0].Values {
+	// 	sum += aws.Float64Value(v)
+	// }
+	return result, nil
+}
+
+func process5xxErrorRawData(result *cloudwatch.GetMetricDataOutput) Api5xxResult {
+	var rawData Api5xxResult
+	rawData.RawData = make([]struct {
+		Timestamp time.Time
+		Value     float64
+	}, len(result.MetricDataResults[0].Timestamps))
+
+	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+		rawData.RawData[i].Timestamp = *timestamp
+		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
 	}
 
-	// If there is only one value, return it
-	if len(result.MetricDataResults[0].Values) == 1 {
-		return aws.Float64Value(result.MetricDataResults[0].Values[0]), nil
-	}
-
-	// If there are multiple values, calculate the sum
-	var sum float64
-	for _, v := range result.MetricDataResults[0].Values {
-		sum += aws.Float64Value(v)
-	}
-	return sum, nil
+	return rawData
 }
 
 func init() {
