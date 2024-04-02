@@ -93,7 +93,7 @@ func FilterActiveService(clientAuth *model.Auth, startTime, endTime *time.Time, 
 	cloudWatchLogs := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
 
 	queryString := `fields @timestamp, @message
-	| filter eventSource = "ecs.amazonaws.com" and @message like /service/ and not(@message like /ERROR|Exception|Failed/)
+	| filter eventSource = "ecs.amazonaws.com"  and @message like /active/ and @message like /service/ and not(@message like /ERROR|Exception|Failed/)
 	| stats count() as ActiveServiceCount by @timestamp
 	| sort @timestamp desc`
 
