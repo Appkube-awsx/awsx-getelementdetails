@@ -1,18 +1,18 @@
 package RDS
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
+	// "encoding/json"
+	// "fmt"
+	// "log"
 
 	"github.com/spf13/cobra"
 )
 
 type ScheduleOverview struct {
-	MaintenanceType string `json:"maintenance_type"`
-	Description     string `json:"description"`
-	StartTime       string `json:"start_time"`
-	EndTime         string `json:"end_time"`
+	MaintenanceType string `json:"MAINTENANCE TYPE"`
+	Description     string `json:"DESCRIPTION"`
+	StartTime       string `json:"START TIME"`
+	EndTime         string `json:"END TIME"`
 }
 
 var ListScheduleOverviewCmd = &cobra.Command{
@@ -48,12 +48,12 @@ func ListScheduleOverview() ([]ScheduleOverview, error) {
 		},
 	}
 
-	// Convert error events to JSON and print them
-	jsonData, err := json.MarshalIndent(scheduleoverview, "", "  ")
-	if err != nil {
-		log.Fatalf("Error marshalling JSON: %v", err)
-	}
-	fmt.Println(string(jsonData))
+	// // Convert error events to JSON and print them
+	// jsonData, err := json.MarshalIndent(scheduleoverview, "", "  ")
+	// if err != nil {
+	// 	log.Fatalf("Error marshalling JSON: %v", err)
+	// }
+	// fmt.Println(string(jsonData))
 	return scheduleoverview, nil
 }
 

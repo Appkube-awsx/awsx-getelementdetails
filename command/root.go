@@ -1600,10 +1600,10 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				for _, event := range events {
 					// Perform further processing on each event
-					fmt.Println("maintenance_type:", event.MaintenanceType)
-					fmt.Println("description:", event.Description)
-					fmt.Println("start_time:", event.StartTime)
-					fmt.Println("end_time:", event.EndTime)
+					fmt.Println("MAINTENANCE TYPE:", event.MaintenanceType)
+					fmt.Println("DESCRIPTION:", event.Description)
+					fmt.Println("START TIME:", event.StartTime)
+					fmt.Println("END TIME:", event.EndTime)
 					fmt.Println("---------------------------------------")
 				}
 
