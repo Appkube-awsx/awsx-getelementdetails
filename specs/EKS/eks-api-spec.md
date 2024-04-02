@@ -997,14 +997,33 @@ Algorithm:
 | 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="cpu_utilization_panel"  | This will get the specific EKS Cluster cpu utilization panel data in hybrid structure |
 | 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="storage_utilization_panel" | This will get the specific EKS Cluster storage utilization panel data in hybrid structure|
 | 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_utilization_panel"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_utilization_panel"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
-| 5    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="CPUrequests"  | This will get the specific EKS Cluster cpu requests to a pod panel data in hybrid structure |
-| 6    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="AllocatableCPU"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
-| 7    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="CPU_limits"  | This will get the specific EKS Cluster cpu limits in a pod, data in hybrid structure |
-| 8    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="cpu_utilization_panel"  | This will get the specific EKS Cluster cpu utilization panel data in hybrid structure |
-| 9    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_request_panel"  | This will get the specific EKS Cluster memory request panel data in hybrid structure |
-| 10    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_limits"  | This will get the specific EKS Cluster memory limits panel over a pod data in hybrid structure |
-| 11    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_utilization_panel"  | This will get the specific EKS Cluster network utilization panel data in hybrid structure |
-| 12    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_utilization_panel"  | This will get the specific EKS memory network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_utilization_panel"  | This will get the specific EKS Cluster memory utilization panel data in hybrid structure |
+| 5    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="cpu_requests_panel"  | This will get the specific EKS Cluster cpu requests to a pod panel data in hybrid structure |
+| 6    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="allocatable_cpu_panel"  | This will get the specific EKS Cluster allocatable cpu panel data in hybrid structure |
+| 7    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="cpu_limits_panel"  | This will get the specific EKS Cluster cpu limits in a pod, data in hybrid structure |
+| 8    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="cpu_graph_utilization_panel"  | This will get the specific EKS Cluster cpu graph utilization panel data in hybrid structure |
+| 9    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_requests_panel"  | This will get the specific EKS Cluster memory request panel data in hybrid structure |
+| 10    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_limits_panel"  | This will get the specific EKS Cluster memory limits panel over a pod data in hybrid structure |
+| 11    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="cpu_node_utilization_panel"  | This will get the specific EKS Cluster cpu node utilization panel data in hybrid structure |
+| 12    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_graph_utilization_panel"  | This will get the specific EKS memory graph utilization utilization panel data in hybrid structure |
 | 13    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="disk_utilization_panel"  | This will get the specific EKS Cluster disk utilization(ebs) panel data in hybrid structure |
 | 14    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_in_out_panel"  | This will get the specific EKS Cluster network in & out panel data in hybrid structure |
+| 15    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="memory_usage_panel"  | This will get the specific EKS Cluster memory usage panel data in hybrid structure |
+| 16    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_throughput_panel"  | This will get the specific EKS Cluster network throughput panel data in hybrid structure |
+| 17    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="node_capacity_panel"  | This will get the specific EKS Cluster node capacity panel data in hybrid structure |
+| 18    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="node_uptime_panel"  | This will get the specific EKS Cluster network in & out panel data in hybrid structure |
+| 19    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_throughput_single_panel"  | This will get the specific EKS Cluster network throughput single panel data in hybrid structure |
+| 20    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="node_downtime_panel"  | This will get the specific EKS Cluster node downtime panel data in hybrid structure |
+| 21    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="network_availability_panel"  | This will get the specific EKS Cluster network availability panel data in hybrid structure |
+| 22    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="service_availability_panel"  | This will get the specific EKS Cluster service availability panel data in hybrid structure |
+| 23    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="node_event_logs_panel"  | This will get the specific EKS Cluster node event logs panel data in hybrid structure |
+| 24    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="allocatable_memory_panel"  | This will get the specific EKS Cluster allocatable memory panel data in hybrid structure |
+| 25    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="resource_utilization_patterns_panel"  | This will get the specific EKS Cluster resource utilization patterns panel data in hybrid structure |
+| 26    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="disk_io_performance_panel"  | This will get the specific EKS Cluster disk io performance panel data in hybrid structure |
+| 27    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="node_stability_index_panel"  | This will get the specific EKS Cluster node stability index panel data in hybrid structure |
+| 28    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="9315" --elementType=EKS --query="incident_response_time_panel"  | This will get the specific EKS Cluster incident response timepanel data in hybrid structure |
+
+
+
+
+
