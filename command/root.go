@@ -1028,6 +1028,29 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
+			} else if queryName == "container_net_received_inbytes_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetECSContainerNetRxInBytesPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting container net received in bytes data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "container_net_transmit_inbytes_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetECSContainerNetTxInBytesPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting container net transmitted in bytes data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+
 			} else if queryName == "container_memory_usage_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetContainerMemoryUsageData(cmd, clientAuth, nil)
 				if err != nil {
