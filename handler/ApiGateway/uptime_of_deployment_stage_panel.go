@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
@@ -95,10 +96,24 @@ func GetApiUptimedata(cmd *cobra.Command, clientAuth *model.Auth) (string, error
 
 		uptimePercentage := calculateUptimePercentage(totalRequests, clientErrors, serverErrors)
 		downtimePercentage := 100 - uptimePercentage
+		uptimePercentagestr := strconv.FormatFloat(uptimePercentage, 'f', 2, 64)
+		downtimePercentagestr := strconv.FormatFloat(downtimePercentage, 'f', 2, 64)
+
+		uptimePercentageAvgFloat, err := strconv.ParseFloat(uptimePercentagestr, 64)
+		if err != nil {
+			log.Println("Error converting string to float64: ", err)
+			return "", err
+		}
+
+		downtimePercentageAvgFloat, err := strconv.ParseFloat(downtimePercentagestr, 64)
+		if err != nil {
+			log.Println("Error converting string to float64: ", err)
+			return "", err
+		}
 
 		cloudwatchMetricData[stage] = MetricResultss{
-			UptimePercentage:   uptimePercentage,
-			DowntimePercentage: downtimePercentage,
+			UptimePercentage:   uptimePercentageAvgFloat,
+			DowntimePercentage: downtimePercentageAvgFloat,
 		}
 
 		// log.Printf("Uptime Percentage for stage %s: %f", stage, uptimePercentage)
