@@ -1588,6 +1588,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "uptime_of_deployment_stages" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp := ApiGateway.GetApiUptimedata(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting uptime deployment data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_utilization_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSCpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -2040,6 +2051,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCacheHitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCacheMissCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiDowntimeIncidentsCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiUptimeCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiDeploymentCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
