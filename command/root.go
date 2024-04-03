@@ -1925,7 +1925,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 
-			} else if queryName == "error_analysis_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+			} else if queryName == "uptime_percentage" && (elementType == "RDS" || elementType == "AWS/RDS") {
+                jsonResp, cloudwatchMetricResp, err := RDS.GetRDSUptimeData(cmd, clientAuth, nil)
+                if err != nil {
+                    log.Println("Error getting uptime percentage data: ", err)
+                    return
+                }
+                if responseType == "frame" {
+                    fmt.Println(cloudwatchMetricResp)
+                } else {
+                    fmt.Println(jsonResp)
+                }
+            } else if queryName == "error_analysis_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, _ := RDS.GetErrorAnalysisData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting read iops: ", err)
@@ -2062,6 +2073,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSTransactionLogsGenCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSWriteIOPSCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSErrorAnalysisCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.ApiResponseTimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCacheHitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCacheMissCmd)
