@@ -1007,14 +1007,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
-			} else if queryName == "failed_task_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+			} else if queryName == "failed_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				failedTask, err := ECS.GetECSFailedTasksEvents(cmd, clientAuth, nil)
 				if err != nil {
 
 					return
 				}
 				fmt.Println(failedTask)
-			} else if queryName == "failed_service_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+			} else if queryName == "failed_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				failedService, err := ECS.GetECSFailedServiceEvents(cmd, clientAuth, nil)
 				if err != nil {
 
