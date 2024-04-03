@@ -1014,13 +1014,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
-			} else if queryName == "failed_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, err := ECS.GetECSFailedServiceEvents(cmd, clientAuth)
+			} else if queryName == "failed_service_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				failedService, err := ECS.GetECSFailedServiceEvents(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting resouce created panel: ", err)
+
 					return
 				}
-				fmt.Println(jsonResp)
+				fmt.Println(failedService)
 			} else if queryName == "active_service_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				activeService, err := ECS.GetECSActiveServiceEvents(cmd, clientAuth, nil)
 				if err != nil {
