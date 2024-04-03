@@ -1036,19 +1036,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(activeConnection)
 			} else if queryName == "new_connection_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, err := ECS.GetECSNewConnectionEvents(cmd, clientAuth)
-				if err != nil {
-					log.Println("Error getting resouce created panel: ", err)
-					return
-				}
-				fmt.Println(jsonResp)
-			} else if queryName == "active_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				activeService, err := ECS.GetECSActiveTaskEvents(cmd, clientAuth, nil)
+				newConnection, err := ECS.GetECSNewConnectionEvents(cmd, clientAuth, nil)
 				if err != nil {
 
 					return
 				}
-				fmt.Println(activeService)
+				fmt.Println(newConnection)
+
+			} else if queryName == "active_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				activeTask, err := ECS.GetECSActiveTaskEvents(cmd, clientAuth, nil)
+				if err != nil {
+
+					return
+				}
+				fmt.Println(activeTask)
 			} else if queryName == "resource_update_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth, nil)
 				if err != nil {
@@ -1926,17 +1927,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 
 			} else if queryName == "uptime_percentage" && (elementType == "RDS" || elementType == "AWS/RDS") {
-                jsonResp, cloudwatchMetricResp, err := RDS.GetRDSUptimeData(cmd, clientAuth, nil)
-                if err != nil {
-                    log.Println("Error getting uptime percentage data: ", err)
-                    return
-                }
-                if responseType == "frame" {
-                    fmt.Println(cloudwatchMetricResp)
-                } else {
-                    fmt.Println(jsonResp)
-                }
-            } else if queryName == "error_analysis_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSUptimeData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting uptime percentage data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "error_analysis_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, _ := RDS.GetErrorAnalysisData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting read iops: ", err)
