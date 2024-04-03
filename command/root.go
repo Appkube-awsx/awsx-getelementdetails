@@ -1021,13 +1021,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
-			} else if queryName == "active_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, err := ECS.GetECSActiveServiceEvents(cmd, clientAuth)
+			} else if queryName == "active_service_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				activeService, err := ECS.GetECSActiveServiceEvents(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting active services panel: ", err)
+
 					return
 				}
-				fmt.Println(jsonResp)
+				fmt.Println(activeService)
 			} else if queryName == "active_connection_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				activeConnection, err := ECS.GetECSActiveConnectionEvents(cmd, clientAuth, nil)
 				if err != nil {
