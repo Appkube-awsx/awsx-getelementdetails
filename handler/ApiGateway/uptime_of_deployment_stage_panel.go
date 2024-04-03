@@ -16,8 +16,8 @@ import (
 )
 
 type MetricResultss struct {
-	UptimePercentage   float64 `json:"uptimePercentage"`
-	DowntimePercentage float64 `json:"downtimePercentage"`
+	UptimePercentage   float64 `json:"Uptime Percentage"`
+	DowntimePercentage float64 `json:"Downtime Percentage"`
 }
 
 var AwsxApiDeploymentCmd = &cobra.Command{
@@ -209,7 +209,7 @@ func calculateUptimePercentage(totalRequests, clientErrors, serverErrors float64
 		return 100
 	}
 	uptimePercentage := (totalRequests / total) * 100
-	fmt.Println("Uptime percentage:", uptimePercentage)
+	//fmt.Println("Uptime percentage:", uptimePercentage)
 	return uptimePercentage
 }
 
