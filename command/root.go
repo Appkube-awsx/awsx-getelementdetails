@@ -1043,12 +1043,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(jsonResp)
 			} else if queryName == "active_tasks_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, err := ECS.GetECSActiveTaskEvents(cmd, clientAuth)
+				activeService, err := ECS.GetECSActiveTaskEvents(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting active tasks panel: ", err)
+
 					return
 				}
-				fmt.Println(jsonResp)
+				fmt.Println(activeService)
 			} else if queryName == "resource_update_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth, nil)
 				if err != nil {

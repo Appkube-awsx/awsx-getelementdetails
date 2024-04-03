@@ -7,6 +7,8 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -35,73 +37,92 @@ var AwsxActiveTaskPanelCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			activeEvents, err := GetECSActiveTaskEvents(cmd, clientAuth)
+			panel, err := GetECSActiveTaskEvents(cmd, clientAuth, nil)
 			if err != nil {
-				log.Fatalf("Error retrieving ECS active task events: %v", err)
 				return
 			}
-			for _, event := range activeEvents {
-				fmt.Println(event)
-			}
+			fmt.Println(panel)
+
 		}
 	},
 }
 
-func GetECSActiveTaskEvents(cmd *cobra.Command, clientAuth *model.Auth) ([]*cloudwatchlogs.ResultField, error) {
+func GetECSActiveTaskEvents(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return nil, err
+		}
+		logGroupName = cmdbData.LogGroup
+
+	}
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
-	startTime, endTime, err := parseTimerange(startTimeStr, endTimeStr)
-	if err != nil {
-		return nil, err
-	}
-
-	activeEvents, err := FilterActiveTask(clientAuth, startTime, endTime, logGroupName)
-	if err != nil {
-		return nil, err
-	}
-
-	return activeEvents, nil
-}
-
-func ParseTimeRangess(startTimeStr, endTimeStr string) (*time.Time, *time.Time, error) {
 	var startTime, endTime *time.Time
 
 	// Parse start time if provided
 	if startTimeStr != "" {
 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
 		if err != nil {
-			return nil, nil, fmt.Errorf("error parsing start time: %v", err)
+			log.Printf("Error parsing start time: %v", err)
+			err := cmd.Help()
+			if err != nil {
+
+			}
 		}
 		startTime = &parsedStartTime
+	} else {
+		defaultStartTime := time.Now().Add(-5 * time.Minute)
+		startTime = &defaultStartTime
 	}
 
-	// Parse end time if provided
 	if endTimeStr != "" {
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
-			return nil, nil, fmt.Errorf("error parsing end time: %v", err)
+			log.Printf("Error parsing end time: %v", err)
+			err := cmd.Help()
+			if err != nil {
+				// handle error
+			}
 		}
 		endTime = &parsedEndTime
+	} else {
+		defaultEndTime := time.Now()
+		endTime = &defaultEndTime
 	}
+	results, err := FilterActiveTask(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
+	if err != nil {
+		return nil, nil
+	}
+	processedResults := processQueryResults(results)
 
-	return startTime, endTime, nil
+	return processedResults, nil
 }
 
-func FilterActiveTask(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string) ([]*cloudwatchlogs.ResultField, error) {
-	cloudWatchLogs := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
-
-	queryString := `fields @timestamp, @message
-	| filter eventSource = "ecs.amazonaws.com" and @message like /task/ and not(@message like /ERROR|Exception|Failed/)
-	| stats count() as ActiveTaskCount by @timestamp
-	| sort @timestamp desc`
-
+func FilterActiveTask(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	params := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String(logGroupName),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
 		EndTime:      aws.Int64(endTime.Unix() * 1000),
-		QueryString:  aws.String(queryString),
+		QueryString: aws.String(`fields @timestamp, @message
+		| filter eventSource = "ecs.amazonaws.com" and @message like /task/ and not(@message like /ERROR|Exception|Failed/)
+		| stats count() as ActiveTaskCount by @timestamp
+		| sort @timestamp desc`),
+	}
+	if cloudWatchLogs == nil {
+		cloudWatchLogs = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
 	}
 
 	queryResult, err := cloudWatchLogs.StartQuery(params)
@@ -110,33 +131,53 @@ func FilterActiveTask(clientAuth *model.Auth, startTime, endTime *time.Time, log
 	}
 
 	queryId := queryResult.QueryId
-	var queryResults []*cloudwatchlogs.ResultField
-
+	var queryResults []*cloudwatchlogs.GetQueryResultsOutput // Declare queryResults outside the loop
 	for {
+		// Check query status
 		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
 			QueryId: queryId,
 		}
 
-		result, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
+		queryResult, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get query results: %v", err)
 		}
 
-		if *result.Status != "Complete" {
-			time.Sleep(5 * time.Second)
+		queryResults = append(queryResults, queryResult)
+
+		if *queryResult.Status != "Complete" {
+			time.Sleep(5 * time.Second) // wait before querying again
 			continue
 		}
 
-		// Flatten and append each element individually
-		for _, res := range result.Results {
-			for _, r := range res {
-				queryResults = append(queryResults, r)
-			}
-		}
-
-		break
+		break // exit loop if query is complete
 	}
+
 	return queryResults, nil
+}
+func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
+
+	for _, result := range results {
+		if *result.Status == "Complete" {
+			for _, resultField := range result.Results {
+				for _, data := range resultField {
+					if *data.Field == "failed" {
+
+						log.Printf("failed: %s\n", *data)
+
+						// You can perform further processing or store the instance count data as needed
+					}
+				}
+			}
+			processedResults = append(processedResults, result)
+
+		} else {
+			log.Println("Query status is not complete.")
+		}
+	}
+
+	return processedResults
 }
 
 func init() {
