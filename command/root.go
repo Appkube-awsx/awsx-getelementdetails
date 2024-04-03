@@ -1925,6 +1925,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 
+			} else if queryName == "error_analysis_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, _ := RDS.GetErrorAnalysisData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
+					return
+				}
+				for _, entry := range jsonResp {
+					fmt.Printf("%+v\n", entry)
+				}
+				// if responseType == "json" {
+				// 	fmt.Println(cloudwatchMetricResp)
+				// } else {
+				// 	fmt.Println(jsonResp)
+				// }
 			} else {
 				fmt.Println("query not found")
 			}
@@ -2047,6 +2061,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSTransactionLogsDiskCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSTransactionLogsGenCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSWriteIOPSCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSErrorAnalysisCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.ApiResponseTimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCacheHitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCacheMissCmd)
