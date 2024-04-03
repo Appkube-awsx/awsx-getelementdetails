@@ -1029,12 +1029,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(jsonResp)
 			} else if queryName == "active_connection_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, err := ECS.GetECSActiveConnectionEvents(cmd, clientAuth)
+				activeConnection, err := ECS.GetECSActiveConnectionEvents(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting resouce created panel: ", err)
+					//log.Println("Error getting resouce created panel: ", err)
 					return
 				}
-				fmt.Println(jsonResp)
+				fmt.Println(activeConnection)
 			} else if queryName == "new_connection_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, err := ECS.GetECSNewConnectionEvents(cmd, clientAuth)
 				if err != nil {
