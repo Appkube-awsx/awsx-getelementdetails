@@ -16,12 +16,12 @@ import (
 )
 
 var AwsxFailedServicePanelCmd = &cobra.Command{
-	Use:   "active_connection_panel",
-	Short: "Get ECS active connection events",
-	Long:  `Command to retrieve ECS active connection events`,
+	Use:   "failed_services_panel",
+	Short: "Get ECS failed services events",
+	Long:  `Command to retrieve ECS failed services events`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Running ECS resource updated panel command")
+		fmt.Println("Running ECS failed services command")
 
 		var authFlag bool
 		var clientAuth *model.Auth
