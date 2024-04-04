@@ -14,8 +14,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type CacheMissCount struct {
-	Value float64 `json:"Value"`
+type CacheMissResult struct {
+	TimeSeries []struct {
+		Timestamp time.Time
+		Value     float64
+	} `json:"timeSeries"`
 }
 
 var AwsxApiCacheMissCmd = &cobra.Command{
@@ -38,7 +41,7 @@ var AwsxApiCacheMissCmd = &cobra.Command{
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
 			jsonResp, cloudwatchMetricResp, err := GetApiCacheMissData(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting API cache hits data: ", err)
+				log.Println("Error getting API cache miss count data: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -50,7 +53,7 @@ var AwsxApiCacheMissCmd = &cobra.Command{
 	},
 }
 
-func GetApiCacheMissData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]float64, error) {
+func GetApiCacheMissData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	ApiName := "dev-hrms"
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -85,20 +88,19 @@ func GetApiCacheMissData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 	// Debug prints
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	cloudwatchMetricData := map[string]float64{}
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
 	metricValue, err := GetApiCacheMissMetricValue(clientAuth, startTime, endTime, ApiName, cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting API cache miss metric value: ", err)
+		log.Println("Error in getting API cache miss count metric value: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["CacheMiss"] = metricValue
 
-	// Debug prints
-	log.Printf("Cache Hits Metric Value: %f", metricValue)
+	result := processCacheMissRawData(metricValue)
 
-	jsonString, err := json.Marshal(CacheMissCount{Value: metricValue})
+	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
@@ -107,7 +109,7 @@ func GetApiCacheMissData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetApiCacheMissMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, ApiName string, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
+func GetApiCacheMissMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, ApiName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
@@ -139,30 +141,29 @@ func GetApiCacheMissMetricValue(clientAuth *model.Auth, startTime, endTime *time
 
 	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	// if len(result.MetricDataResults) == 0 || len(result.MetricDataResults[0].Values) == 0 {
-	// 	return 0, fmt.Errorf("no data available for the specified time range")
-	// }
+	return result, nil
+}
 
-	// If there is no data available for the specified time range, return 0 instead of an error
-	if len(result.MetricDataResults) == 0 || len(result.MetricDataResults[0].Values) == 0 {
-		log.Println("No data available for the specified time range. Returning 0.")
-		return 0, nil
+func processCacheMissRawData(result *cloudwatch.GetMetricDataOutput) CacheMissResult {
+	var timeSeries []struct {
+		Timestamp time.Time
+		Value     float64
 	}
 
-	// If there is only one value, return it
-	if len(result.MetricDataResults[0].Values) == 1 {
-		return aws.Float64Value(result.MetricDataResults[0].Values[0]), nil
+	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+		timeSeries = append(timeSeries, struct {
+			Timestamp time.Time
+			Value     float64
+		}{
+			Timestamp: *timestamp,
+			Value:     *result.MetricDataResults[0].Values[i],
+		})
 	}
 
-	// If there are multiple values, calculate the sum
-	var sum float64
-	for _, v := range result.MetricDataResults[0].Values {
-		sum += aws.Float64Value(v)
-	}
-	return sum, nil
+	return CacheMissResult{TimeSeries: timeSeries}
 }
 
 func init() {
