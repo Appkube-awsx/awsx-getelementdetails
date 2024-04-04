@@ -1,6 +1,7 @@
 package EC2
 
 import (
+	// "encoding/json"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -55,7 +56,7 @@ var AwsxEc2DiskAvailableCmd = &cobra.Command{
 	},
 }
 
-func GetDiskAvailablePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]interface{}, error) {
+func GetDiskAvailablePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
@@ -71,7 +72,7 @@ func GetDiskAvailablePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 		log.Println("cmdb url: " + apiUrl)
 		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
 		if err != nil {
-			return "", nil, err
+			return "",nil, err
 		}
 		instanceId = cmdbData.InstanceId
 	}
@@ -81,31 +82,39 @@ func GetDiskAvailablePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 
 	startTime, endTime, err := parseTimeRange(startTimeStr, endTimeStr)
 	if err != nil {
-		return "", nil, err
+		return "",nil, err
 	}
 
 	totalResult, usedResult, err := GetDiskTotalPanelMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting total and used disk space data: ", err)
-		return "", nil, err
+		return "",nil, err
 	}
 
 	// Process the CloudWatch metric data to calculate disk available data
 	availableData, err := processDiskAvailablePanelMetricData(totalResult, usedResult)
 	if err != nil {
 		log.Println("Error processing disk available data: ", err)
-		return "", nil, err
+		return "",nil, err
 	}
+	
+	// Create a map to store the metric data outputs
+	cloudwatchMetricData := make(map[string]*cloudwatch.GetMetricDataOutput)
 
-	// Marshal the calculated data into JSON format
-	jsonString, err := json.Marshal(availableData)
+	// Store the available data under the key "DiskAvailable"
+	cloudwatchMetricData["DiskAvailable"] = availableData
+
+	jsonResponse, err := json.Marshal(cloudwatchMetricData)
 	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
+		log.Println("Error marshaling cloudwatchMetricData to JSON: ", err)
 		return "", nil, err
 	}
 
-	return string(jsonString), availableData, nil
+	// Return the JSON response along with cloudwatchMetricData map and nil error
+	return string(jsonResponse), cloudwatchMetricData, nil
 }
+
+
 
 func GetDiskTotalPanelMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, *cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
@@ -179,29 +188,34 @@ func GetDiskTotalPanelMetricData(clientAuth *model.Auth, instanceID, elementType
 	return totalResult, usedResult, nil
 }
 
-func processDiskAvailablePanelMetricData(totalResult, usedResult *cloudwatch.GetMetricDataOutput) (map[string]interface{}, error) {
+func processDiskAvailablePanelMetricData(totalResult, usedResult *cloudwatch.GetMetricDataOutput) (*cloudwatch.GetMetricDataOutput, error) {
 	// Initialize slices to store timestamps and values separately
-	var timestamps []string
-	var values []float64
+	var timestamps []*time.Time
+	var values []*float64
 
 	// Iterate through the metric data points to collect timestamps and values
 	for i := 0; i < len(totalResult.MetricDataResults[0].Timestamps); i++ {
-		timestamp := *totalResult.MetricDataResults[0].Timestamps[i]
-		total := *totalResult.MetricDataResults[0].Values[i]
-		used := *usedResult.MetricDataResults[0].Values[i]
+		timestamp := totalResult.MetricDataResults[0].Timestamps[i]
+		total := totalResult.MetricDataResults[0].Values[i]
+		used := usedResult.MetricDataResults[0].Values[i]
 
 		// Calculate available disk space by subtracting used from total
-		available := total - used
+		available := *total - *used
 
 		// Append timestamp and value to their respective slices
-		timestamps = append(timestamps, timestamp.String())
-		values = append(values, available)
+		timestamps = append(timestamps, timestamp)
+		values = append(values, &available)
 	}
 
 	// Create a map with "Timestamps" and "Values" keys
-	data := make(map[string]interface{})
-	data["DiskAvailable"] = timestamps
-	data["Values"] = values
+	data := &cloudwatch.GetMetricDataOutput{
+		MetricDataResults: []*cloudwatch.MetricDataResult{
+			{
+				Timestamps: timestamps,
+				Values:     values,
+			},
+		},
+	}
 
 	return data, nil
 }
