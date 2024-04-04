@@ -2,9 +2,11 @@ package ApiGateway
 
 import (
 	"fmt"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"log"
 	"time"
+
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
@@ -59,7 +61,11 @@ func GetTopEventsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs
 			apiUrl = config.CmdbUrl
 		}
 		log.Println("cmdb url: " + apiUrl)
-
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return nil, err
+		}
+		logGroupName = cmdbData.LogGroup
 	}
 
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
