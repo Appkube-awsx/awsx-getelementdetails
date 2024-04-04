@@ -2,9 +2,11 @@ package ApiGateway
 
 import (
 	"fmt"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"log"
 	"time"
+
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
@@ -59,7 +61,11 @@ func GetFailedEventData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLo
 			apiUrl = config.CmdbUrl
 		}
 		log.Println("cmdb url: " + apiUrl)
-
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return nil, err
+		}
+		logGroupName = cmdbData.LogGroup
 	}
 
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -135,7 +141,6 @@ func FilterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
 			QueryId: queryId,
 		}
-		
 
 		queryResult, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
 		if err != nil {
