@@ -1601,7 +1601,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "total_api_calls_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
-				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetTotalApiData(clientAuth,nil)
+				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiCallsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting total api request data: ", err)
 					return
@@ -2092,6 +2092,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiDowntimeIncidentsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiDeploymentCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCallsCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
