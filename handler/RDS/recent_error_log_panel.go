@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+
 	// "net/http"
 	// "strconv"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 
@@ -71,7 +73,12 @@ func GetRdsErrorLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 			log.Println("using default cmdb url")
 			apiUrl = config.CmdbUrl
 		}
-		log.Println("cmdb url: " + apiUrl)
+        log.Println("cmdb url: " + apiUrl)
+        cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+        if err != nil {
+            return "","", err
+        }
+        logGroupName = cmdbData.LogGroup
 	}
 
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
