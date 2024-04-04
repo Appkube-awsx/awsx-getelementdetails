@@ -1,8 +1,11 @@
 package RDS
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	// "net/http"
+	// "strconv"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
@@ -36,25 +39,27 @@ var AwsxRdsErrorLogsCmd = &cobra.Command{
 		}
 
 		if authFlag {
-			_, err := GetRdsErrorLogsPanel(cmd, clientAuth, nil)
+			jsonResp, rawLogs, err := GetRdsErrorLogsPanel(cmd, clientAuth, nil)
 			if err != nil {
 				log.Printf("Error retrieving RDS error logs: %v\n", err)
 				return
 			}
-			// fmt.Println(panel) // Not printing panel directly to demonstrate the custom processing
+			fmt.Println("JSON Response:")
+			fmt.Println(jsonResp)
+			fmt.Println("\nRaw Logs:")
+			fmt.Println(rawLogs)
 		}
 	},
 }
 
 type RdsErrorLogEntry struct {
-	Timestamp   time.Time
-	ErrorType   string
-	ErrorCode   string
-	Description string
-	Resolution  string
+	Timestamp   string // Change type to string
+	ErrorType   string // Change field name to ErrorType
+	ErrorCode   int    // Store HTTP status code only
+	Description string // No changes here
 }
 
-func GetRdsErrorLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]RdsErrorLogEntry, error) {
+func GetRdsErrorLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) (string, string, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
@@ -80,7 +85,7 @@ func GetRdsErrorLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 			log.Printf("Error parsing start time: %v", err)
 			err := cmd.Help()
 			if err != nil {
-				return nil, err
+				return "", "", err
 			}
 		}
 		startTime = &parsedStartTime
@@ -95,7 +100,7 @@ func GetRdsErrorLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 			log.Printf("Error parsing end time: %v", err)
 			err := cmd.Help()
 			if err != nil {
-				return nil, err
+				return "", "", err
 			}
 		}
 		endTime = &parsedEndTime
@@ -106,11 +111,23 @@ func GetRdsErrorLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 
 	results, err := filterCloudWatchLogsRDS(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 
 	processedResults := processQueryResults(results)
-	return processedResults, nil
+	jsonResp, err := json.Marshal(processedResults)
+	if err != nil {
+		log.Println("Error marshalling JSON: ", err)
+		return "", "", err
+	}
+
+	// Concatenate raw logs
+	rawLogs := ""
+	for _, log := range processedResults {
+		rawLogs += fmt.Sprintf("%s\t%s\t%s\t%d\n", log.Timestamp, log.ErrorType, log.Description, log.ErrorCode)
+	}
+
+	return string(jsonResp), rawLogs, nil
 }
 
 func filterCloudWatchLogsRDS(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
@@ -118,9 +135,10 @@ func filterCloudWatchLogsRDS(clientAuth *model.Auth, startTime, endTime *time.Ti
 		LogGroupName: aws.String(logGroupName),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
 		EndTime:      aws.Int64(endTime.Unix() * 1000),
-		QueryString: aws.String(`filter @logStream = 'postgresql.0' and @message like /ERROR/
-| fields @timestamp, @message
-| limit 20`),
+		QueryString: aws.String(`fields @timestamp, @message, errorCode, eventType, errorMessage
+| filter eventSource = 'rds.amazonaws.com' 
+| filter ispresent(responseElements) or ispresent(errorCode)
+| limit 1000`),
 	}
 
 	if cloudWatchLogs == nil {
@@ -161,6 +179,16 @@ func filterCloudWatchLogsRDS(clientAuth *model.Auth, startTime, endTime *time.Ti
 func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []RdsErrorLogEntry {
 	errorLogs := make([]RdsErrorLogEntry, 0)
 
+	// Map error codes to HTTP status codes
+	errorCodeMap := map[string]int{
+		"DBInstanceNotFoundFault":              404,
+		"AccessDenied":                         403,
+		"InvalidParameterCombinationException":  400,
+		"InvalidParameterValueException":       400,
+		"InternalFailure":                      500, // Mapping for InternalFailure
+		// Add more mappings as needed
+	}
+
 	for _, result := range results {
 		if *result.Status == "Complete" {
 			for _, res := range result.Results {
@@ -168,33 +196,58 @@ func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []RdsE
 
 				for _, field := range res {
 					if *field.Field == "@timestamp" {
-						t, err := time.Parse("2006-01-02 15:04:05.000", *field.Value)
+						t, err := time.Parse("2006-01-02 15:04:05.000", *field.Value) // Adjust timestamp format
 						if err != nil {
-							log.Printf("Error parsing timestamp: %v", 							err)
-							continue
+							log.Printf("Error parsing timestamp: %v", err)
 						}
-						entry.Timestamp = t
-					} else if *field.Field == "@message" {
-						// Example parsing logic for message field to extract error type, error code, description, and resolution
-						// Assuming message format is: ERROR: type: <type>, code: <code>, description: <description>, resolution: <resolution>
-						message := *field.Value
-						var err error
-						_, err = fmt.Sscanf(message, "ERROR: type: %s, code: %s, description: %s, resolution: %s", &entry.ErrorType, &entry.ErrorCode, &entry.Description, &entry.Resolution)
-						if err != nil {
-							log.Printf("Error parsing message: %v", err)
+						entry.Timestamp = t.String()
+					}
+					if *field.Field == "errorCode" {
+						entry.ErrorType = *field.Value
+					}
+					if *field.Field == "errorCode" {
+						if code, ok := errorCodeMap[*field.Value]; ok {
+							entry.ErrorCode = code
+						} else {
+							entry.ErrorCode = 500 // Default to Internal Server Error if code not found
 						}
 					}
+					if *field.Field == "errorMessage" {
+						entry.Description = *field.Value
+					}
+					// Add more field mappings as needed
 				}
 
 				errorLogs = append(errorLogs, entry)
 			}
-		} else {
-			log.Println("Query status is not complete.")
 		}
 	}
 
 	return errorLogs
 }
+
+
+
+
+// func convertToHTTPStatusCode(errorCode int) int {
+//     // Map error codes to corresponding HTTP status codes
+//     switch errorCode {
+//     case 400:
+//         return http.StatusBadRequest
+//     case 401:
+//         return http.StatusUnauthorized
+//     case 403:
+//         return http.StatusForbidden
+//     case 404:
+//         return http.StatusNotFound
+//     case 500:
+//         return http.StatusInternalServerError
+//     // Add more mappings as needed
+//     default:
+//         return errorCode // Return the error code as is if no mapping is found
+//     }
+// }
+
 
 func init() {
 	AwsxRdsErrorLogsCmd.PersistentFlags().String("elementId", "", "Element ID")
@@ -203,4 +256,3 @@ func init() {
 	AwsxRdsErrorLogsCmd.PersistentFlags().String("startTime", "", "Start Time")
 	AwsxRdsErrorLogsCmd.PersistentFlags().String("endTime", "", "End Time")
 }
-
