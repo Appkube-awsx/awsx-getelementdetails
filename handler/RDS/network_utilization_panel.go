@@ -18,8 +18,8 @@ import (
 )
 
 type NetworkResult struct {
-	InboundTraffic  float64 `json:"Network RX"`
-	OutboundTraffic float64 `json:"Network TX"`
+	InboundTraffic  float64 `json:"Inbound Traffic"`
+	OutboundTraffic float64 `json:"Outbound Traffic"`
 	DataTransferred float64 `json:"DataTransferred"`
 }
 

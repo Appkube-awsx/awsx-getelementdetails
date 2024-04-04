@@ -19,7 +19,7 @@ type CPUSurplusCreditChargedResult struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"CPU_Surplus_Credit_Balance"`
+	} `json:"CPU_Surplus_Credit_Charged"`
 }
 
 // Define a CLI command to get CPU Surplus Credit Balance for RDS instances

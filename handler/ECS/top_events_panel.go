@@ -1,11 +1,10 @@
-package ApiGateway
+package ECS
 
 import (
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
@@ -16,14 +15,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxApiFailedEventCmd = &cobra.Command{
+var AwsxApiECSTopEventsCmd = &cobra.Command{
 
-	Use:   "failed_event_panel",
-	Short: "Get failed event metrics data",
-	Long:  `Command to get failed event metrics data`,
+	Use:   "top_events_panel",
+	Short: "Get top event metrics data",
+	Long:  `Command to get top event metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Running failed event panel command")
+		fmt.Println("Running top event panel command")
 
 		var authFlag bool
 		var clientAuth *model.Auth
@@ -39,7 +38,7 @@ var AwsxApiFailedEventCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			panel, err := GetFailedEventData(cmd, clientAuth, nil)
+			panel, err := GetECSTopEventsData(cmd, clientAuth, nil)
 			if err != nil {
 				return
 			}
@@ -48,7 +47,7 @@ var AwsxApiFailedEventCmd = &cobra.Command{
 	},
 }
 
-func GetFailedEventData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func GetECSTopEventsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
@@ -61,11 +60,7 @@ func GetFailedEventData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLo
 			apiUrl = config.CmdbUrl
 		}
 		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return nil, err
-		}
-		logGroupName = cmdbData.LogGroup
+
 	}
 
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -103,25 +98,26 @@ func GetFailedEventData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLo
 		endTime = &defaultEndTime
 	}
 
-	results, err := FilterCloudWatchLogs(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
+	results, err := FilterCloudWatchLog(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
 	if err != nil {
 		return nil, nil
 	}
-	processedResults := ProcessQueryResultss(results)
+	processedResults := ProcessQueryResults(results)
 
 	return processedResults, nil
 
 }
 
-func FilterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func FilterCloudWatchLog(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	params := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String(logGroupName),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
 		EndTime:      aws.Int64(endTime.Unix() * 1000),
-		QueryString: aws.String(`fields @timestamp, eventType, errorMessage
-		| filter eventSource = 'apigateway.amazonaws.com' 
-		| filter ispresent(errorMessage) 
-		| display @timestamp, eventType, errorMessage`),
+		QueryString: aws.String(`fields @timestamp, @message
+		| filter eventSource = 'ecs.amazonaws.com'
+		| stats count() as count by eventName, @timestamp
+		| limit 10
+		`),
 	}
 
 	if cloudWatchLogs == nil {
@@ -159,20 +155,17 @@ func FilterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 	return queryResults, nil
 }
 
-func ProcessQueryResultss(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+func ProcessQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
 	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
 
 	for _, result := range results {
 		if *result.Status == "Complete" {
 			for _, resultField := range result.Results {
 				for _, data := range resultField {
-					if *data.Field == "eventType" {
+					if *data.Field == "eventName" {
 
-						log.Printf("eventType: %s\n", *data)
+						log.Printf("eventName: %s\n", *data)
 
-					} else if *data.Field == "errorMessage" {
-
-						log.Printf("errorMessage: %s\n", *data)
 					}
 				}
 			}
@@ -186,8 +179,8 @@ func ProcessQueryResultss(results []*cloudwatchlogs.GetQueryResultsOutput) []*cl
 }
 
 func init() {
-	AwsxApiFailedEventCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxApiFailedEventCmd.PersistentFlags().String("functionName", "", "Lambda function name")
-	AwsxApiFailedEventCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxApiFailedEventCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxApiECSTopEventsCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	AwsxApiECSTopEventsCmd.PersistentFlags().String("functionName", "", "Lambda function name")
+	AwsxApiECSTopEventsCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxApiECSTopEventsCmd.PersistentFlags().String("endTime", "", "end time")
 }

@@ -14,17 +14,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type ApiLatency struct {
-	RawData []struct {
+type CacheHitsResult struct {
+	TimeSeries []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"Latency "`
+	} `json:"timeSeries"`
 }
 
-var AwsxApiLatencyCmd = &cobra.Command{
-	Use:   "api_latency_panel",
-	Short: "get latency metrics data",
-	Long:  `command to get latency metrics data`,
+var AwsxApiCacheHitsCmd = &cobra.Command{
+	Use:   "cache_hit_count_panel",
+	Short: "get cache hits metrics data",
+	Long:  `command to get cache hits metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -39,9 +39,9 @@ var AwsxApiLatencyCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetApiLatencyData(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetApiCacheHitsData(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting API latency data: ", err)
+				log.Println("Error getting API cache hits data: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -53,7 +53,7 @@ var AwsxApiLatencyCmd = &cobra.Command{
 	},
 }
 
-func GetApiLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetApiCacheHitsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	ApiName := "dev-hrms"
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -91,15 +91,14 @@ func GetApiLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := GetApiLatencyMetricValue(clientAuth, ApiName, startTime, endTime, "Sum", cloudWatchClient)
+	metricValue, err := GetApiCacheHitsMetricValue(clientAuth, startTime, endTime, ApiName, cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting latency metric value: ", err)
+		log.Println("Error in getting API cache hits metric value: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["Latency"] = metricValue
-	result := processLatencyRawData(metricValue)
-	// Debug prints
-	//log.Printf("Latency Metric Value: %f", metricValue)
+	cloudwatchMetricData["CacheHits"] = metricValue
+
+	result := processCacheHitsRawData(metricValue)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
@@ -110,15 +109,15 @@ func GetApiLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetApiLatencyMetricValue(clientAuth *model.Auth, ApiName string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetApiCacheHitsMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, ApiName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Id: aws.String("latency"),
+				Id: aws.String("cacheHits"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
 						Namespace:  aws.String("AWS/ApiGateway"),
-						MetricName: aws.String("Latency"),
+						MetricName: aws.String("CacheHitCount"),
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("ApiName"),
@@ -126,8 +125,8 @@ func GetApiLatencyMetricValue(clientAuth *model.Auth, ApiName string, startTime,
 							},
 						},
 					},
-					Period: aws.Int64(300), 
-					Stat:   aws.String("Sum"),
+					Period: aws.Int64(300),
+					Stat:   aws.String("Sum"), // Sum to get the total count
 				},
 				ReturnData: aws.Bool(true),
 			},
@@ -144,39 +143,45 @@ func GetApiLatencyMetricValue(clientAuth *model.Auth, ApiName string, startTime,
 	if err != nil {
 		return nil, err
 	}
-     return result, nil
+
+	return result, nil
 }
 
-func processLatencyRawData(result *cloudwatch.GetMetricDataOutput) ApiLatency {
-	var rawData ApiLatency
-	rawData.RawData = make([]struct {
+func processCacheHitsRawData(result *cloudwatch.GetMetricDataOutput) CacheHitsResult {
+	var timeSeries []struct {
 		Timestamp time.Time
 		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
+	}
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+		timeSeries = append(timeSeries, struct {
+			Timestamp time.Time
+			Value     float64
+		}{
+			Timestamp: *timestamp,
+			Value:     *result.MetricDataResults[0].Values[i],
+		})
 	}
-	return rawData
+
+	return CacheHitsResult{TimeSeries: timeSeries}
 }
 
 func init() {
-	AwsxApiLatencyCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxApiLatencyCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxApiLatencyCmd.PersistentFlags().String("query", "", "query")
-	AwsxApiLatencyCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxApiLatencyCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxApiLatencyCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxApiLatencyCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxApiLatencyCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxApiLatencyCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxApiLatencyCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxApiLatencyCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxApiLatencyCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxApiLatencyCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxApiLatencyCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxApiLatencyCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxApiLatencyCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxApiLatencyCmd.PersistentFlags().String("ApiName", "", "api name")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("query", "", "query")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxApiCacheHitsCmd.PersistentFlags().String("ApiName", "", "api name")
 }

@@ -102,7 +102,7 @@ func GetErrorMessageCountData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 	if err != nil {
 		return nil, nil
 	}
-	processedResults := processQueryResults(results)
+	processedResults := processQueryResult(results)
 
 	
 
