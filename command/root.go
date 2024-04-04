@@ -1958,7 +1958,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "recent_error_log_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetRdsErrorLogsPanel(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting read iops: ", err)
+					log.Println("Error getting recent error logs: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "recent_event_log_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp,err := RDS.GetRecentEventLogsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting recent events logs: ", err)
 					return
 				}
 				if responseType == "frame" {
