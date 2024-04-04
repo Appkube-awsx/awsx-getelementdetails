@@ -1050,7 +1050,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(activeTask)
-			} else if queryName == "resource_update_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+			} else if queryName == "resource_updated_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, err := ECS.GetECSResourceUpdatedEvents(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting resource updated panel: ", err)
