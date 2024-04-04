@@ -1000,10 +1000,10 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
-			} else if queryName == "resource_created_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+			} else if queryName == "resources_created_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, err := ECS.GetECSResourceCreatedEvents(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting resouce created panel: ", err)
+					log.Println("Error getting resource created panel: ", err)
 					return
 				}
 				fmt.Println(jsonResp)
@@ -1021,7 +1021,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(failedService)
-			} else if queryName == "active_service_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+			} else if queryName == "active_services_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				activeService, err := ECS.GetECSActiveServiceEvents(cmd, clientAuth, nil)
 				if err != nil {
 
