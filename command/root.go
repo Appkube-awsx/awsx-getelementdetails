@@ -1091,6 +1091,24 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "service_error_panel" && (elementType == "ECS" || elementType == "AWS/ECS") {
+				events, err := ECS.ListServiceErrors()
+				if err != nil {
+					return
+				}
+				for _, event := range events {
+					// Perform further processing on each event
+					fmt.Println("TIME STAMP:", event.Timestamp)
+					fmt.Println("SERVICE NAME:", event.ServiceName)
+					fmt.Println("TASK ID:", event.TaskID)
+					fmt.Println("ERROR TYPE:", event.ErrorType)
+					fmt.Println("ERROR DESCRIPTION:", event.ErrorDescription)
+					fmt.Println("RESOLUTION TIME:", event.ResolutionTime)
+					fmt.Println("IMPACT LEVEL:", event.ImpactLevel)
+					fmt.Println("RESOLUTION DETAILS:", event.ResolutionDetails)
+					fmt.Println("STATUS:", event.Status)
+					fmt.Println("---------------------------------------")
+				}
 				// } else if queryName == "iam_role_and_policies_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				// 	jsonResp, cloudwatchMetricResp, err := ECS.GetECSIAMRolesPanel(cmd, clientAuth)
 				// 	if err != nil {
@@ -1938,7 +1956,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 
 			} else if queryName == "recent_error_log_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp,err := RDS.GetRdsErrorLogsPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRdsErrorLogsPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting read iops: ", err)
 					return
@@ -2063,6 +2081,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxResourceCreatedPanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxResourceDeletedPanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxResourceUpdatedPanelCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxEcsServiceErrorCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaSuccessFailureCmd)
