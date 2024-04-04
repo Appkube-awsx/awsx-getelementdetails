@@ -84,7 +84,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				if err != nil {
 					return
 				}
-				fmt.Println(cloudwatchMetricData)
+				// fmt.Println(cloudwatchMetricData)
 
 			} else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth, nil)

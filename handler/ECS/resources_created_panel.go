@@ -68,7 +68,6 @@ func GetECSResourceCreatedEvents(cmd *cobra.Command, clientAuth *model.Auth, clo
 			return nil, err
 		}
 		logGroupName = cmdbData.LogGroup
-		fmt.Println("HELLPPP", logGroupName)
 
 	}
 

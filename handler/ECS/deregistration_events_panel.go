@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
@@ -60,7 +61,11 @@ func GetDeRegistrationEventsData(cmd *cobra.Command, clientAuth *model.Auth, clo
 			apiUrl = config.CmdbUrl
 		}
 		log.Println("cmdb url: " + apiUrl)
-
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return nil, err
+		}
+		logGroupName = cmdbData.LogGroup
 	}
 
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
