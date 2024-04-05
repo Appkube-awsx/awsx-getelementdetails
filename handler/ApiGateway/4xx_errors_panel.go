@@ -100,14 +100,13 @@ func GetApi4xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 
 	result := process4xxErrorRawData(metricValue)
 
-
 	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
 	}
 
-	return string(jsonString), cloudwatchMetricData,nil
+	return string(jsonString), cloudwatchMetricData, nil
 }
 
 func GetApi4xxErrorMetricValue(clientAuth *model.Auth, ApiName string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {

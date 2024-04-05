@@ -66,7 +66,6 @@ func GetECSResourceDeletedEvents(cmd *cobra.Command, clientAuth *model.Auth, clo
 			return nil, err
 		}
 		logGroupName = cmdbData.LogGroup
-		fmt.Println("HELLPPP", logGroupName)
 
 	}
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -147,14 +146,16 @@ func FilterDeletedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, 
 			continue
 		}
 
-		// Flatten and append each element individually
-		for _, res := range result.Results {
-			for _, r := range res {
-				queryResults = append(queryResults, result)
-				fmt.Println(r)
+		// // Flatten and append each element individually
+		// for _, res := range result.Results {
+		// 	for _, r := range res {
+		// 		queryResults = append(queryResults, result)
+		// 		fmt.Println(r)
 
-			}
-		}
+		// 	}
+		// }
+		queryResults = append(queryResults, result)
+
 		break
 	}
 	return queryResults, nil

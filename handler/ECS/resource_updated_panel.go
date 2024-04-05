@@ -68,7 +68,6 @@ func GetECSResourceUpdatedEvents(cmd *cobra.Command, clientAuth *model.Auth, clo
 			return nil, err
 		}
 		logGroupName = cmdbData.LogGroup
-		fmt.Println("HELLPPP", logGroupName)
 
 	}
 
@@ -148,13 +147,13 @@ func FilterUpdatedEvents(clientAuth *model.Auth, startTime, endTime *time.Time, 
 		}
 
 		// Flatten and append each element individually
-		for _, res := range result.Results {
-			for _, r := range res {
-				queryResults = append(queryResults, result)
-				fmt.Println(r)
-			}
-		}
-
+		// for _, res := range result.Results {
+		// 	for _, r := range res {
+		// 		queryResults = append(queryResults, result)
+		// 		fmt.Println(r)
+		// 	}
+		// }
+		queryResults = append(queryResults, result)
 		break
 	}
 	return queryResults, nil

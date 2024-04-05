@@ -84,7 +84,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				if err != nil {
 					return
 				}
-				fmt.Println(cloudwatchMetricData)
+				// fmt.Println(cloudwatchMetricData)
 
 			} else if queryName == "custom_alert_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				cloudwatchMetric, _ := EC2.GetEc2CustomAlertPanel(cmd, clientAuth, nil)
@@ -1091,6 +1091,35 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "uptime_percentage_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetECSUptimeData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting uptime percentage: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "service_error_panel" && (elementType == "ECS" || elementType == "AWS/ECS") {
+				events, err := ECS.ListServiceErrors()
+				if err != nil {
+					return
+				}
+				for _, event := range events {
+					// Perform further processing on each event
+					fmt.Println("TIME STAMP:", event.Timestamp)
+					fmt.Println("SERVICE NAME:", event.ServiceName)
+					fmt.Println("TASK ID:", event.TaskID)
+					fmt.Println("ERROR TYPE:", event.ErrorType)
+					fmt.Println("ERROR DESCRIPTION:", event.ErrorDescription)
+					fmt.Println("RESOLUTION TIME:", event.ResolutionTime)
+					fmt.Println("IMPACT LEVEL:", event.ImpactLevel)
+					fmt.Println("RESOLUTION DETAILS:", event.ResolutionDetails)
+					fmt.Println("STATUS:", event.Status)
+					fmt.Println("---------------------------------------")
+				}
 				// } else if queryName == "iam_role_and_policies_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				// 	jsonResp, cloudwatchMetricResp, err := ECS.GetECSIAMRolesPanel(cmd, clientAuth)
 				// 	if err != nil {
@@ -1937,6 +1966,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 
+			} else if queryName == "recent_error_log_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRdsErrorLogsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting recent error logs: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "recent_event_log_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
+				jsonResp, cloudwatchMetricResp,err := RDS.GetRecentEventLogsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting recent events logs: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "uptime_percentage" && (elementType == "RDS" || elementType == "AWS/RDS") {
 				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSUptimeData(cmd, clientAuth, nil)
 				if err != nil {
@@ -2052,6 +2103,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxResourceCreatedPanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxResourceDeletedPanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxResourceUpdatedPanelCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxEcsServiceErrorCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaSuccessFailureCmd)
