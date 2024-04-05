@@ -1,6 +1,7 @@
 package RDS
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -119,19 +120,21 @@ func GetRecentEventLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	}
 
 	processedResults := processQueryResult(results)
-	jsonResp, err := json.Marshal(processedResults)
-	if err != nil {
-		log.Println("Error marshalling JSON: ", err)
-		return "", "", err
-	}
+	jsonResp, err := json.MarshalIndent(processedResults, "", "\t")
+    if err != nil {
+        log.Println("Error marshalling JSON: ", err)
+        return "", "", err
+    }
 
-	// Concatenate raw logs
-	rawLogs := ""
-	for _, log := range processedResults {
-		rawLogs += fmt.Sprintf("%s\t%s\t%s\t%s\t%s\n", log.Timestamp, log.EventName, log.SourceIPAddress, log.EventSource, log.UserAgent)
-	}
+    // Concatenate raw logs
+    var rawLogsBuffer bytes.Buffer
+    for _, log := range processedResults {
+        rawLogsBuffer.WriteString(fmt.Sprintf("%s\t%s\t%s\t%s\t%s\n", log.Timestamp, log.EventName, log.SourceIPAddress, log.EventSource, log.UserAgent))
+        rawLogsBuffer.WriteString("\n") // Add a newline character after each log entry
+    }
+    rawLogs := rawLogsBuffer.String()
 
-	return string(jsonResp), rawLogs, nil
+    return string(jsonResp), rawLogs, nil
 }
 
 func filterCloudWatchLogRDS(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {

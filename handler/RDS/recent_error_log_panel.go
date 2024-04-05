@@ -1,6 +1,7 @@
 package RDS
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -73,12 +74,12 @@ func GetRdsErrorLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 			log.Println("using default cmdb url")
 			apiUrl = config.CmdbUrl
 		}
-        log.Println("cmdb url: " + apiUrl)
-        cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-        if err != nil {
-            return "","", err
-        }
-        logGroupName = cmdbData.LogGroup
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", "", err
+		}
+		logGroupName = cmdbData.LogGroup
 	}
 
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
@@ -122,19 +123,22 @@ func GetRdsErrorLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	}
 
 	processedResults := processQueryResults(results)
-	jsonResp, err := json.Marshal(processedResults)
+	jsonResp, err := json.MarshalIndent(processedResults, "", "\t")
 	if err != nil {
 		log.Println("Error marshalling JSON: ", err)
 		return "", "", err
 	}
 
 	// Concatenate raw logs
-	rawLogs := ""
+	var rawLogsBuffer bytes.Buffer
 	for _, log := range processedResults {
-		rawLogs += fmt.Sprintf("%s\t%s\t%s\t%d\n", log.Timestamp, log.ErrorType, log.Description, log.ErrorCode)
+		rawLogsBuffer.WriteString(fmt.Sprintf("%s\t%s\t%s\t%d\n", log.Timestamp, log.ErrorType, log.Description, log.ErrorCode))
+		rawLogsBuffer.WriteString("\n") // Add a newline character after each log entry
 	}
+	rawLogs := rawLogsBuffer.String()
 
 	return string(jsonResp), rawLogs, nil
+
 }
 
 func filterCloudWatchLogsRDS(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
@@ -190,7 +194,7 @@ func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []RdsE
 	errorCodeMap := map[string]int{
 		"DBInstanceNotFoundFault":              404,
 		"AccessDenied":                         403,
-		"InvalidParameterCombinationException":  400,
+		"InvalidParameterCombinationException": 400,
 		"InvalidParameterValueException":       400,
 		"InternalFailure":                      500, // Mapping for InternalFailure
 		// Add more mappings as needed
@@ -233,9 +237,6 @@ func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []RdsE
 	return errorLogs
 }
 
-
-
-
 // func convertToHTTPStatusCode(errorCode int) int {
 //     // Map error codes to corresponding HTTP status codes
 //     switch errorCode {
@@ -254,7 +255,6 @@ func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []RdsE
 //         return errorCode // Return the error code as is if no mapping is found
 //     }
 // }
-
 
 func init() {
 	AwsxRdsErrorLogsCmd.PersistentFlags().String("elementId", "", "Element ID")
