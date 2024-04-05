@@ -1091,6 +1091,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "uptime_percentage_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+				jsonResp, cloudwatchMetricResp, err := ECS.GetECSUptimeData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting uptime percentage: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "service_error_panel" && (elementType == "ECS" || elementType == "AWS/ECS") {
 				events, err := ECS.ListServiceErrors()
 				if err != nil {
@@ -2093,6 +2104,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxResourceDeletedPanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxResourceUpdatedPanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxEcsServiceErrorCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaSuccessFailureCmd)
