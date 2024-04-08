@@ -2060,6 +2060,19 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(targetDegistration)
+			} else if queryName == "connection_errors_panel" && (elementType == "AWS/NetworkELB") {
+				targetStatuses, printresp, err := NLB.GetNLBConnectionErrorsData(cmd,clientAuth,nil)
+				if err != nil {
+					log.Println("Error getting target status:", err)
+					return
+				}
+
+				if responseType == "frame" {
+					fmt.Println(targetStatuses)
+				} else {
+					fmt.Println(printresp)
+				}
+
 			} else if queryName == "active_connections_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
 				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBActiveConnectionsPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -2241,4 +2254,6 @@ func init() {
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	AwsxCloudWatchMetricsCmd.PersistentFlags().String("loadBalancerArn", "", "NLB Load Balancer ARN")
+
 }
