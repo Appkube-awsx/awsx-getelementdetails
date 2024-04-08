@@ -72,7 +72,6 @@ func GetLambdaNumberOfCallsPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 		}
 		log.Println("cmdb url: " + apiUrl)
 
-
 	}
 
 	var startTime, endTime *time.Time
@@ -108,7 +107,7 @@ func GetLambdaNumberOfCallsPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	totalInvocations, err := GetLambdaNumberOfCallsMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum" ,cloudWatchClient)
+	totalInvocations, err := GetLambdaNumberOfCallsMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -130,45 +129,44 @@ func GetLambdaNumberOfCallsPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 func GetLambdaNumberOfCallsMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 
 	input := &cloudwatch.GetMetricDataInput{
-        StartTime: startTime,
-        EndTime:   endTime,
-        MetricDataQueries: []*cloudwatch.MetricDataQuery{
-            {
-                Id: aws.String("m1"),
-                MetricStat: &cloudwatch.MetricStat{
-                    Metric: &cloudwatch.Metric{
-                        Namespace:  aws.String("AWS/Lambda"),
-                        MetricName: aws.String("Invocations"),
-                        Dimensions: []*cloudwatch.Dimension{
-                            // {
-                            //     Name:  aws.String("FunctionName"),
-                            //     Value: aws.String(instanceId),
-                            // },
-                        },
-                    },
-                    Period: aws.Int64(300), // Adjust period as needed (e.g., 5 minutes)
-                    Stat:   aws.String(statistic),
-                },
-            },
-        },
-    }
+		StartTime: startTime,
+		EndTime:   endTime,
+		MetricDataQueries: []*cloudwatch.MetricDataQuery{
+			{
+				Id: aws.String("m1"),
+				MetricStat: &cloudwatch.MetricStat{
+					Metric: &cloudwatch.Metric{
+						Namespace:  aws.String("AWS/Lambda"),
+						MetricName: aws.String("Invocations"),
+						Dimensions: []*cloudwatch.Dimension{
+							// {
+							//     Name:  aws.String("FunctionName"),
+							//     Value: aws.String(instanceId),
+							// },
+						},
+					},
+					Period: aws.Int64(300), // Adjust period as needed (e.g., 5 minutes)
+					Stat:   aws.String(statistic),
+				},
+			},
+		},
+	}
 
-    if cloudWatchClient == nil {
-        cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-    }
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 
-    result, err := cloudWatchClient.GetMetricData(input)
-    if err != nil {
-        return nil, err
-    }
+	result, err := cloudWatchClient.GetMetricData(input)
+	if err != nil {
+		return nil, err
+	}
 
-    if len(result.MetricDataResults) == 0 {
-        return nil, fmt.Errorf("no data available for the specified time range")
-    }
+	if len(result.MetricDataResults) == 0 {
+		return nil, fmt.Errorf("no data available for the specified time range")
+	}
 
-    return result, nil
+	return result, nil
 }
-
 
 func processRawData(result *cloudwatch.GetMetricDataOutput) NumberOfCallsResult {
 	var rawData NumberOfCallsResult

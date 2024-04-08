@@ -10,6 +10,7 @@ import (
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/ECS"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/EKS"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/Lambda"
+	"github.com/Appkube-awsx/awsx-getelementdetails/handler/NLB"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/RDS"
 	"github.com/spf13/cobra"
 )
@@ -1978,7 +1979,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "recent_event_log_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp,err := RDS.GetRecentEventLogsPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRecentEventLogsPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting recent events logs: ", err)
 					return
@@ -2013,6 +2014,55 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				// } else {
 				// 	fmt.Println(jsonResp)
 				// }
+			} else if queryName == "error_log_panel" && (elementType == "AWS/NetworkELB") {
+				jsonResp, err := NLB.GetNLBErrorLogData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting error log data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "target_health_check_configuration_panel" && (elementType == "AWS/NetworkELB") {
+				jsonResp, err := NLB.GetNLBTargetHealthCheckData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting target health  check configuration data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "target_status_panel" && (elementType == "AWS/NetworkELB") {
+				targetStatuses, printresp, err := NLB.GetTargetStatussPanel(clientAuth)
+				if err != nil {
+					log.Println("Error getting target status:", err)
+					return
+				}
+
+				if responseType == "frame" {
+					fmt.Println(targetStatuses)
+				} else {
+					fmt.Println(printresp)
+				}
+
+			} else if queryName == "active_connections_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBActiveConnectionsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "new_connections_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBNewConnectionsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else {
 				fmt.Println("query not found")
 			}
@@ -2146,6 +2196,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiDeploymentCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCallsCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBActiveConnectionsCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBNewConnectionsCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
