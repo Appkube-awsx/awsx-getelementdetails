@@ -2041,6 +2041,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(printresp)
 				}
 
+			} else if queryName == "target_deregistrations_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				targetDegistration, err := NLB.GetTargetDeregistrationspanel(cmd, clientAuth, nil)
+				if err != nil {
+
+					return
+				}
+				fmt.Println(targetDegistration)
 			} else if queryName == "active_connections_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
 				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBActiveConnectionsPanel(cmd, clientAuth, nil)
 				if err != nil {
