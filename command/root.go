@@ -2040,6 +2040,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(printresp)
 				}
+			} else if queryName == "security_group_configuration_panel" && (elementType == "AWS/NetworkELB") {
+				securityGroup, printresp, err := NLB.GetSecurityGroupConfigurations(clientAuth)
+				if err != nil {
+					log.Println("Error getting security group configuration:", err)
+					return
+				}
+
+				if responseType == "frame" {
+					fmt.Println(securityGroup)
+				} else {
+					fmt.Println(printresp)
+				}
 
 			} else if queryName == "target_deregistrations_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
 				targetDegistration, err := NLB.GetTargetDeregistrationspanel(cmd, clientAuth, nil)
