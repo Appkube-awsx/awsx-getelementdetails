@@ -2036,6 +2036,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				// 	}
 				// 	fmt.Println(jsonResp)
 
+			} else if queryName == "active_connections_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBActiveConnectionsPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else {
 				fmt.Println("query not found")
 			}
@@ -2169,6 +2180,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiDeploymentCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ApiGateway.AwsxApiCallsCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBActiveConnectionsCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
