@@ -208,7 +208,7 @@ func ProcessQueryResult(results []*cloudwatchlogs.GetQueryResultsOutput) []*clou
 
 func init() {
 	AwsxNLBTargetHealthCheckCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxNLBTargetHealthCheckCmd.PersistentFlags().String("clusterName", "", "ECS cluster name")
+
 	AwsxNLBTargetHealthCheckCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxNLBTargetHealthCheckCmd.PersistentFlags().String("endTime", "", "end time")
 }

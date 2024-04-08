@@ -2014,27 +2014,32 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				// } else {
 				// 	fmt.Println(jsonResp)
 				// }
-			} else if queryName == "error_log_panel" && (elementType == "AWS/ApplicationELB" || elementType == "AWS/NetworkELB") {
+			} else if queryName == "error_log_panel" && (elementType == "AWS/NetworkELB") {
 				jsonResp, err := NLB.GetNLBErrorLogData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting error log data: ", err)
 					return
 				}
 				fmt.Println(jsonResp)
-			} else if queryName == "target_health_check_configuration_panel" && (elementType == "AWS/ApplicationELB" || elementType == "AWS/NetworkELB") {
+			} else if queryName == "target_health_check_configuration_panel" && (elementType == "AWS/NetworkELB") {
 				jsonResp, err := NLB.GetNLBTargetHealthCheckData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting target health  check configuration data: ", err)
 					return
 				}
 				fmt.Println(jsonResp)
-				// } else if queryName == "target_status_panel" && (elementType == "AWS/ApplicationELB" || elementType == "AWS/NetworkELB") {
-				// 	jsonResp, err := NLB.GetTargetStatusPanel(cmd, clientAuth)
-				// 	if err != nil {
-				// 		log.Println("Error getting target status  data: ", err)
-				// 		return
-				// 	}
-				// 	fmt.Println(jsonResp)
+			} else if queryName == "target_status_panel" && (elementType == "AWS/NetworkELB") {
+				targetStatuses, printresp, err := NLB.GetTargetStatussPanel(clientAuth)
+				if err != nil {
+					log.Println("Error getting target status:", err)
+					return
+				}
+
+				if responseType == "frame" {
+					fmt.Println(targetStatuses)
+				} else {
+					fmt.Println(printresp)
+				}
 
 			} else if queryName == "active_connections_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
 				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBActiveConnectionsPanel(cmd, clientAuth, nil)
