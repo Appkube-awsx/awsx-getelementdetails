@@ -113,14 +113,14 @@ func GetRDSIopsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 		log.Println("Error in getting network inbound data: ", err)
 		return "", "", nil, err
 	}
-	cloudwatchMetricData["Inbound Traffic"] = rawReadIopsData
+	cloudwatchMetricData["Read"] = rawReadIopsData
 
 	rawWriteIopsData, err := GetIopsMetricData(clientAuth, elementType, startTime, endTime, "WriteIOPS", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting network outbound data: ", err)
 		return "", "", nil, err
 	}
-	cloudwatchMetricData["Outbound Traffic"] = rawWriteIopsData
+	cloudwatchMetricData["Write"] = rawWriteIopsData
 
 	// Process raw inbound data
 	resultInbound := processedTheRawData(rawReadIopsData)
