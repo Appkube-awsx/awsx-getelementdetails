@@ -2117,6 +2117,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "unhealthy_host_count_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBUnhealthyHostCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else {
 				fmt.Println("query not found")
 			}
@@ -2254,6 +2265,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBNewConnectionsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBProcessedBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBHealthyHostCountCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBUnhealthyHostCountCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
