@@ -2061,7 +2061,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(targetDegistration)
 			} else if queryName == "connection_errors_panel" && (elementType == "AWS/NetworkELB") {
-				targetStatuses, printresp, err := NLB.GetNLBConnectionErrorsData(cmd,clientAuth,nil)
+				targetStatuses, printresp, err := NLB.GetNLBConnectionErrorsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting target status:", err)
 					return
@@ -2097,6 +2097,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 			} else if queryName == "processed_bytes_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
 				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBProcessedBytesPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting read iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "healthy_host_count_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBHealthyHostCountPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting read iops: ", err)
 					return
@@ -2242,6 +2253,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBActiveConnectionsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBNewConnectionsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBProcessedBytesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBHealthyHostCountCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
