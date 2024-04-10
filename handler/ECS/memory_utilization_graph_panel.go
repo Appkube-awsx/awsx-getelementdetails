@@ -152,7 +152,7 @@ func GetMemoryUtilizationGraphMetricData(clientAuth *model.Auth, instanceId, ele
                         MetricName: aws.String("MemoryUtilized"),
                         Namespace:  aws.String(elmType),
                     },
-                    Period: aws.Int64(900),
+                    Period: aws.Int64(60),
                     Stat:   aws.String("Average"),
                 },
             },
