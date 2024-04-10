@@ -857,7 +857,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "memory_graph_utilization_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
+			} else if queryName == "memory_utilization_graph_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
 				jsonResp, cloudwatchMetricResp, err := ECS.GetMemoryUtilizationGraphData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory utilization graph for ECS: ", err)
