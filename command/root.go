@@ -2040,6 +2040,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(printresp)
 				}
+			} else if queryName == "target_error_count_panel" && (elementType == "AWS/NetworkELB") {
+				targetStatuses, printresp, err := NLB.GetTargetErrorCountData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting target status:", err)
+					return
+				}
+
+				if responseType == "frame" {
+					fmt.Println(targetStatuses)
+				} else {
+					fmt.Println(printresp)
+				}
 			} else if queryName == "security_group_configuration_panel" && (elementType == "AWS/NetworkELB") {
 				securityGroup, printresp, err := NLB.GetSecurityGroupConfigurations(clientAuth)
 				if err != nil {
