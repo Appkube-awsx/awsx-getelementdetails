@@ -12,6 +12,7 @@ import (
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/Lambda"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/NLB"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/RDS"
+
 	"github.com/spf13/cobra"
 )
 
@@ -151,16 +152,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "disk_io_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				jsonResp, cloudwatchMetricResp, err := EC2.GetEC2DiskIOPerformancePanel(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting memory utilization: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
+				//jsonResp, cloudwatchMetricResp, err := EC2.GetEC2DiskIOPerformancePanel(cmd, clientAuth, nil)
+				//if err != nil {
+				//	log.Println("Error getting memory utilization: ", err)
+				//	return
+				//}
+				//if responseType == "frame" {
+				//	fmt.Println(cloudwatchMetricResp)
+				//} else {
+				//	fmt.Println(jsonResp)
+				//}
 			} else if queryName == "network_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -2184,7 +2185,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutboundCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2AlarmandNotificationcmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskIOPerformanceCmd)
+	//AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskIOPerformanceCmd)
 	//AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStopCmdTest)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkOutBytesCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
