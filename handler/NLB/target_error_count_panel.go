@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	// "github.com/Appkube-awsx/awsx-common/cmdb"
+	 "github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
@@ -69,11 +69,11 @@ func GetTargetErrorCountData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 			apiUrl = config.CmdbUrl
 		}
 		log.Println("cmdb url: " + apiUrl)
-		// cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		// if err != nil {
-		// 	return "", nil, err
-		// }
-		// instanceId = cmdbData.InstanceId
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
 
 	}
 
@@ -129,7 +129,7 @@ func GetTargetErrorCountData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNlbTargetErrorCountMetricValue(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetNlbTargetErrorCountMetricValue(clientAuth *model.Auth, instanceId string, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
@@ -139,7 +139,7 @@ func GetNlbTargetErrorCountMetricValue(clientAuth *model.Auth, instanceId, eleme
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String("net/a0affec9643ca40c5a4e837eab2f07fb/f623f27b6210158f"),
+								Value: aws.String(instanceId),
 							},
 						},
 						Namespace:  aws.String("AWS/NetworkELB"),

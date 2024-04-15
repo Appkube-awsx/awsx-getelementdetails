@@ -8,6 +8,8 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -56,10 +58,29 @@ var AwsxNLBHealthyHostCountCmd = &cobra.Command{
 }
 
 func GetNLBHealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
+	//nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	//elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
 	var startTime, endTime *time.Time
 
 	if startTimeStr != "" {
@@ -91,7 +112,7 @@ func GetNLBHealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetNLBHealthyHostCountMetricData(clientAuth, nlbArn, startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := GetNLBHealthyHostCountMetricData(clientAuth, instanceId, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting NLB healthy host count data: ", err)
 		return "", nil, err
@@ -109,8 +130,9 @@ func GetNLBHealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNLBHealthyHostCountMetricData(clientAuth *model.Auth, nlbArn string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for NLB %s from %v to %v", nlbArn, startTime, endTime)
+func GetNLBHealthyHostCountMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	log.Printf("Getting metric data for NLB %s from %v to %v", instanceId, startTime, endTime)
+	elmType := "AWS/NetworkELB"
 
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
@@ -123,7 +145,7 @@ func GetNLBHealthyHostCountMetricData(clientAuth *model.Auth, nlbArn string, sta
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String("net/a0affec9643ca40c5a4e837eab2f07fb/f623f27b6210158f"),
+								Value: aws.String(instanceId),
 							},
 							{
 								Name:  aws.String("TargetGroup"),
@@ -131,7 +153,7 @@ func GetNLBHealthyHostCountMetricData(clientAuth *model.Auth, nlbArn string, sta
 							},
 						},
 						MetricName: aws.String("HealthyHostCount"),
-						Namespace:  aws.String("AWS/NetworkELB"),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String(statistic),
@@ -167,7 +189,7 @@ func processNLBHealthyHostCountRawData(result *cloudwatch.GetMetricDataOutput) H
 }
 
 func init() {
-	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("nlbArn", "", "NLB ARN")
+	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("instanceId", "", "instanceId")
 	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("endTime", "", "end time")
 	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("responseType", "", "response type. json/frame")

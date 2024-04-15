@@ -9,7 +9,7 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 
-	// "github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
@@ -61,9 +61,9 @@ var AwsxNLBSSLTLSNegotiationCmd = &cobra.Command{
 
 func GetSSLTLSNegotiationDataData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	lbID, _ := cmd.PersistentFlags().GetString("lbID")
+	//lbID, _ := cmd.PersistentFlags().GetString("lbID")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-	// instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
@@ -75,8 +75,12 @@ func GetSSLTLSNegotiationDataData(cmd *cobra.Command, clientAuth *model.Auth, cl
 			log.Println("using default cmdb url")
 			apiUrl = config.CmdbUrl
 		}
-		log.Println("cmdb url: "+apiUrl, lbID)
-
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
 
 	}
 
@@ -111,7 +115,7 @@ func GetSSLTLSNegotiationDataData(cmd *cobra.Command, clientAuth *model.Auth, cl
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	// Fetch raw data
-	rawData, err := GetSSLTLSNegotiationDataMetricData(clientAuth, lbID, elementType, startTime, endTime, cloudWatchClient)
+	rawData, err := GetSSLTLSNegotiationDataMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -158,9 +162,9 @@ func GetSSLTLSNegotiationDataData(cmd *cobra.Command, clientAuth *model.Auth, cl
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetSSLTLSNegotiationDataMetricData(clientAuth *model.Auth, lbID, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetSSLTLSNegotiationDataMetricData(clientAuth *model.Auth, instanceId string, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 
-	log.Printf("Getting SSL/TLS negotiation metric data for NLB %s from %v to %v", lbID, startTime, endTime)
+	log.Printf("Getting SSL/TLS negotiation metric data for NLB %s from %v to %v", instanceId, startTime, endTime)
 
 	// Replace this block with actual code to fetch SSL/TLS negotiation metrics from CloudWatch
 	input := &cloudwatch.GetMetricDataInput{
@@ -174,7 +178,7 @@ func GetSSLTLSNegotiationDataMetricData(clientAuth *model.Auth, lbID, elementTyp
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String("net/a0affec9643ca40c5a4e837eab2f07fb/f623f27b6210158f"),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("ClientTLSNegotiationErrorCount"),
@@ -191,7 +195,7 @@ func GetSSLTLSNegotiationDataMetricData(clientAuth *model.Auth, lbID, elementTyp
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String("net/a0affec9643ca40c5a4e837eab2f07fb/f623f27b6210158f"),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("TargetTLSNegotiationErrorCount"),
@@ -211,7 +215,7 @@ func GetSSLTLSNegotiationDataMetricData(clientAuth *model.Auth, lbID, elementTyp
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return result, nil
 }
 
@@ -222,21 +226,19 @@ func processssltlsrawdata(result *cloudwatch.GetMetricDataOutput) SSLTLSNegotiat
 	// Assuming the two metrics have the same number of data points
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
 		rawData.SSLTLSNegotiationData[i].Timestamp = *timestamp
-	
+
 		clientTLSNegotiationErrorCount := *result.MetricDataResults[0].Values[i]
 		targetTLSNegotiationErrorCount := *result.MetricDataResults[1].Values[i]
 
-		
 		SSLTLSNegotiationData := clientTLSNegotiationErrorCount + targetTLSNegotiationErrorCount
 
-	
 		rawData.SSLTLSNegotiationData[i].SSLTLSNegotiationData = SSLTLSNegotiationData
 	}
 	return rawData
 }
 
 func init() {
-	AwsxNLBSSLTLSNegotiationCmd.PersistentFlags().String("lbID", "", "NLB ID")
+	AwsxNLBSSLTLSNegotiationCmd.PersistentFlags().String("instanceId", "", "instanceId")
 	AwsxNLBSSLTLSNegotiationCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxNLBSSLTLSNegotiationCmd.PersistentFlags().String("endTime", "", "end time")
 	AwsxNLBSSLTLSNegotiationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")

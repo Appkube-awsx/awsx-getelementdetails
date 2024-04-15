@@ -8,6 +8,8 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -56,7 +58,27 @@ var AwsxNLBUnhealthyHostCountCmd = &cobra.Command{
 }
 
 func GetNLBUnhealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
+	//nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	//elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -91,7 +113,7 @@ func GetNLBUnhealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, c
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetNLBUnhealthyHostCountMetricData(clientAuth, nlbArn, startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := GetNLBUnhealthyHostCountMetricData(clientAuth, instanceId, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting NLB unhealthy host count data: ", err)
 		return "", nil, err
@@ -109,8 +131,8 @@ func GetNLBUnhealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, c
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNLBUnhealthyHostCountMetricData(clientAuth *model.Auth, nlbArn string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for NLB %s from %v to %v", nlbArn, startTime, endTime)
+func GetNLBUnhealthyHostCountMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	log.Printf("Getting metric data for NLB %s from %v to %v", instanceId, startTime, endTime)
 
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
@@ -123,7 +145,7 @@ func GetNLBUnhealthyHostCountMetricData(clientAuth *model.Auth, nlbArn string, s
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String("net/a0affec9643ca40c5a4e837eab2f07fb/f623f27b6210158f"),
+								Value: aws.String(instanceId),
 							},
 							{
 								Name:  aws.String("TargetGroup"),
@@ -167,7 +189,7 @@ func processNLBUnhealthyHostCountRawData(result *cloudwatch.GetMetricDataOutput)
 }
 
 func init() {
-	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("nlbArn", "", "NLB ARN")
+	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("instanceId", "", "instanceId")
 	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("endTime", "", "end time")
 	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("responseType", "", "response type. json/frame")

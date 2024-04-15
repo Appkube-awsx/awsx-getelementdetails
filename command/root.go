@@ -2079,9 +2079,9 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 
 				if responseType == "frame" {
-					fmt.Println(targetStatuses)
-				} else {
 					fmt.Println(printresp)
+				} else {
+					fmt.Println(targetStatuses)
 				}
 
 			} else if queryName == "active_connections_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-	// "github.com/Appkube-awsx/awsx-common/cmdb"
+	 "github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
@@ -71,11 +71,11 @@ func GetNLBNewFlowCountTLSPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 			apiUrl = config.CmdbUrl
 		}
 		log.Println("cmdb url: " + apiUrl)
-		// cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		// if err != nil {
-		// 	return "", nil, err
-		// }
-		// instanceId = cmdbData.InstanceId
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
 
 	}
 
@@ -147,7 +147,7 @@ func GetNLBNewFlowCountTLSMetricData(clientAuth *model.Auth, instanceId, element
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String("net/a0affec9643ca40c5a4e837eab2f07fb/f623f27b6210158f"),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("NewFlowCount_TLS"),
@@ -187,6 +187,7 @@ func processNLBNewFlowCountTLSRawData(result *cloudwatch.GetMetricDataOutput) Ne
 }
 
 func init() {
+	AwsxNLBNewFlowCountTLSCmd.PersistentFlags().String("instanceId", "", "instanceId")
 
 	AwsxNLBNewFlowCountTLSCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxNLBNewFlowCountTLSCmd.PersistentFlags().String("endTime", "", "end time")

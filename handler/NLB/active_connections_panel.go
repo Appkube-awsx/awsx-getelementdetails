@@ -187,7 +187,7 @@ func processNLBActiveConnectionsRawData(result *cloudwatch.GetMetricDataOutput) 
 }
 
 func init() {
-
+	AwsxNLBActiveConnectionsCmd.PersistentFlags().String("instanceId", "", "Instance ID")
 	AwsxNLBActiveConnectionsCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxNLBActiveConnectionsCmd.PersistentFlags().String("endTime", "", "end time")
 	AwsxNLBActiveConnectionsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")

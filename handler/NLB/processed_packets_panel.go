@@ -8,7 +8,9 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-	// "github.com/Appkube-awsx/awsx-common/config"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
+
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -57,10 +59,26 @@ var AwsxNLBProcessedPacketsCmd = &cobra.Command{
 }
 
 func GetNLBProcessedPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	// elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -129,7 +147,7 @@ func GetNLBProcessedPacketsMetricData(clientAuth *model.Auth, instanceId, elemen
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String("net/a0affec9643ca40c5a4e837eab2f07fb/f623f27b6210158f"),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("ProcessedPackets"),
@@ -169,7 +187,7 @@ func processNLBProcessedPacketsRawData(result *cloudwatch.GetMetricDataOutput) P
 }
 
 func init() {
-
+	AwsxNLBProcessedPacketsCmd.PersistentFlags().String("instanceId", "", " InstanceID")
 	AwsxNLBProcessedPacketsCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxNLBProcessedPacketsCmd.PersistentFlags().String("endTime", "", "end time")
 	AwsxNLBProcessedPacketsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")

@@ -8,6 +8,8 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -56,10 +58,29 @@ var AwsxNLBProcessedBytesCmd = &cobra.Command{
 }
 
 func GetNLBProcessedBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
+	//nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	//elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
 	var startTime, endTime *time.Time
 
 	if startTimeStr != "" {
@@ -91,7 +112,7 @@ func GetNLBProcessedBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetNLBProcessedBytesMetricData(clientAuth, nlbArn, startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := GetNLBProcessedBytesMetricData(clientAuth, instanceId, startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting NLB processed bytes data: ", err)
 		return "", nil, err
@@ -109,8 +130,8 @@ func GetNLBProcessedBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNLBProcessedBytesMetricData(clientAuth *model.Auth, nlbArn string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for NLB %s from %v to %v", nlbArn, startTime, endTime)
+func GetNLBProcessedBytesMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	log.Printf("Getting metric data for NLB %s from %v to %v", instanceId, startTime, endTime)
 
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
@@ -123,7 +144,7 @@ func GetNLBProcessedBytesMetricData(clientAuth *model.Auth, nlbArn string, start
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String("net/a0affec9643ca40c5a4e837eab2f07fb/f623f27b6210158f"),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("ProcessedBytes"),
@@ -163,7 +184,7 @@ func processNLBProcessedBytesRawData(result *cloudwatch.GetMetricDataOutput) Pro
 }
 
 func init() {
-	AwsxNLBProcessedBytesCmd.PersistentFlags().String("nlbArn", "", "NLB ARN")
+	AwsxNLBProcessedBytesCmd.PersistentFlags().String("instanceId", "", "instanceId")
 	AwsxNLBProcessedBytesCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxNLBProcessedBytesCmd.PersistentFlags().String("endTime", "", "end time")
 	AwsxNLBProcessedBytesCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
