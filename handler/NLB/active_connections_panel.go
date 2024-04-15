@@ -8,6 +8,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
@@ -78,7 +79,6 @@ func GetNLBActiveConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 		instanceId = cmdbData.InstanceId
 
 	}
-
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -147,7 +147,7 @@ func GetNLBActiveConnectionsMetricData(clientAuth *model.Auth, instanceId, eleme
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String("net/a0affec9643ca40c5a4e837eab2f07fb/f623f27b6210158f"),
+								Value: aws.String(instanceId),
 							},
 						},
 						MetricName: aws.String("ActiveFlowCount"),
