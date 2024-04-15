@@ -76,6 +76,7 @@ func GetNLBActiveConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 		if err != nil {
 			return "", nil, err
 		}
+		
 		instanceId = cmdbData.InstanceId
 
 	}
