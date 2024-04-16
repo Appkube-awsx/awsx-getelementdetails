@@ -1472,6 +1472,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "latency_graph_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaLatencyGraphData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda latency data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "rest_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayRestAPIData(clientAuth, nil)
 				if err != nil {
