@@ -1213,17 +1213,15 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 			} else if queryName == "functions_by_region_panel" && elementType == "Lambda" {
 				log.Printf("ClientAuth: %+v\n", clientAuth)
-				jsonResp, cloudwatchMetricResp, totalFunctions, _ := Lambda.GetLambdaFunctionsByRegion(clientAuth)
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaFunctionsByRegion(clientAuth)
 				if err != nil {
-					log.Println("Error total functions panel data: ", err)
+					log.Println("Error getting functions by regions data: ", err)
 					return
 				}
 				if responseType == "frame" {
 					fmt.Println(cloudwatchMetricResp)
-					fmt.Println("Function By Region:", totalFunctions)
 				} else {
 					fmt.Println(jsonResp)
-					fmt.Println("Function By Region:", totalFunctions)
 				}
 			} else if queryName == "idle_functions_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaIdleFunctionData(clientAuth, nil)
