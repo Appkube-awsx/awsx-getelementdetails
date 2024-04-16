@@ -1289,6 +1289,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+
 			} else if queryName == "used_and_unused_memory_data_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaUnusedMemoryPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -1453,6 +1454,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaConcurrencyGraphData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda concurrency data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "invocations_graph_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaInvocationsGraphData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda invocations data: ", err)
 					return
 				}
 				if responseType == "frame" {
