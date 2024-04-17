@@ -16,17 +16,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type NewConnectionsData struct {
-	NewConnections []struct {
+type TargetHealthCheckData struct {
+	HostCount map[string][]struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"NewConnections"`
+	} `json:"HostCount"`
 }
 
-var AwsxNLBNewConnectionsCmd = &cobra.Command{
-	Use:   "nlb_new_connections_panel",
-	Short: "Get NLB new connections metrics data",
-	Long:  `Command to get NLB new connections metrics data`,
+var AwsxNLBTargetHealthChecksCmd = &cobra.Command{
+	Use:   "nlb_target_health_checks_panel",
+	Short: "Get NLB target health checks metrics data",
+	Long:  `Command to get NLB target health checks metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Running from child command..")
@@ -41,9 +41,9 @@ var AwsxNLBNewConnectionsCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetNLBNewConnectionsPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetNLBTargetHealthCheckPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting NLB new connections: ", err)
+				log.Println("Error getting NLB target health check data: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -57,12 +57,14 @@ var AwsxNLBNewConnectionsCmd = &cobra.Command{
 	},
 }
 
-func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	// nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
+func GetNLBTargetHealthCheckPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	//nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
+
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	//elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
@@ -111,15 +113,34 @@ func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	// Fetch raw data
-	rawData, err := GetNLBNewConnectionsMetricData(clientAuth, instanceId, startTime, endTime, "Sum", cloudWatchClient)
+	// Fetch raw data for successful host count
+	successfulRawData, err := GetNLBTargetHealthCheckMetricData(clientAuth, instanceId, startTime, endTime, "HealthyHostCount", "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting NLB new connections data: ", err)
+		log.Println("Error in getting NLB successful target health check data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["NewConnections"] = rawData
+	cloudwatchMetricData["Successful"] = successfulRawData
 
-	result := processNLBNewConnectionsRawData(rawData)
+	// Fetch raw data for failed host count
+	failedRawData, err := GetNLBTargetHealthCheckMetricData(clientAuth, instanceId, startTime, endTime, "UnHealthyHostCount", "Average", cloudWatchClient)
+	if err != nil {
+		log.Println("Error in getting NLB failed target health check data: ", err)
+		return "", nil, err
+	}
+	cloudwatchMetricData["Failed"] = failedRawData
+
+	successfulHostCount := processNLBTargetHealthCheckRawData(successfulRawData)
+	failedHostCount := processNLBTargetHealthCheckRawData(failedRawData)
+
+	result := TargetHealthCheckData{
+		HostCount: map[string][]struct {
+			Timestamp time.Time
+			Value     float64
+		}{
+			"SuccessfulHostCount": successfulHostCount,
+			"FailedHostCount":     failedHostCount,
+		},
+	}
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
@@ -130,7 +151,7 @@ func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNLBNewConnectionsMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetNLBTargetHealthCheckMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, metricName, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for NLB %s from %v to %v", instanceId, startTime, endTime)
 
 	input := &cloudwatch.GetMetricDataInput{
@@ -146,8 +167,12 @@ func GetNLBNewConnectionsMetricData(clientAuth *model.Auth, instanceId string, s
 								Name:  aws.String("LoadBalancer"),
 								Value: aws.String(instanceId),
 							},
+							{
+								Name:  aws.String("TargetGroup"),
+								Value: aws.String("targetgroup/k8s-istiosys-istioing-30129717de/b5e55c2955f8e65f"),
+							},
 						},
-						MetricName: aws.String("NewFlowCount"),
+						MetricName: aws.String(metricName),
 						Namespace:  aws.String("AWS/NetworkELB"),
 					},
 					Period: aws.Int64(60),
@@ -168,24 +193,26 @@ func GetNLBNewConnectionsMetricData(clientAuth *model.Auth, instanceId string, s
 	return result, nil
 }
 
-func processNLBNewConnectionsRawData(result *cloudwatch.GetMetricDataOutput) NewConnectionsData {
-	var rawData NewConnectionsData
-	rawData.NewConnections = make([]struct {
+func processNLBTargetHealthCheckRawData(result *cloudwatch.GetMetricDataOutput) []struct {
+	Timestamp time.Time
+	Value     float64
+} {
+	rawData := make([]struct {
 		Timestamp time.Time
 		Value     float64
 	}, len(result.MetricDataResults[0].Timestamps))
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.NewConnections[i].Timestamp = *timestamp
-		rawData.NewConnections[i].Value = *result.MetricDataResults[0].Values[i]
+		rawData[i].Timestamp = *timestamp
+		rawData[i].Value = *result.MetricDataResults[0].Values[i]
 	}
 
 	return rawData
 }
 
 func init() {
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("instanceId", "", "instance Id")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxNLBTargetHealthChecksCmd.PersistentFlags().String("instanceId", "", "instanceId")
+	AwsxNLBTargetHealthChecksCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxNLBTargetHealthChecksCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxNLBTargetHealthChecksCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

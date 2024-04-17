@@ -10,23 +10,24 @@ import (
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
+
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type NewConnectionsData struct {
-	NewConnections []struct {
+type ProcessedPacketsData struct {
+	ProcessedPackets []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"NewConnections"`
+	} `json:"ProcessedPackets"`
 }
 
-var AwsxNLBNewConnectionsCmd = &cobra.Command{
-	Use:   "nlb_new_connections_panel",
-	Short: "Get NLB new connections metrics data",
-	Long:  `Command to get NLB new connections metrics data`,
+var AwsxNLBProcessedPacketsCmd = &cobra.Command{
+	Use:   "processed_packets_panel",
+	Short: "Get NLB processed packets metrics data",
+	Long:  `Command to get NLB processed packets metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Running from child command..")
@@ -41,9 +42,9 @@ var AwsxNLBNewConnectionsCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetNLBNewConnectionsPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetNLBProcessedPacketsPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting NLB new connections: ", err)
+				log.Println("Error getting NLB processed packets: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -57,12 +58,9 @@ var AwsxNLBNewConnectionsCmd = &cobra.Command{
 	},
 }
 
-func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	// nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+func GetNLBProcessedPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
@@ -81,6 +79,9 @@ func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		instanceId = cmdbData.InstanceId
 
 	}
+	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
+	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+
 	var startTime, endTime *time.Time
 
 	if startTimeStr != "" {
@@ -112,14 +113,14 @@ func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetNLBNewConnectionsMetricData(clientAuth, instanceId, startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := GetNLBProcessedPacketsMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting NLB new connections data: ", err)
+		log.Println("Error in getting NLB processed packets data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["NewConnections"] = rawData
+	cloudwatchMetricData["ProcessedPackets"] = rawData
 
-	result := processNLBNewConnectionsRawData(rawData)
+	result := processNLBProcessedPacketsRawData(rawData)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
@@ -130,8 +131,10 @@ func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNLBNewConnectionsMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for NLB %s from %v to %v", instanceId, startTime, endTime)
+func GetNLBProcessedPacketsMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	log.Printf("Getting metric data for NLB %s from %v to %v %v", instanceId, elementType, startTime, endTime)
+
+	elmType := "AWS/NetworkELB"
 
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
@@ -147,8 +150,8 @@ func GetNLBNewConnectionsMetricData(clientAuth *model.Auth, instanceId string, s
 								Value: aws.String(instanceId),
 							},
 						},
-						MetricName: aws.String("NewFlowCount"),
-						Namespace:  aws.String("AWS/NetworkELB"),
+						MetricName: aws.String("ProcessedPackets"),
+						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(60),
 					Stat:   aws.String(statistic),
@@ -168,24 +171,24 @@ func GetNLBNewConnectionsMetricData(clientAuth *model.Auth, instanceId string, s
 	return result, nil
 }
 
-func processNLBNewConnectionsRawData(result *cloudwatch.GetMetricDataOutput) NewConnectionsData {
-	var rawData NewConnectionsData
-	rawData.NewConnections = make([]struct {
+func processNLBProcessedPacketsRawData(result *cloudwatch.GetMetricDataOutput) ProcessedPacketsData {
+	var rawData ProcessedPacketsData
+	rawData.ProcessedPackets = make([]struct {
 		Timestamp time.Time
 		Value     float64
 	}, len(result.MetricDataResults[0].Timestamps))
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.NewConnections[i].Timestamp = *timestamp
-		rawData.NewConnections[i].Value = *result.MetricDataResults[0].Values[i]
+		rawData.ProcessedPackets[i].Timestamp = *timestamp
+		rawData.ProcessedPackets[i].Value = *result.MetricDataResults[0].Values[i]
 	}
 
 	return rawData
 }
 
 func init() {
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("instanceId", "", "instance Id")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxNLBProcessedPacketsCmd.PersistentFlags().String("instanceId", "", " InstanceID")
+	AwsxNLBProcessedPacketsCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxNLBProcessedPacketsCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxNLBProcessedPacketsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

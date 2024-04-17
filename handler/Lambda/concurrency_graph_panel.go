@@ -1,4 +1,4 @@
-package NLB
+package Lambda
 
 import (
 	"encoding/json"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
@@ -17,20 +16,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type ActiveConnectionsData struct {
-	ActiveConnections []struct {
+type ConcurrencyGraph struct {
+	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"ActiveConnections"`
+	} `json:"concurrency_graph_panel"`
 }
 
-var AwsxNLBActiveConnectionsCmd = &cobra.Command{
-	Use:   "nlb_active_connections_panel",
-	Short: "Get NLB active connections metrics data",
-	Long:  `Command to get NLB active connections metrics data`,
+var AwsxLambdaConcurrencyGraphCmd = &cobra.Command{
+	Use:   "concurrency_graph_panel",
+	Short: "get concurrency graph metrics data",
+	Long:  `command to get concurrency graph metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Running from child command..")
+		fmt.Println("running from child command")
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
 		if err != nil {
 			log.Printf("Error during authentication: %v\n", err)
@@ -42,23 +41,21 @@ var AwsxNLBActiveConnectionsCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetNLBActiveConnectionsPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetLambdaConcurrencyGraphData(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting NLB active connections: ", err)
+				log.Println("Error getting lambda concurrency response data: ", err)
 				return
 			}
 			if responseType == "frame" {
 				fmt.Println(cloudwatchMetricResp)
 			} else {
-				// Default case. It prints JSON
 				fmt.Println(jsonResp)
 			}
 		}
-
 	},
 }
 
-func GetNLBActiveConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaConcurrencyGraphData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -76,10 +73,10 @@ func GetNLBActiveConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 		if err != nil {
 			return "", nil, err
 		}
-		
 		instanceId = cmdbData.InstanceId
 
 	}
+
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -114,52 +111,45 @@ func GetNLBActiveConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetNLBActiveConnectionsMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", cloudWatchClient)
+	ConcurrencyData, err := GetLambdaConcurrencyCountMetricValue(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting NLB active connections data: ", err)
+		log.Println("Error in getting lambda concurrency data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["ActiveConnections"] = rawData
+	cloudwatchMetricData["Concurrency"] = ConcurrencyData
 
-	result := processNLBActiveConnectionsRawData(rawData)
+	result := ProcessLambdaConcurrencyRawData(ConcurrencyData)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
 	}
+	fmt.Println(jsonString)
 
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNLBActiveConnectionsMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for NLB %s from %v to %v %v", instanceId, elementType, startTime, endTime)
-
-	elmType := "AWS/NetworkELB"
-
+func GetLambdaConcurrencyCountMetricValue(clientAuth *model.Auth, instanceId string, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Id: aws.String("m1"),
+				Id: aws.String("concurrency"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("LoadBalancer"),
-								Value: aws.String(instanceId),
-							},
-						},
-						MetricName: aws.String("ActiveFlowCount"),
-						Namespace:  aws.String(elmType),
+
+						Namespace:  aws.String("AWS/Lambda"),
+						MetricName: aws.String("ConcurrentExecutions"),
 					},
-					Period: aws.Int64(60),
-					Stat:   aws.String("Sum"),
+					Period: aws.Int64(300),
+					Stat:   aws.String(statistic),
 				},
 			},
 		},
+		StartTime: startTime,
+		EndTime:   endTime,
 	}
+
 	if cloudWatchClient == nil {
 		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
 	}
@@ -168,28 +158,39 @@ func GetNLBActiveConnectionsMetricData(clientAuth *model.Auth, instanceId, eleme
 	if err != nil {
 		return nil, err
 	}
-
 	return result, nil
 }
 
-func processNLBActiveConnectionsRawData(result *cloudwatch.GetMetricDataOutput) ActiveConnectionsData {
-	var rawData ActiveConnectionsData
-	rawData.ActiveConnections = make([]struct {
+func ProcessLambdaConcurrencyRawData(result *cloudwatch.GetMetricDataOutput) ConcurrencyGraph {
+	var rawData ConcurrencyGraph
+	rawData.RawData = make([]struct {
 		Timestamp time.Time
 		Value     float64
 	}, len(result.MetricDataResults[0].Timestamps))
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.ActiveConnections[i].Timestamp = *timestamp
-		rawData.ActiveConnections[i].Value = *result.MetricDataResults[0].Values[i]
+		rawData.RawData[i].Timestamp = *timestamp
+		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
 	}
-
 	return rawData
 }
 
 func init() {
-	AwsxNLBActiveConnectionsCmd.PersistentFlags().String("instanceId", "", "Instance ID")
-	AwsxNLBActiveConnectionsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxNLBActiveConnectionsCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxNLBActiveConnectionsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("query", "", "query")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("ApiName", "", "api name")
 }

@@ -16,17 +16,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type NewConnectionsData struct {
-	NewConnections []struct {
+type UnhealthyHostCountData struct {
+	UnhealthyHostCount []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"NewConnections"`
+	} `json:"UnhealthyHostCount"`
 }
 
-var AwsxNLBNewConnectionsCmd = &cobra.Command{
-	Use:   "nlb_new_connections_panel",
-	Short: "Get NLB new connections metrics data",
-	Long:  `Command to get NLB new connections metrics data`,
+var AwsxNLBUnhealthyHostCountCmd = &cobra.Command{
+	Use:   "nlb_unhealthy_host_count_panel",
+	Short: "Get NLB unhealthy host count metrics data",
+	Long:  `Command to get NLB unhealthy host count metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Running from child command..")
@@ -41,9 +41,9 @@ var AwsxNLBNewConnectionsCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetNLBNewConnectionsPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetNLBUnhealthyHostCountPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting NLB new connections: ", err)
+				log.Println("Error getting NLB unhealthy host count: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -57,14 +57,12 @@ var AwsxNLBNewConnectionsCmd = &cobra.Command{
 	},
 }
 
-func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	// nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+func GetNLBUnhealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	//nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	//elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 
 	if elementId != "" {
 		log.Println("getting cloud-element data from cmdb")
@@ -81,6 +79,9 @@ func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		instanceId = cmdbData.InstanceId
 
 	}
+	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
+	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+
 	var startTime, endTime *time.Time
 
 	if startTimeStr != "" {
@@ -112,14 +113,14 @@ func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetNLBNewConnectionsMetricData(clientAuth, instanceId, startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := GetNLBUnhealthyHostCountMetricData(clientAuth, instanceId, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting NLB new connections data: ", err)
+		log.Println("Error in getting NLB unhealthy host count data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["NewConnections"] = rawData
+	cloudwatchMetricData["UnhealthyHostCount"] = rawData
 
-	result := processNLBNewConnectionsRawData(rawData)
+	result := processNLBUnhealthyHostCountRawData(rawData)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
@@ -130,7 +131,7 @@ func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNLBNewConnectionsMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetNLBUnhealthyHostCountMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for NLB %s from %v to %v", instanceId, startTime, endTime)
 
 	input := &cloudwatch.GetMetricDataInput{
@@ -146,8 +147,12 @@ func GetNLBNewConnectionsMetricData(clientAuth *model.Auth, instanceId string, s
 								Name:  aws.String("LoadBalancer"),
 								Value: aws.String(instanceId),
 							},
+							{
+								Name:  aws.String("TargetGroup"),
+								Value: aws.String("targetgroup/k8s-istiosys-istioing-30129717de/b5e55c2955f8e65f"),
+							},
 						},
-						MetricName: aws.String("NewFlowCount"),
+						MetricName: aws.String("UnHealthyHostCount"),
 						Namespace:  aws.String("AWS/NetworkELB"),
 					},
 					Period: aws.Int64(60),
@@ -168,24 +173,24 @@ func GetNLBNewConnectionsMetricData(clientAuth *model.Auth, instanceId string, s
 	return result, nil
 }
 
-func processNLBNewConnectionsRawData(result *cloudwatch.GetMetricDataOutput) NewConnectionsData {
-	var rawData NewConnectionsData
-	rawData.NewConnections = make([]struct {
+func processNLBUnhealthyHostCountRawData(result *cloudwatch.GetMetricDataOutput) UnhealthyHostCountData {
+	var rawData UnhealthyHostCountData
+	rawData.UnhealthyHostCount = make([]struct {
 		Timestamp time.Time
 		Value     float64
 	}, len(result.MetricDataResults[0].Timestamps))
 
 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.NewConnections[i].Timestamp = *timestamp
-		rawData.NewConnections[i].Value = *result.MetricDataResults[0].Values[i]
+		rawData.UnhealthyHostCount[i].Timestamp = *timestamp
+		rawData.UnhealthyHostCount[i].Value = *result.MetricDataResults[0].Values[i]
 	}
 
 	return rawData
 }
 
 func init() {
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("instanceId", "", "instance Id")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("instanceId", "", "instanceId")
+	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
