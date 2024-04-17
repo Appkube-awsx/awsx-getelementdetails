@@ -1,0 +1,23 @@
+{
+    "total": 121212,
+    "increment": true,
+    "change": 10,
+    "items": [
+        {
+            "label": "Product1",
+            "value": 121212
+        },
+        {
+            "label": "Product2",
+            "value": 121212
+        },
+        {
+            "label": "Product3",
+            "value": 121212
+        },
+        {
+            "label": "Product4",
+            "value": 121212
+        }
+    ]
+}
