@@ -1494,6 +1494,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "top_failure_graph_panel" && elementType == "Lambda" {
+				topFailureCount, err := Lambda.GetLambdaTopFailurePanel(cmd, clientAuth, nil)
+				if err != nil {
+					return
+				}
+				fmt.Println(topFailureCount)
+
 			} else if queryName == "rest_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayRestAPIData(clientAuth, nil)
 				if err != nil {
