@@ -1156,8 +1156,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "error_and_warning_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaErrorAndWarningData(cmd, clientAuth, nil)
+			} else if queryName == "error_and_warning_events_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaErrorAndWarningData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda error and warning  data: ", err)
 					return
