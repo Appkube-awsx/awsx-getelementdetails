@@ -2106,6 +2106,32 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(printresp)
 				}
+			}else if queryName == "target_tls_negotiation_error_count_panel" && (elementType == "AWS/NetworkELB") {
+				targetcount, jsonResp, err := NLB.GetTargetTlsErrorCountData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting target tls:", err)
+					return
+				}
+
+				if responseType == "frame" {
+					fmt.Println(targetcount)
+				} else {
+					fmt.Println(jsonResp)
+				}
+
+			} else if queryName == "port_allocation_error_count_panel" && (elementType == "AWS/NetworkELB") {
+				targetcount, jsonResp, err := NLB.GetPortAllocationErrorCountData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting port allocation:", err)
+					return
+				}
+
+				if responseType == "frame" {
+					fmt.Println(targetcount)
+				} else {
+					fmt.Println(jsonResp)
+				}
+
 			} else if queryName == "target_error_count_panel" && (elementType == "AWS/NetworkELB") {
 				targetStatuses, printresp, err := NLB.GetTargetErrorCountData(cmd, clientAuth, nil)
 				if err != nil {
