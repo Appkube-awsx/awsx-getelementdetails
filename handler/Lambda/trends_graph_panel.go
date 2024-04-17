@@ -16,17 +16,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type InvocationsGraph struct {
+type TrendsGraph struct {
 	RawData []struct {
 		Timestamp time.Time
 		Value     float64
-	} `json:"invocations_graph_panel"`
+	} `json:"trends_graph_panel"`
 }
 
-var AwsxLambdaInvocationsGraphCmd = &cobra.Command{
-	Use:   "Invocations_graph_panel",
-	Short: "get Invocations count graph metrics data",
-	Long:  `command to get Invocations count graph metrics data`,
+var AwsxLambdaTrendsGraphCmd = &cobra.Command{
+	Use:   "trends_graph_panel",
+	Short: "get trends count graph metrics data",
+	Long:  `command to get trends count graph metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -41,7 +41,7 @@ var AwsxLambdaInvocationsGraphCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetLambdaInvocationsGraphData(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetLambdaTrendsGraphData(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting lambda Invocations response data: ", err)
 				return
@@ -55,7 +55,7 @@ var AwsxLambdaInvocationsGraphCmd = &cobra.Command{
 	},
 }
 
-func GetLambdaInvocationsGraphData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaTrendsGraphData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -111,14 +111,14 @@ func GetLambdaInvocationsGraphData(cmd *cobra.Command, clientAuth *model.Auth, c
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	InvocationsCount, err := GetLambdaInvocationsCountMetricValue(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
+	TotalInvocationsCount, err := GetLambdaTrendsCountMetricValue(clientAuth, instanceId, elementType, startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting lambda throttles count data: ", err)
+		log.Println("Error in getting lambda trends count data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["Invocations"] = InvocationsCount
+	cloudwatchMetricData["TotalInvocations"] = TotalInvocationsCount
 
-	result := ProcessLambdaInvocationsRawData(InvocationsCount)
+	result := ProcessLambdaTrendsRawData(TotalInvocationsCount)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
@@ -130,7 +130,7 @@ func GetLambdaInvocationsGraphData(cmd *cobra.Command, clientAuth *model.Auth, c
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetLambdaInvocationsCountMetricValue(clientAuth *model.Auth, instanceId string, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaTrendsCountMetricValue(clientAuth *model.Auth, instanceId string, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
@@ -161,7 +161,7 @@ func GetLambdaInvocationsCountMetricValue(clientAuth *model.Auth, instanceId str
 	return result, nil
 }
 
-func ProcessLambdaInvocationsRawData(result *cloudwatch.GetMetricDataOutput) InvocationsGraph {
+func ProcessLambdaTrendsRawData(result *cloudwatch.GetMetricDataOutput) InvocationsGraph {
 	var rawData InvocationsGraph
 	rawData.RawData = make([]struct {
 		Timestamp time.Time
@@ -176,21 +176,21 @@ func ProcessLambdaInvocationsRawData(result *cloudwatch.GetMetricDataOutput) Inv
 }
 
 func init() {
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("query", "", "query")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxLambdaInvocationsGraphCmd.PersistentFlags().String("ApiName", "", "api name")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("query", "", "query")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxLambdaTrendsGraphCmd.PersistentFlags().String("ApiName", "", "api name")
 }

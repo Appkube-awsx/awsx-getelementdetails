@@ -1483,6 +1483,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "trends_graph_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaTrendsGraphData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda trends data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "rest_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayRestAPIData(clientAuth, nil)
 				if err != nil {
@@ -2106,7 +2117,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(printresp)
 				}
-			}else if queryName == "target_tls_negotiation_error_count_panel" && (elementType == "AWS/NetworkELB") {
+			} else if queryName == "target_tls_negotiation_error_count_panel" && (elementType == "AWS/NetworkELB") {
 				targetcount, jsonResp, err := NLB.GetTargetTlsErrorCountData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting target tls:", err)
