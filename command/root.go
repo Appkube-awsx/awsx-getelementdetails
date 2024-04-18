@@ -2123,6 +2123,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
+			} else if queryName == "target_health_check_panel" && (elementType == "AWS/NetworkELB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTargetHealthCheckPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting target health  check configuration data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "target_status_panel" && (elementType == "AWS/NetworkELB") {
 				targetStatuses, printresp, err := NLB.GetTargetStatussPanel(clientAuth)
 				if err != nil {
