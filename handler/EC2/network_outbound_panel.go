@@ -54,16 +54,15 @@ var AwsxEc2NetworkOutboundCmd = &cobra.Command{
 }
 
 func GetNetworkOutBoundPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	
+
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
-	
-	
+
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	startTime, endTime, err := commanFunction.ParseTimes(cmd)
-	
-		if err != nil {
-			return "", nil, fmt.Errorf("error parsing time: %v", err)
+
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 	instanceId, err = commanFunction.GetCmdbData(cmd)
 	if err != nil {
@@ -74,7 +73,7 @@ func GetNetworkOutBoundPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 
 	// Fetch raw data
 	rawData, err := metricData.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkOut", startTime, endTime, "Sum", cloudWatchClient)
-	
+
 	if err != nil {
 		log.Println("Error in network outbounds data: ", err)
 		return "", nil, err
