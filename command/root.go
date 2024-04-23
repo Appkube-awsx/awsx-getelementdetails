@@ -1163,6 +1163,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(toperrors)
+			} else if queryName == "error_trend_panel" && elementType == "Lambda" {
+				errortrend, err := Lambda.GetLambdaErrorTrendEvents(cmd, clientAuth, nil)
+				if err != nil {
+
+					return
+				}
+				fmt.Println(errortrend)
 			} else if queryName == "top_errors_messages_panel" && elementType == "Lambda" {
 				toperrorsmessages, err := Lambda.GetLambdaTopErrorsMessagesEvents(cmd, clientAuth, nil)
 				if err != nil {
