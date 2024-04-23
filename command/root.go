@@ -837,7 +837,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "memory_utilization_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetECSMemoryUtilizationPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := ECS.GetMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory utilization for ECS: ", err)
 					return
@@ -848,7 +848,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "cpu_graph_utilization_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetCPUUtilizationGraphData(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := ECS.GetCpuUtilizationGraphPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting cpu utilization graph for ECS: ", err)
 					return
@@ -859,7 +859,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "memory_utilization_graph_panel" && (elementType == "AWS/ECS" || elementType == "ECS") {
-				jsonResp, cloudwatchMetricResp, err := ECS.GetMemoryUtilizationGraphData(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := ECS.GetMemoryUtilizationGraphPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory utilization graph for ECS: ", err)
 					return
@@ -2216,11 +2216,11 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSNodeUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSServiceAvailabilityCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSStorageUtilizationCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSCpuUtilizationCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSCpuUtilizationGraphCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxEcsCpuUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxEcsCpuUtilizationGraphsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxCpuReservedCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSMemoryUtilizationCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSMemoryUtilizationGraphCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxEcsMemoryUtilizationCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxEcsMemoryUtilizationGraphCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxMemoryReservedCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSStorageUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSNetworkRxInBytesCmd)
