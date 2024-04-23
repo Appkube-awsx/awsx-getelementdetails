@@ -1156,6 +1156,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "top_errors_in_lambda_panel" && elementType == "Lambda" {
+				toperrors, err := Lambda.GetLambdaTopErrorsEvents(cmd, clientAuth, nil)
+				if err != nil {
+
+					return
+				}
+				fmt.Println(toperrors)
+			} else if queryName == "top_errors_messages_panel" && elementType == "Lambda" {
+				toperrorsmessages, err := Lambda.GetLambdaTopErrorsMessagesEvents(cmd, clientAuth, nil)
+				if err != nil {
+
+					return
+				}
+				fmt.Println(toperrorsmessages)
 			} else if queryName == "error_and_warning_events_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaErrorAndWarningData(cmd, clientAuth, nil)
 				if err != nil {
