@@ -8,21 +8,26 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/cmdb"
+	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type SuccessFailureResult struct {
-	SuccessRate float64 `json:"SuccessRate"`
-	FailureRate float64 `json:"FailureRate"`
+type SuccessFailedCount struct {
+	RawData []struct {
+		Timestamp time.Time
+		Value     float64
+		Values    float64
+	} `json:"success_and_failed_function_panel"`
 }
 
-var AwsxLambdaSuccessFailureCmd = &cobra.Command{
-	Use:   "successfailure_panel",
-	Short: "get successfailure metrics data",
-	Long:  `command to get successfailure metrics data`,
+var AwsxLambdaSuccessFailedCountCmd = &cobra.Command{
+	Use:   "success_and_failed_function_panel",
+	Short: "get SuccessFailedCount  data",
+	Long:  `command to get concurrency graph metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
@@ -37,9 +42,9 @@ var AwsxLambdaSuccessFailureCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetLambdaSuccessFailureData(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetLambdaSuccessFailedCountData(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting lambda data : ", err)
+				log.Println("Error getting lambda response data: ", err)
 				return
 			}
 			if responseType == "frame" {
@@ -48,17 +53,36 @@ var AwsxLambdaSuccessFailureCmd = &cobra.Command{
 				fmt.Println(jsonResp)
 			}
 		}
-
 	},
 }
 
-func GetLambdaSuccessFailureData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, *SuccessFailureResult, error) {
+func GetLambdaSuccessFailedCountData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+
+	if elementId != "" {
+		log.Println("getting cloud-element data from cmdb")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("using default cmdb url")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("cmdb url: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", nil, err
+		}
+		instanceId = cmdbData.InstanceId
+
+	}
+
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
 	var startTime, endTime *time.Time
 
-	// Parse start time if provided
 	if startTimeStr != "" {
 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
 		if err != nil {
@@ -83,87 +107,104 @@ func GetLambdaSuccessFailureData(cmd *cobra.Command, clientAuth *model.Auth, clo
 		endTime = &defaultEndTime
 	}
 
-	// Debug prints
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
+
 	// Fetch raw data
-	invocations, err := GetMetricData(cloudWatchClient, clientAuth, "Invocations", startTime, endTime)
+	SuccessFailedData, err := GetLambdaSuccessFailedCountMetricValue(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error retrieving invocations:", err)
+		log.Println("Error in getting lambda concurrency data: ", err)
 		return "", nil, err
 	}
+	cloudwatchMetricData["SuccessFailedData"] = SuccessFailedData
 
-	errors, err := GetMetricData(cloudWatchClient, clientAuth, "Errors", startTime, endTime)
-	if err != nil {
-		log.Println("Error retrieving errors:", err)
-		return "", nil, err
-	}
-
-	// Calculate success rate
-	successRate := (invocations - errors) / invocations * 100
-
-	// Calculate failure rate
-	failureRate := (errors / invocations) * 100
-
-	result := &SuccessFailureResult{
-		SuccessRate: successRate,
-		FailureRate: failureRate,
-	}
+	result := ProcessLambdaSuccessFailedCountRawData(SuccessFailedData)
 
 	jsonString, err := json.Marshal(result)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
-
 		return "", nil, err
 	}
+	fmt.Println(jsonString)
 
-	return string(jsonString), result, nil
+	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetMetricData(cloudWatchClient *cloudwatch.CloudWatch, clientAuth *model.Auth, metricName string, startTime, endTime *time.Time) (float64, error) {
+func GetLambdaSuccessFailedCountMetricValue(clientAuth *model.Auth, instanceId string, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+	input := &cloudwatch.GetMetricDataInput{
+		MetricDataQueries: []*cloudwatch.MetricDataQuery{
+			{
+				Id: aws.String("m1"),
+				MetricStat: &cloudwatch.MetricStat{
+					Metric: &cloudwatch.Metric{
+
+						Namespace:  aws.String("AWS/Lambda"),
+						MetricName: aws.String("Errors"),
+					},
+					Period: aws.Int64(300),
+					Stat:   aws.String(statistic),
+				},
+			},
+			{
+				Id: aws.String("m2"),
+				MetricStat: &cloudwatch.MetricStat{
+					Metric: &cloudwatch.Metric{
+
+						Namespace:  aws.String("AWS/Lambda"),
+						MetricName: aws.String("Invocations"),
+					},
+					Period: aws.Int64(300),
+					Stat:   aws.String(statistic),
+				},
+			},
+		},
+		StartTime: startTime,
+		EndTime:   endTime,
+	}
+
 	if cloudWatchClient == nil {
 		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
 	}
 
-	input := &cloudwatch.GetMetricStatisticsInput{
-		Namespace:  aws.String("AWS/Lambda"),
-		MetricName: aws.String(metricName),
-		StartTime:  startTime,
-		EndTime:    endTime,
-		Period:     aws.Int64(300),               // Period of 5 minutes
-		Statistics: []*string{aws.String("Sum")}, // Sum the metric over the specified period
-	}
-
-	result, err := cloudWatchClient.GetMetricStatistics(input)
+	result, err := cloudWatchClient.GetMetricData(input)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
+	return result, nil
+}
 
-	if len(result.Datapoints) == 0 {
-		return 0, fmt.Errorf("no data available for the specified time range")
+func ProcessLambdaSuccessFailedCountRawData(result *cloudwatch.GetMetricDataOutput) SuccessFailedCount {
+	var rawData SuccessFailedCount
+	rawData.RawData = make([]struct {
+		Timestamp time.Time
+		Value     float64
+		Values    float64
+	}, len(result.MetricDataResults[0].Timestamps))
+
+	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+		rawData.RawData[i].Timestamp = *timestamp
+		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
 	}
-
-	// Extract the sum of the metric from the first datapoint
-	metricValue := aws.Float64Value(result.Datapoints[0].Sum)
-
-	return metricValue,nil
+	return rawData
 }
 
 func init() {
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("query", "", "query")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxLambdaSuccessFailureCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("query", "", "query")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("endTime", "", "end time")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxLambdaSuccessFailedCountCmd.PersistentFlags().String("ApiName", "", "api name")
 }

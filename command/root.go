@@ -1163,6 +1163,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(toperrors)
+			} else if queryName == "dead_letter_errors_trends_panel" && elementType == "Lambda" {
+				deadletter, err := Lambda.GetLambdaDeadLetterErrorsTrendsEvents(cmd, clientAuth, nil)
+				if err != nil {
+
+					return
+				}
+				fmt.Println(deadletter)
 			} else if queryName == "error_trend_panel" && elementType == "Lambda" {
 				errortrend, err := Lambda.GetLambdaErrorTrendEvents(cmd, clientAuth, nil)
 				if err != nil {
@@ -1428,9 +1435,9 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				//return
 				//}
 			} else if queryName == "success_and_failed_function_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailureData(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailedCountData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting success and failure functions data: ", err)
+					log.Println("Error getting lambda concurrency data: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -2431,7 +2438,6 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
-	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaSuccessFailureCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaNumberOfCallsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSCpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
