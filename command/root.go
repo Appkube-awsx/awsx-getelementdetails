@@ -1880,7 +1880,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "network_receive_throughput_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSNetworkReceiveThroughputPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSNetworkReceiveThroughputPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network receive throughput data: ", err)
 					return
@@ -1891,9 +1891,9 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "network_transmit_throughput_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSNetworkTransmitThroughputPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSNetworkTransmitThroughputPanel(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting network receive throughput data: ", err)
+					log.Println("Error getting network transmit throughput data: ", err)
 					return
 				}
 				if responseType == "frame" {

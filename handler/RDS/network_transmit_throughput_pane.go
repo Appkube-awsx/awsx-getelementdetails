@@ -1,24 +1,21 @@
 package RDS
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type NetworkTransmitThroughput struct {
-	Timestamp time.Time
-	Value     float64
-}
+// type NetworkTransmitThroughput struct {
+// 	Timestamp time.Time
+// 	Value     float64
+// }
 
 var AwsxRDSNetworkTransmitThroughputCmd = &cobra.Command{
 	Use:   "network_transmit_throughput_panel",
@@ -38,7 +35,7 @@ var AwsxRDSNetworkTransmitThroughputCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err, _ := GetRDSNetworkTransmitThroughputPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetRDSNetworkTransmitThroughputPanel(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting network transmit throughput data: ", err)
 				return
@@ -54,118 +51,49 @@ var AwsxRDSNetworkTransmitThroughputCmd = &cobra.Command{
 	},
 }
 
-func GetRDSNetworkTransmitThroughputPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+func GetRDSNetworkTransmitThroughputPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	fmt.Println(elementType)
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
 
-	if elementId != "" {
-		log.Println("Getting cloud-element data from CMDB")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("Using default CMDB URL")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("CMDB URL: " + apiUrl)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
+	instanceId, err = commanFunction.GetCmdbData(cmd)
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	var startTime, endTime *time.Time
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
 	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	// Fetch raw data for network transmit throughput metric
-	rawData, err := GetNetworkmetricData(clientAuth, elementType, startTime, endTime, "NetworkTransmitThroughput", cloudWatchClient)
+	rawData, err := metricData.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "NetworkTransmitThroughput", startTime, endTime, "Sum", cloudWatchClient)
+
 	if err != nil {
-		log.Println("Error getting network transmit throughput data: ", err)
-		return "", "", nil, err
+		log.Println("Error in getting network transmit throughput data: ", err)
+		return "", nil, err
 	}
 	cloudwatchMetricData["NetworkTransmitThroughput"] = rawData
 
-	// Process raw data
-	result := processedRawNetworkTransmitThroughputData(rawData)
-	jsonData, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error marshalling JSON for network transmit throughput data: ", err)
-		return "", "", nil, err
-	}
-
-	return string(jsonData), "", cloudwatchMetricData, nil
+	return "", cloudwatchMetricData, nil
 }
 
-func GetNetworkmetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for instance %s in namespace AWS/RDS from %v to %v", elementType, startTime, endTime)
+// func processedRawNetworkTransmitThroughputData(result *cloudwatch.GetMetricDataOutput) []NetworkTransmitThroughput {
+// 	var processedData []NetworkTransmitThroughput
 
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{},
-						MetricName: aws.String(metricName),
-						Namespace:  aws.String("AWS/RDS"),
-					},
-					Period: aws.Int64(60),
-					Stat:   aws.String("Sum"),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		value := *result.MetricDataResults[0].Values[i]
+// 		processedData = append(processedData, NetworkTransmitThroughput{
+// 			Timestamp: *timestamp,
+// 			Value:     value,
+// 		})
+// 	}
 
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func processedRawNetworkTransmitThroughputData(result *cloudwatch.GetMetricDataOutput) []NetworkTransmitThroughput {
-	var processedData []NetworkTransmitThroughput
-
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		value := *result.MetricDataResults[0].Values[i]
-		processedData = append(processedData, NetworkTransmitThroughput{
-			Timestamp: *timestamp,
-			Value:     value,
-		})
-	}
-
-	return processedData
-}
+// 	return processedData
+// }
 
 func init() {
 	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("elementId", "", "element id")
