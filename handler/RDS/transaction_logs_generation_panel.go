@@ -1,27 +1,23 @@
 package RDS
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type TransactionLogsGenerationResult struct {
-	RawData []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"Transaction_Logs_Generation"`
-}
+// type TransactionLogsGenerationResult struct {
+// 	RawData []struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	} `json:"Transaction_Logs_Generation"`
+// }
 
 var AwsxRDSTransactionLogsGenCmd = &cobra.Command{
 	Use:   "transaction_logs_generation_panel",
@@ -58,137 +54,53 @@ var AwsxRDSTransactionLogsGenCmd = &cobra.Command{
 }
 
 func GetTransactionLogsGenerationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	
 		if err != nil {
-			return "", nil, err
+			return "", nil, fmt.Errorf("error parsing time: %v", err)
 		}
-		instanceId = cmdbData.InstanceId
+		instanceId, err = commanFunction.GetCmdbData(cmd)
 
-	}
-
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
+	
 		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+			return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
+		
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := GetTransactionLogsGenerationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := metricData.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "TransactionLogsGeneration", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting transaction logs generation data: ", err)
 		return "", nil, err
 	}
 
 	cloudwatchMetricData["Transaction_Logs_Generation"] = rawData
 
-	result := processTransactionLogRawData(rawData)
+	return "", cloudwatchMetricData, nil
 
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
 
 }
 
-func GetTransactionLogsGenerationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
-	elmType := "AWS/RDS"
 
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("transactionloggeneration"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
+// func processTransactionLogRawData(result *cloudwatch.GetMetricDataOutput) TransactionLogsGenerationResult {
+// 	var rawData TransactionLogsGenerationResult
+// 	rawData.RawData = make([]struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	}, len(result.MetricDataResults[0].Timestamps))
 
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("DBInstanceIdentifier"),
-								Value: aws.String("postgresql"), // Ensure instanceID is the identifier of your RDS instance
-							},
-						},
-						MetricName: aws.String("TransactionLogsGeneration"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(300),
-					Stat:   aws.String("Average"),
-				},
-				//ReturnData: aws.Bool(true),
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		rawData.RawData[i].Timestamp = *timestamp
+// 		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+// 	}
 
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func processTransactionLogRawData(result *cloudwatch.GetMetricDataOutput) TransactionLogsGenerationResult {
-	var rawData TransactionLogsGenerationResult
-	rawData.RawData = make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
-
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
-	}
-
-	return rawData
-}
+// 	return rawData
+// }
 
 func init() {
 	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("elementId", "", "element id")

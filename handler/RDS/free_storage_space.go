@@ -1,24 +1,20 @@
 package RDS
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
-
-type StorageSpace struct {
-	Timestamp time.Time
-	Value     float64
-}
+// type StorageSpace struct {
+// 	Timestamp time.Time
+// 	Value     float64
+//}
 
 var AwsxRDSFreeStorageSpaceCmd = &cobra.Command{
 	Use:   "free_storage_space_panel",
@@ -38,7 +34,7 @@ var AwsxRDSFreeStorageSpaceCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err, _ := GetRDSFreeStorageSpacePanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetRDSFreeStorageSpacePanel(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting free storage space data: ", err)
 				return
@@ -54,118 +50,52 @@ var AwsxRDSFreeStorageSpaceCmd = &cobra.Command{
 	},
 }
 
-func GetRDSFreeStorageSpacePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+func GetRDSFreeStorageSpacePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+	
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-	}
-
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	var startTime, endTime *time.Time
-
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
+	fmt.Println(elementType)
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	
 		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+			return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+		
 		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", "", nil, err
+			return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
+		
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	// Fetch raw data for free storage space metric
-	rawStorageSpaceData, err := GetStorageSpaceMetricData(clientAuth, elementType, startTime, endTime, "FreeStorageSpace", cloudWatchClient)
+	
+	rawData, err := metricData.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "FreeStorageSpace", startTime, endTime, "Average", cloudWatchClient)
+		
 	if err != nil {
-		log.Println("Error in getting free storage space data: ", err)
-		return "", "", nil, err
-	}
-	cloudwatchMetricData["FreeStorageSpace"] = rawStorageSpaceData
-
-	// Process raw storage space data
-	resultStorageSpace := processedRawStorageSpaceData(rawStorageSpaceData)
-	jsonStorageSpace, err := json.Marshal(resultStorageSpace)
-	if err != nil {
-		log.Println("Error in marshalling json for free storage space data: ", err)
-		return "", "", nil, err
+		log.Println("Error in getting for free storage space data: ", err)
+		return "",  nil, err
 	}
 
-	return string(jsonStorageSpace), string(jsonStorageSpace), cloudwatchMetricData, nil
+	cloudwatchMetricData["FreeStorageSpace"] = rawData
+
+	return "", cloudwatchMetricData, nil
 }
 
-func GetStorageSpaceMetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for instance %s in namespace AWS/RDS from %v to %v", elementType, startTime, endTime)
 
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{},
-						MetricName: aws.String(metricName),
-						Namespace:  aws.String("AWS/RDS"),
-					},
-					Period: aws.Int64(60),
-					Stat:   aws.String("Average"), // Use "Average" for storage space metrics
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
+// func processedRawStorageSpaceData(result *cloudwatch.GetMetricDataOutput) []StorageSpace {
+// 	var processedData []StorageSpace
 
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		value := *result.MetricDataResults[0].Values[i]
+// 		processedData = append(processedData, StorageSpace{
+// 			Timestamp: *timestamp,
+// 			Value:     value,
+// 		})
+// 	}
 
-	return result, nil
-}
-
-func processedRawStorageSpaceData(result *cloudwatch.GetMetricDataOutput) []StorageSpace {
-	var processedData []StorageSpace
-
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		value := *result.MetricDataResults[0].Values[i]
-		processedData = append(processedData, StorageSpace{
-			Timestamp: *timestamp,
-			Value:     value,
-		})
-	}
-
-	return processedData
-}
+// 	return processedData
+// }
 
 
 func init() {
