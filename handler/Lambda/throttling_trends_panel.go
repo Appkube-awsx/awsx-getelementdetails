@@ -118,7 +118,7 @@ func filterCloudWatchLogsss(clientAuth *model.Auth, startTime, endTime *time.Tim
 		EndTime:      aws.Int64(endTime.Unix() * 1000),
 		QueryString: aws.String(`fields @timestamp, InvocationCount, errorCount
 		| filter eventSource = "lambda.amazonaws.com" 
-		| stats count() as InvocationCount, count(errorCode) as errorCount by bin(1m)`),
+		| stats count(errorCode) as errorCount by bin(1m)`),
 	}
 
 	if cloudWatchLogs == nil {
