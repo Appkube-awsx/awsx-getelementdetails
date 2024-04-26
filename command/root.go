@@ -1227,7 +1227,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println("Function By Region:", totalFunctions)
 				}
 			} else if queryName == "idle_functions_panel" && elementType == "Lambda" {
-				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaIdleFunctionData(clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaIdleFunctionData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting idle functions panel data: ", err)
 					return
