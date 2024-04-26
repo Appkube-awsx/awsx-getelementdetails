@@ -1836,7 +1836,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "freeable_memory_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSFreeableMemoryPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSFreeableMemoryPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting freeable memory data: ", err)
 					return
@@ -1847,7 +1847,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "free_storage_space_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSFreeStorageSpacePanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSFreeStorageSpacePanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting free storage space data: ", err)
 					return
@@ -1858,7 +1858,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "disk_queue_depth_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDiskQueueDepthPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSDiskQueueDepthPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting disk queue depth data: ", err)
 					return
@@ -1902,7 +1902,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "database_workload_overview_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadPanel(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSDBLoadPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting database workload overview data: ", err)
 					return
@@ -1913,7 +1913,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "db_load_non_cpu_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadNonCPU(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSDBLoadNonCPU(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting database non-cpu load data: ", err)
 					return
@@ -1924,7 +1924,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "db_load_cpu_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err, _ := RDS.GetRDSDBLoadCPU(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := RDS.GetRDSDBLoadCPU(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting database cpu load data: ", err)
 					return
