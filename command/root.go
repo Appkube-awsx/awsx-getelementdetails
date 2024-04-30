@@ -1431,7 +1431,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 			} else if queryName == "top_used_functions_panel" && elementType == "Lambda" {
 				Lambda.GetTopUsedFunctionsLogData(cmd, clientAuth, nil)
 				if err != nil {
-					log.Println("Error getting lambda top used functions  data: ", err)
+					log.Println("Error getting lambda used functions  data: ", err)
 					return
 				}
 			} else if queryName == "success_and_failed_function_panel" && elementType == "Lambda" {

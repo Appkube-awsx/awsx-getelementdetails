@@ -107,7 +107,7 @@ func GetTopUsedFunctionsLogData(cmd *cobra.Command, clientAuth *model.Auth, clou
 	if err != nil {
 		return nil, nil
 	}
-	processedResults := ProcessQueryResultss(results)
+	processedResults := ProcessQuerysResultss(results)
 
 	return processedResults, nil
 
@@ -162,7 +162,7 @@ func FilterCloudWatchLogs(clientAuth *model.Auth, startTime, endTime *time.Time,
 	return queryResults, nil
 }
 
-func ProcessQueryResultss(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+func ProcessQuerysResultss(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
 	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
 
 	for _, result := range results {
