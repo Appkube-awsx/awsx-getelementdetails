@@ -1,27 +1,24 @@
 package EKS
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type nodeFailureResult struct {
-	RawData []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"Node Failures"`
-}
+// type nodeFailureResult struct {
+// 	RawData []struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	} `json:"Node Failures"`
+// }
 
 var AwsxEKSNodeFailureCmd = &cobra.Command{
 	Use:   "node_failure_panel",
@@ -57,63 +54,25 @@ var AwsxEKSNodeFailureCmd = &cobra.Command{
 }
 
 func GetNodeFailureData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	fmt.Println(elementType)
 
-	if elementId != "" {
-		log.Println("Getting cloud-element data from CMDB")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("Using default CMDB URL")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("CMDB URL: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	// Debug prints
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetnodefailureMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
+	rawData, err := metricData.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "cluster_failed_node_count", startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -121,83 +80,47 @@ func GetNodeFailureData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	cloudwatchMetricData["Node Failures"] = rawData
 
 	// Process the raw data if needed
-	result := processNodeFailureRawData(rawData)
+	// result := processNodeFailureRawData(rawData)
 
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling JSON in string: ", err)
-		return "", nil, err
-	}
+	// jsonString, err := json.Marshal(result)
+	// if err != nil {
+	// 	log.Println("Error in marshalling JSON in string: ", err)
+	// 	return "", nil, err
+	// }
 
-	return string(jsonString), cloudwatchMetricData, nil
+	return "", cloudwatchMetricData, nil
 }
 
-func GetnodefailureMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "ContainerInsights"
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ClusterName"),
-								Value: aws.String(instanceId),
-							},
-						},
-						MetricName: aws.String("cluster_failed_node_count"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(86400),
-					Stat:   aws.String("Sum"),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
+// func processNodeFailureRawData(result *cloudwatch.GetMetricDataOutput) nodeFailureResult {
+// 	var rawData nodeFailureResult
 
-	return result, nil
-}
+// 	// Initialize map to store data by date
+// 	dateMap := make(map[time.Time]float64)
 
-func processNodeFailureRawData(result *cloudwatch.GetMetricDataOutput) nodeFailureResult {
-	var rawData nodeFailureResult
+// 	// Iterate through timestamps and values
+// 	for i := 0; i < len(result.MetricDataResults[0].Timestamps); i++ {
+// 		timestamp := result.MetricDataResults[0].Timestamps[i]
 
-	// Initialize map to store data by date
-	dateMap := make(map[time.Time]float64)
+// 		// Truncate timestamp to start of day
+// 		date := time.Date(timestamp.Year(), timestamp.Month(), timestamp.Day(), 0, 0, 0, 0, timestamp.Location())
 
-	// Iterate through timestamps and values
-	for i := 0; i < len(result.MetricDataResults[0].Timestamps); i++ {
-		timestamp := result.MetricDataResults[0].Timestamps[i]
+// 		// Add value to corresponding date
+// 		dateMap[date] += *result.MetricDataResults[0].Values[i]
+// 	}
 
-		// Truncate timestamp to start of day
-		date := time.Date(timestamp.Year(), timestamp.Month(), timestamp.Day(), 0, 0, 0, 0, timestamp.Location())
+// 	// Convert map to array of struct
+// 	for date, value := range dateMap {
+// 		rawData.RawData = append(rawData.RawData, struct {
+// 			Timestamp time.Time
+// 			Value     float64
+// 		}{
+// 			Timestamp: date,
+// 			Value:     value,
+// 		})
+// 	}
 
-		// Add value to corresponding date
-		dateMap[date] += *result.MetricDataResults[0].Values[i]
-	}
-
-	// Convert map to array of struct
-	for date, value := range dateMap {
-		rawData.RawData = append(rawData.RawData, struct {
-			Timestamp time.Time
-			Value     float64
-		}{
-			Timestamp: date,
-			Value:     value,
-		})
-	}
-
-	return rawData
-}
+// 	return rawData
+// }
 
 // Function to calculate the number of days ago based on the day string
 // Function to calculate the number of days ago based on the day string

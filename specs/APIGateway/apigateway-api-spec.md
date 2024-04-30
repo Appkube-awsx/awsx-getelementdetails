@@ -2,30 +2,24 @@
 
 - [awsx-getelementdetails](#awsx-getelementdetails)
 - [ui-analysis-and-listing-methods](#ui-analysis-and-listing-methods)
-   - [total_cost_panel](#total-cost-panel)
-   - [total_api_panel](#total-api-panel)
-   - [rest_api_panel](#rest-api-panel)
-   - [http_api_panel](#http_api_panel)
-   - [websocket_api_panel](#websocket_api_panel)
    - [total_api_calls_panel](#total_api_calls_panel)
-   - [cache_hit_panel](#cache_hit_panel)
-   - [cache_miss_panel](#cache_miss_panel)
-   - [message_count_panel](#message_count_panel)
-   - [apis_with_maximum_request_panel](#apis_with_maximum_request_panel)
-   - [lambda_function_panel](#lambda_function_panel)
-   - [database_connection_panel](#database_connection_panel)
-   - [request_count_panel](#request_count_panel)
    - [cache_hit_count_panel](#cache_hit_count_panel)
    - [cache_miss_count_panel](#cache_miss_count_panel)
+   - [integration_latency_panel](#integration_latency_panel)
    - [latency_panel](#latency_panel)
-  - [integration_latency_panel](#integration_latency_panel)
-  - [4xx_errors_panel](#4xx_errors_panel)
-  - [5xx_errors_panel](#5xx_errors_panel)
-  - [integration_error_panel](#integration_error_panel)
-  - [execution_count_panel](#execution_count_panel)
-  - [message_count_panel](#message_count_panel)
-  - [connect_count_panel](#connect_count_panel)
-  - [data_processed_panel](#data_processed_panel)
+   - [uptime_percentage_panel](#total_api_calls_panel)
+   - [response_time_panel](#cache_hit_panel)
+   - [uptime_of_deploymnet_stages_panel](#cache_miss_panel)
+   - [downtime_incident_panel](#message_count_panel)
+   - [4xx_errors_panel](#apis_with_maximum_request_panel)
+   - [5xx_errors_panel](#lambda_function_panel)
+   - [error_logs_panel](#database_connection_panel)
+   - [top_events_panel](#request_count_panel)
+   - [successful_and_failed_events_panel](#cache_hit_count_panel)
+   - [successful_event_details_panel](#cache_miss_count_panel)
+   - [failed_event_details_panel](#latency_panel)
+  - [security_logs_panel](#integration_latency_panel)
+  - [threats_panel](#4xx_errors_panel)
 
   
  
@@ -35,37 +29,32 @@
 It implements the awsx plugin getElementDetails
  
 # ui analysis and listing methods
-![Alt text](apigateway_screen1.png)
-1. total_cost_panel
-2. total_api_panel
-3. rest_api_panel
-4. http_api_panel
-5. websocket_api_panel
-6. total_api_calls_panel
-7. cache_hit_panel
-8. cache_miss_panel
-9.  message_count_panel
-10. apis_with_maximum_request_panel
-11. lambda_function_panel
-12. database_connection_panel
-13. request_count_panel
-14. cache_hit_count_panel
-15. cache_miss_count_panel
-16. latency_panel
-17. integration_latency_panel
-18. 4xx_errors_panel
-19. 5xx_errors_panel
-20. integration_error_panel
-21. execution_count_panel
-22. message_count_panel
-23. connect_count_panel
-24. data_processed_panel
+![Alt text](apigatewayscreen1.png)
+1. total_api_calls_panel
+2. cache_hit_count_panel
+3. cache_miss_count_panel
+4. integration_latency_panel
+5. latency_panel
+6. uptime_percentage_panel
+7. response_time_panel
+8. uptime_of_deploymnet_stages_panel
+9. downtime_incident_panel
+10. 4xx_errors_panel
+11. 5xx_errors_panel
+12. error_logs_panel
+13. top_events_panel
+14. successful_and_failed_events_panel
+15. successful_event_details_panel
+16. failed_event_details_panel
+17. security_logs_panel
+18. threats_panel
+
 
 _
 # ui-analysys-and listing-methods
 ## Total cost panel
 
-![Alt text](apigateway_screen.png)
+![Alt text](apigatewayscreen1.png)
 1. total_cost_panel
 
 <!-- if vault is their then external Id and crossAccountRole is not required -->

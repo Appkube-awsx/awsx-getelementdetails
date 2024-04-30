@@ -189,21 +189,4 @@ func GetNodeDowntimeMetrics(clientAuth *model.Auth, instanceId string, startTime
 	return result, nil
 }
 
-func init() {
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-}
+

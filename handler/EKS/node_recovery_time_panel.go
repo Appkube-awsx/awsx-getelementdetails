@@ -1,17 +1,13 @@
 package EKS
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -49,137 +45,96 @@ var AwsxEKSNodeRecoveryPanelCmd = &cobra.Command{
 	},
 }
 
-type NodeRecoveryData struct {
-	Timestamp    time.Time     `json:"timestamp"`
-	RecoveryTime time.Duration `json:"recovery_time"`
-}
+// type NodeRecoveryData struct {
+// 	Timestamp    time.Time     `json:"timestamp"`
+// 	RecoveryTime time.Duration `json:"recovery_time"`
+// }
 
-func GetNodeRecoveryTime(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, []NodeRecoveryData, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+func GetNodeRecoveryTime(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
-	}
-
-	var startTime, endTime *time.Time
-
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
-	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	// Fetch node ready metric data
-	nodeReadyData, err := GetNodeReadyMetricData(clientAuth, instanceId, startTime, endTime, cloudWatchClient)
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
 	if err != nil {
-		log.Println("Error fetching node ready metric data: ", err)
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
+	}
+
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
+	}
+
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
+
+	rawData, err := metricData.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_status_condition_ready", startTime, endTime, "Maximum", cloudWatchClient)
+	if err != nil {
+		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
+	cloudwatchMetricData["CPU_User"] = rawData
+	// Fetch node ready metric data
+	// nodeReadyData, err := GetNodeReadyMetricData(clientAuth, instanceId, startTime, endTime, cloudWatchClient)
+	// if err != nil {
+	// 	log.Println("Error fetching node ready metric data: ", err)
+	// 	return "", nil, err
+	// }
 
 	// Process node ready data
-	recoveryTimeSeries := ProcessNodeReadyData(nodeReadyData)
+	// recoveryTimeSeries := ProcessNodeReadyData(nodeReadyData)
 
-	// Check if recoveryTimeSeries is empty
-	if len(recoveryTimeSeries) == 0 {
-		return "No node recovery events detected", nil, nil
-	}
+	// // Check if recoveryTimeSeries is empty
+	// if len(recoveryTimeSeries) == 0 {
+	// 	return "No node recovery events detected", nil, nil
+	// }
 
-	// Marshal recovery time series data to JSON
-	jsonData, err := json.Marshal(recoveryTimeSeries)
-	if err != nil {
-		log.Println("Error marshalling JSON: ", err)
-		return "", nil, err
-	}
+	// // Marshal recovery time series data to JSON
+	// jsonData, err := json.Marshal(recoveryTimeSeries)
+	// if err != nil {
+	// 	log.Println("Error marshalling JSON: ", err)
+	// 	return "", nil, err
+	// }
 
-	return string(jsonData), recoveryTimeSeries, nil
+	return "", cloudwatchMetricData, nil
+
 }
 
-func GetNodeReadyMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "ContainerInsights"
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ClusterName"),
-								Value: aws.String(instanceId),
-							},
-						},
-						MetricName: aws.String("node_status_condition_ready"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(60),
-					Stat:   aws.String("Maximum"),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
+// func ProcessNodeReadyData(result *cloudwatch.GetMetricDataOutput) []NodeRecoveryData {
+// 	var recoveryTimeSeries []NodeRecoveryData
 
-	return result, nil
-}
+// 	for i := 1; i < len(result.MetricDataResults[0].Timestamps); i++ {
+// 		currentTimestamp := *result.MetricDataResults[0].Timestamps[i]
+// 		previousTimestamp := *result.MetricDataResults[0].Timestamps[i-1]
 
-func ProcessNodeReadyData(result *cloudwatch.GetMetricDataOutput) []NodeRecoveryData {
-	var recoveryTimeSeries []NodeRecoveryData
+// 		if *result.MetricDataResults[0].Values[i-1] == 0 && *result.MetricDataResults[0].Values[i] == 1 {
+// 			recoveryTime := currentTimestamp.Sub(previousTimestamp)
 
-	for i := 1; i < len(result.MetricDataResults[0].Timestamps); i++ {
-		currentTimestamp := *result.MetricDataResults[0].Timestamps[i]
-		previousTimestamp := *result.MetricDataResults[0].Timestamps[i-1]
+// 			recoveryTimeSeries = append(recoveryTimeSeries, NodeRecoveryData{
+// 				Timestamp:    currentTimestamp,
+// 				RecoveryTime: recoveryTime,
+// 			})
+// 		}
+// 	}
 
-		if *result.MetricDataResults[0].Values[i-1] == 0 && *result.MetricDataResults[0].Values[i] == 1 {
-			recoveryTime := currentTimestamp.Sub(previousTimestamp)
+// 	return recoveryTimeSeries
+// }
 
-			recoveryTimeSeries = append(recoveryTimeSeries, NodeRecoveryData{
-				Timestamp:    currentTimestamp,
-				RecoveryTime: recoveryTime,
-			})
-		}
-	}
-
-	return recoveryTimeSeries
+func init() {
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("query", "", "query")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
