@@ -1423,17 +1423,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 			} else if queryName == "top_failure_function_panel" && elementType == "Lambda" {
-				Lambda.GetTotalFailureFunctionsPanel(cmd, clientAuth, nil)
+				Lambda.GetTopFailureFunctionsLogData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting top failure functions  data: ", err)
 					return
 				}
-				//} else if queryName == "top_used_function_panel" && elementType == "Lambda" {
-				//Lambda.GetTopUsedFunctionsPanel(cmd, clientAuth, nil)
-				//if err != nil {
-				//log.Println("Error getting lambda functions  data: ", err)
-				//return
-				//}
+			} else if queryName == "top_used_function_panel" && elementType == "Lambda" {
+				Lambda.GetTopUsedFunctionsLogData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda functions  data: ", err)
+					return
+				}
 			} else if queryName == "success_and_failed_function_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaSuccessFailedCountData(cmd, clientAuth, nil)
 				if err != nil {
