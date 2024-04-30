@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -54,13 +53,13 @@ var AwsxEc2NetworkInBytesCmd = &cobra.Command{
 }
 
 func GetNetworkInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	
+
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
-	
+
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	startTime, endTime, err := commanFunction.ParseTimes(cmd)
-	
+
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
@@ -72,7 +71,7 @@ func GetNetworkInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := metricData.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkIn", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkIn", startTime, endTime, "Sum", cloudWatchClient)
 
 	if err != nil {
 		log.Println("Error in getting network inbytes data: ", err)
@@ -81,9 +80,6 @@ func GetNetworkInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	cloudwatchMetricData["Net_Inbytes"] = rawData
 	return "", cloudwatchMetricData, nil
 }
-
-
-
 
 // func processInbytesRawdata(result *cloudwatch.GetMetricDataOutput) NetworkInBytes {
 // 	var rawData NetworkInBytes

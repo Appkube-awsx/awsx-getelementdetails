@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -70,7 +69,7 @@ func GetRDSNetworkReceiveThroughputPanel(cmd *cobra.Command, clientAuth *model.A
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := metricData.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "NetworkReceiveThroughput", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "NetworkReceiveThroughput", startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting network receive throughput data: ", err)
 		return "", nil, err

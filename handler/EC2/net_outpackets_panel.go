@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -54,32 +53,28 @@ var AwsxEc2NetworkOutPacketsCmd = &cobra.Command{
 }
 
 func GetNetworkOutPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	
+
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
-	
+
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	startTime, endTime, err := commanFunction.ParseTimes(cmd)
-	
-		if err != nil {
-			return "", nil, fmt.Errorf("error parsing time: %v", err)
-		}
-		instanceId, err = commanFunction.GetCmdbData(cmd)
 
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
+	}
+	instanceId, err = commanFunction.GetCmdbData(cmd)
 
-	
+	if err != nil {
 
-		if err != nil {
-			
-			return "", nil, fmt.Errorf("error getting instance ID: %v", err)
-		}
-		
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
+	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := metricData.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkPacketsOut", startTime, endTime, "Sum", cloudWatchClient)
-	
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkPacketsOut", startTime, endTime, "Sum", cloudWatchClient)
+
 	if err != nil {
 		log.Println("Error in getting network outpackets data: ", err)
 		return "", nil, err
@@ -87,7 +82,6 @@ func GetNetworkOutPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	cloudwatchMetricData["Net_Outpackets"] = rawData
 	return "", cloudwatchMetricData, nil
 }
-
 
 // func processOutPacketsRawData(result *cloudwatch.GetMetricDataOutput) NetworkOutPackets {
 // 	var rawData NetworkOutPackets

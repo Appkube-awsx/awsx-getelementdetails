@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -62,7 +61,7 @@ func GetLambdaIdleFunctionData(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	idleFunctionCount, err := metricData.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "Invocations", startTime, endTime, "Sum", cloudWatchClient)
+	idleFunctionCount, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "Invocations", startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting idle function count: ", err)
 		return "", nil, err

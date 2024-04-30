@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -67,7 +66,7 @@ func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	avgErrorValue, err := metricData.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "Errors", startTime, endTime, "Average", cloudWatchClient)
+	avgErrorValue, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "Errors", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average error value: ", err)
 		return "", nil, err

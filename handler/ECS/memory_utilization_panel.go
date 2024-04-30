@@ -8,7 +8,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -65,7 +64,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	currentUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "MemoryUtilization", startTime, endTime, "SampleCount", cloudWatchClient)
+	currentUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "MemoryUtilization", startTime, endTime, "SampleCount", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
@@ -81,7 +80,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	// }
 
 	// Get average utilization
-	averageUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "MemoryUtilization", startTime, endTime, "Average", cloudWatchClient)
+	averageUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "MemoryUtilization", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
@@ -95,7 +94,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	// 	MetricDataResults: []*cloudwatch.MetricDataResult{{Values: []*float64{aws.Float64(0)}}},
 	// }
 
-	maxUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "MemoryUtilization", startTime, endTime, "Maximum", cloudWatchClient)
+	maxUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "MemoryUtilization", startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err

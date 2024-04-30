@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -65,7 +64,7 @@ func GetLambdaLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	// Fetch raw data
-	avgLatencyValue, err := metricData.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "Duration", startTime, endTime, "Average", cloudWatchClient)
+	avgLatencyValue, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "Duration", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average latency value: ", err)
 		return "", nil, err

@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -64,7 +63,7 @@ func GetLambdaColdStartData(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := metricData.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "init_duration", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "init_duration", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cold start duration data: ", err)
 		return "", nil, err

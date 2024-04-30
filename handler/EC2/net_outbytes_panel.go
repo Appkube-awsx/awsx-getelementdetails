@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -54,10 +53,10 @@ var AwsxEc2NetworkOutBytesCmd = &cobra.Command{
 }
 
 func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	
+
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
-	
+
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	startTime, endTime, err := commanFunction.ParseTimes(cmd)
 	if err != nil {
@@ -71,8 +70,8 @@ func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := metricData.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkOut", startTime, endTime, "Sum", cloudWatchClient)
-	
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkOut", startTime, endTime, "Sum", cloudWatchClient)
+
 	if err != nil {
 		log.Println("Error in getting network outbytes data: ", err)
 		return "", nil, err
@@ -80,8 +79,6 @@ func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	cloudwatchMetricData["Net_Outbytes"] = rawData
 	return "", cloudwatchMetricData, nil
 }
-
-
 
 // func processOutbytesRawdata(result *cloudwatch.GetMetricDataOutput) NetworkOutBytes {
 // 	var rawData NetworkOutBytes

@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -71,7 +70,7 @@ func GetTransactionLogsDiskUsagePanel(cmd *cobra.Command, clientAuth *model.Auth
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := metricData.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "TransactionLogsDiskUsage", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "TransactionLogsDiskUsage", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting transaction logs disk usage data: ", err)
 		return "", nil, err

@@ -4,13 +4,12 @@ import (
 	// "encoding/json"
 	"encoding/json"
 	"fmt"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
 	"log"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -57,47 +56,31 @@ var AwsxEc2DiskAvailableCmd = &cobra.Command{
 }
 
 func GetDiskAvailablePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "",nil, err
-		}
-		instanceId = cmdbData.InstanceId
-	}
-
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	startTime, endTime, err := parseTimeRange(startTimeStr, endTimeStr)
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
 	if err != nil {
-		return "",nil, err
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
+	}
 	totalResult, usedResult, err := GetDiskTotalPanelMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting total and used disk space data: ", err)
-		return "",nil, err
+		return "", nil, err
 	}
 
 	// Process the CloudWatch metric data to calculate disk available data
 	availableData, err := processDiskAvailablePanelMetricData(totalResult, usedResult)
 	if err != nil {
 		log.Println("Error processing disk available data: ", err)
-		return "",nil, err
+		return "", nil, err
 	}
-	
+
 	// Create a map to store the metric data outputs
 	cloudwatchMetricData := make(map[string]*cloudwatch.GetMetricDataOutput)
 
@@ -113,8 +96,6 @@ func GetDiskAvailablePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	// Return the JSON response along with cloudwatchMetricData map and nil error
 	return string(jsonResponse), cloudwatchMetricData, nil
 }
-
-
 
 func GetDiskTotalPanelMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, *cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
@@ -218,29 +199,6 @@ func processDiskAvailablePanelMetricData(totalResult, usedResult *cloudwatch.Get
 	}
 
 	return data, nil
-}
-
-func parseTimeRange(startTimeStr, endTimeStr string) (*time.Time, *time.Time, error) {
-	var (
-		startTime, endTime time.Time
-		err                error
-	)
-
-	if startTimeStr != "" {
-		startTime, err = time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error parsing start time: %v", err)
-		}
-	}
-
-	if endTimeStr != "" {
-		endTime, err = time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error parsing end time: %v", err)
-		}
-	}
-
-	return &startTime, &endTime, nil
 }
 
 func init() {

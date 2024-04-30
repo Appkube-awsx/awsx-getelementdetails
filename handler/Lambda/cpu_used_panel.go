@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -67,7 +66,7 @@ func GetLambdaCpuData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	CpuUsedValue, err := metricData.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "cpu_total_time", startTime, endTime, "Average", cloudWatchClient)
+	CpuUsedValue, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "cpu_total_time", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cpu used value: ", err)
 		return "", nil, err

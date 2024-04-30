@@ -64,3 +64,25 @@ func GetCmdbData(cmd *cobra.Command) (string, error) {
 
 	return "", errors.New("element ID is required")
 }
+
+func GetCmdbLogsData(cmd *cobra.Command) (string, error) {
+	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+
+	if elementId != "" {
+		log.Println("Getting cloud-element data from CMDB")
+		apiUrl := cmdbApiUrl
+		if cmdbApiUrl == "" {
+			log.Println("Using default CMDB URL")
+			apiUrl = config.CmdbUrl
+		}
+		log.Println("CMDB URL: " + apiUrl)
+		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+		if err != nil {
+			return "", fmt.Errorf("error getting cloud element data: %v", err)
+		}
+		return cmdbData.LogGroup, nil
+	}
+
+	return "", errors.New("element ID is required")
+}

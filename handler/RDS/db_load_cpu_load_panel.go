@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -46,38 +45,33 @@ var AwsxRDSDBLoadCPUCmd = &cobra.Command{
 	},
 }
 
-func GetRDSDBLoadCPU(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string,  map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetRDSDBLoadCPU(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	startTime, endTime, err := commanFunction.ParseTimes(cmd)
-	
-		if err != nil {
-			return "", nil, fmt.Errorf("error parsing time: %v", err)
-		}
-		instanceId, err = commanFunction.GetCmdbData(cmd)
-		
-		if err != nil {
-			return "", nil, fmt.Errorf("error getting instance ID: %v", err)
-		}
-		
+
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
+	}
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
+	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	
-	rawData, err := metricData.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "DBLoadCPU", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "DBLoadCPU", startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting CPU load data: ", err)
-		return "",  nil, err
+		return "", nil, err
 	}
 	cloudwatchMetricData["DBLoadCPU"] = rawData
 
-	
-
 	return "", cloudwatchMetricData, nil
 }
-
 
 // func processedRawdata(result *cloudwatch.GetMetricDataOutput) []struct {
 // 	Timestamp time.Time
@@ -99,7 +93,6 @@ func GetRDSDBLoadCPU(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 // 	return processedData
 // }
 
-
 func init() {
 	AwsxRDSDBLoadCPUCmd.PersistentFlags().String("elementId", "", "element id")
 	AwsxRDSDBLoadCPUCmd.PersistentFlags().String("elementType", "", "element type")
@@ -118,4 +111,3 @@ func init() {
 	AwsxRDSDBLoadCPUCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxRDSDBLoadCPUCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
-
