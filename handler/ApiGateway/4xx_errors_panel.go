@@ -68,7 +68,7 @@ func GetApi4xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := commanFunction.GetMetricAPIData(clientAuth, instanceId, "AWS/ApiGateway", "4XXError", startTime, endTime, "Sum", cloudWatchClient)
+	metricValue, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/ApiGateway", "4XXError", startTime, endTime, "Sum", "ApiName", cloudWatchClient)
 	//metricValue, err := GetApi4xxErrorMetricValue(clientAuth, ApiName, startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting 4xx error metric value: ", err)

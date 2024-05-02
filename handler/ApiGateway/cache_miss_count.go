@@ -68,7 +68,7 @@ func GetApiCacheMissData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := commanFunction.GetMetricAPIData(clientAuth, instanceId, "AWS/ApiGateway", "CacheMissCount", startTime, endTime, "Sum", cloudWatchClient)
+	metricValue, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/ApiGateway", "CacheMissCount", startTime, endTime, "Sum", "ApiName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting API cache miss count metric value: ", err)
 		return "", nil, err

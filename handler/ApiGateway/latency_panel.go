@@ -68,7 +68,7 @@ func GetApiLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := commanFunction.GetMetricAPIData(clientAuth, instanceId, "AWS/ApiGateway", "Latency", startTime, endTime, "Sum", cloudWatchClient)
+	metricValue, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/ApiGateway", "Latency", startTime, endTime, "Sum", "ApiName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting latency metric value: ", err)
 		return "", nil, err

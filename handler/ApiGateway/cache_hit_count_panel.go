@@ -68,7 +68,7 @@ func GetApiCacheHitsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := commanFunction.GetMetricAPIData(clientAuth, instanceId, "AWS/ApiGateway", "CacheHitCount", startTime, endTime, "Sum", cloudWatchClient)
+	metricValue, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/ApiGateway", "CacheHitCount", startTime, endTime, "Sum", "ApiName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting API cache hits metric value: ", err)
 		return "", nil, err

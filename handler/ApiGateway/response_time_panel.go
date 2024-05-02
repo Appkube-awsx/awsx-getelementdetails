@@ -71,7 +71,7 @@ func GetApiResponseTimePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricAPIData(clientAuth, instanceId, "AWS/ApiGateway", "Latency", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/ApiGateway", "Latency", startTime, endTime, "Average", "ApiName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting API response time data: ", err)
 		return "", nil, err
