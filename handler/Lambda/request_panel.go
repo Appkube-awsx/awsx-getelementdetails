@@ -89,17 +89,17 @@ func GetLambdaRequestData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	cloudwatchMetricData := map[string]float64{}
 
 	// Fetch raw data
-	metricValue, err := GetLambdaRequestMetricValue(clientAuth, startTime, endTime, cloudWatchClient)
+	rawData, err := GetLambdaRequestMetricValue(clientAuth, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cpu used metric value: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["Memory"] = metricValue
+	cloudwatchMetricData["Memory"] = rawData
 
 	// Debug prints
-	log.Printf("Memory Metric Value: %f", metricValue)
+	log.Printf("Memory Metric Value: %f", rawData)
 
-	jsonString, err := json.Marshal(MetricResult{Value: metricValue})
+	jsonString, err := json.Marshal(rawData)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err

@@ -89,17 +89,17 @@ func GetLambdaFailureData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	cloudwatchMetricData := map[string]float64{}
 
 	// Fetch raw data
-	failureCount, err := GetLambdaFailureCount(clientAuth, startTime, endTime, cloudWatchClient)
+	rawData, err := GetLambdaFailureCount(clientAuth, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting failure count: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["FailureCount"] = failureCount
+	cloudwatchMetricData["FailureCount"] = rawData
 
 	// Debug prints
-	log.Printf("Failure Count: %f", failureCount)
+	log.Printf("Failure Count: %f", rawData)
 
-	jsonString, err := json.Marshal(ErrorResult{Value: failureCount})
+	jsonString, err := json.Marshal(rawData)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
