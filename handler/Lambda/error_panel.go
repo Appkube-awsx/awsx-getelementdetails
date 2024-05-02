@@ -15,7 +15,9 @@ import (
 )
 
 type ErrorResult struct {
-    Value float64 `json:"Value"`
+    Value            float64 `json:"Value"`
+	PercentageChange float64 `json:"PercentageChange"`
+	ChangeType       string  `json:"ChangeType"`
 }
 
 var AwsxLambdaErrorCmd = &cobra.Command{
@@ -51,7 +53,7 @@ var AwsxLambdaErrorCmd = &cobra.Command{
     },
 }
 
-func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]float64, error) {
+func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]interface{}, error) {
     startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
     endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -85,27 +87,46 @@ func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
     // Debug prints
     log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-    cloudwatchMetricData := map[string]float64{}
+    cloudwatchMetricData := map[string]interface{}{}
 
-    // Fetch raw data
-    avgErrorValue, err := GetAverageLambdaErrorMetricValue(clientAuth, startTime, endTime, cloudWatchClient)
-    if err != nil {
-        log.Println("Error in getting average error value: ", err)
-        return "", nil, err
-    }
-    cloudwatchMetricData["AverageErrors"] = avgErrorValue
+    // Fetch raw data for last month and current month
+	lastMonthStartTime := startTime.AddDate(0, -1, 0)
+	lastMonthEndTime := endTime.AddDate(0, -1, 0)
+	lastMonthMemory, err := GetAverageLambdaErrorMetricValue(clientAuth, &lastMonthStartTime, &lastMonthEndTime, cloudWatchClient)
+	if err != nil {
+		log.Println("Error in getting error metric value for last month: ", err)
+		return "", nil, err
+	}
 
-    // Debug prints
-    log.Printf("Average Error Value: %f", avgErrorValue)
+	currentMonthMemory, err := GetAverageLambdaErrorMetricValue(clientAuth, startTime, endTime, cloudWatchClient)
+	if err != nil {
+		log.Println("Error in getting error metric value for current month: ", err)
+		return "", nil, err
+	}
 
-    jsonString, err := json.Marshal(ErrorResult{Value: avgErrorValue})
-    if err != nil {
-        log.Println("Error in marshalling json in string: ", err)
-        return "", nil, err
-    }
+	fmt.Println(lastMonthMemory, currentMonthMemory)
+	// Calculate percentage change
+	percentageChange := ((currentMonthMemory - lastMonthMemory) / lastMonthMemory) * 100
 
-    return string(jsonString), cloudwatchMetricData, nil
+	// Determine if it's an increment or decrement
+	changeType := "increment"
+	if percentageChange < 0 {
+		changeType = "decrement"
+	}
+
+	cloudwatchMetricData["LastMonthMemory"] = lastMonthMemory
+	cloudwatchMetricData["CurrentMemory"] = currentMonthMemory
+	cloudwatchMetricData["PercentageChange"] = fmt.Sprintf("%.2f%% %s", percentageChange, changeType)
+
+	jsonString, err := json.Marshal(ErrorResult{Value: currentMonthMemory, PercentageChange: percentageChange, ChangeType: changeType})
+	if err != nil {
+		log.Println("Error in marshalling json in string: ", err)
+		return "", nil, err
+	}
+
+	return string(jsonString), cloudwatchMetricData, nil
 }
+
 
 func GetAverageLambdaErrorMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
     input := &cloudwatch.GetMetricStatisticsInput{

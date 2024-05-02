@@ -1,165 +1,183 @@
 package Lambda
 
 import (
-    "encoding/json"
-    "fmt"
-    "log"
-    "time"
+	"encoding/json"
+	"fmt"
+	"log"
+	"time"
 
-    "github.com/Appkube-awsx/awsx-common/authenticate"
-    "github.com/Appkube-awsx/awsx-common/awsclient"
-    "github.com/Appkube-awsx/awsx-common/model"
-    "github.com/aws/aws-sdk-go/aws"
-    "github.com/aws/aws-sdk-go/service/cloudwatch"
-    "github.com/spf13/cobra"
+	"github.com/Appkube-awsx/awsx-common/authenticate"
+	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-common/model"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
+	"github.com/spf13/cobra"
 )
 
 type MetricResult struct {
-    Value float64 `json:"Value"`
+	Value            float64 `json:"Value"`
+	PercentageChange float64 `json:"PercentageChange"`
+	ChangeType       string  `json:"ChangeType"`
 }
 
 var AwsxLambdaMemoryCmd = &cobra.Command{
-    Use:   "memory_used_panel",
-    Short: "get memory metrics data",
-    Long:  `command to get memory metrics data`,
+	Use:   "memory_used_panel",
+	Short: "get memory metrics data",
+	Long:  `command to get memory metrics data`,
 
-    Run: func(cmd *cobra.Command, args []string) {
-        fmt.Println("running from child command")
-        var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
-        if err != nil {
-            log.Printf("Error during authentication: %v\n", err)
-            err := cmd.Help()
-            if err != nil {
-                return
-            }
-            return
-        }
-        if authFlag {
-            responseType, _ := cmd.PersistentFlags().GetString("responseType")
-            jsonResp, cloudwatchMetricResp, err := GetLambdaMemoryData(cmd, clientAuth, nil)
-            if err != nil {
-                log.Println("Error getting lambda memory data : ", err)
-                return
-            }
-            if responseType == "frame" {
-                fmt.Println(cloudwatchMetricResp)
-            } else {
-                fmt.Println(jsonResp)
-            }
-        }
-    },
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetLambdaMemoryData(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting lambda memory data : ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				fmt.Println(jsonResp)
+			}
+		}
+	},
 }
 
-func GetLambdaMemoryData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]float64, error) {
-    functionName:="CW-agent-installation-automation"
+func GetLambdaMemoryData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]interface{}, error) {
+	functionName := "CW-agent-installation-automation"
 
-    startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-    endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
+	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
-    var startTime, endTime *time.Time
+	var startTime, endTime *time.Time
 
-    // Parse start time if provided
-    if startTimeStr != "" {
-        parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-        if err != nil {
-            log.Printf("Error parsing start time: %v", err)
-            return "", nil, err
-        }
-        startTime = &parsedStartTime
-    } else {
-        defaultStartTime := time.Now().Add(-5 * time.Minute)
-        startTime = &defaultStartTime
-    }
+	// Parse start time if provided
+	if startTimeStr != "" {
+		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
+		if err != nil {
+			log.Printf("Error parsing start time: %v", err)
+			return "", nil, err
+		}
+		startTime = &parsedStartTime
+	} else {
+		defaultStartTime := time.Now().Add(-5 * time.Minute)
+		startTime = &defaultStartTime
+	}
 
-    if endTimeStr != "" {
-        parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-        if err != nil {
-            log.Printf("Error parsing end time: %v", err)
-            return "", nil, err
-        }
-        endTime = &parsedEndTime
-    } else {
-        defaultEndTime := time.Now()
-        endTime = &defaultEndTime
-    }
+	if endTimeStr != "" {
+		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
+		if err != nil {
+			log.Printf("Error parsing end time: %v", err)
+			return "", nil, err
+		}
+		endTime = &parsedEndTime
+	} else {
+		defaultEndTime := time.Now()
+		endTime = &defaultEndTime
+	}
 
-    // Debug prints
-    log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
+	// Debug prints
+	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-    cloudwatchMetricData := map[string]float64{}
+	cloudwatchMetricData := map[string]interface{}{}
 
-    // Fetch raw data
-    metricValue, err := GetLambdaMemoryMetricValue(clientAuth, startTime, endTime, functionName, cloudWatchClient)
-    if err != nil {
-        log.Println("Error in getting memory metric value: ", err)
-        return "", nil, err
-    }
-    cloudwatchMetricData["Memory"] = metricValue
+	// Fetch raw data for last month and current month
+	lastMonthStartTime := startTime.AddDate(0, -1, 0)
+	lastMonthEndTime := endTime.AddDate(0, -1, 0)
+	lastMonthMemory, err := GetLambdaMemoryMetricValue(clientAuth, &lastMonthStartTime, &lastMonthEndTime, functionName, cloudWatchClient)
+	if err != nil {
+		log.Println("Error in getting memory metric value for last month: ", err)
+		return "", nil, err
+	}
 
-    // Debug prints
-    log.Printf("Memory Metric Value: %f", metricValue)
+	currentMonthMemory, err := GetLambdaMemoryMetricValue(clientAuth, startTime, endTime, functionName, cloudWatchClient)
+	if err != nil {
+		log.Println("Error in getting memory metric value for current month: ", err)
+		return "", nil, err
+	}
 
-    jsonString, err := json.Marshal(MetricResult{Value: metricValue})
-    if err != nil {
-        log.Println("Error in marshalling json in string: ", err)
-        return "", nil, err
-    }
+	// Calculate percentage change
+	percentageChange := ((currentMonthMemory - lastMonthMemory) / lastMonthMemory) * 100
 
-    return string(jsonString), cloudwatchMetricData, nil
+	// Determine if it's an increment or decrement
+	changeType := "increment"
+	if percentageChange < 0 {
+		changeType = "decrement"
+	}
+
+	cloudwatchMetricData["LastMonthMemory"] = lastMonthMemory
+	cloudwatchMetricData["CurrentMemory"] = currentMonthMemory
+	cloudwatchMetricData["PercentageChange"] = fmt.Sprintf("%.2f%% %s", percentageChange, changeType)
+
+	jsonString, err := json.Marshal(MetricResult{Value: currentMonthMemory, PercentageChange: percentageChange, ChangeType: changeType})
+	if err != nil {
+		log.Println("Error in marshalling json in string: ", err)
+		return "", nil, err
+	}
+
+	return string(jsonString), cloudwatchMetricData, nil
 }
 
 func GetLambdaMemoryMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, functionName string, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
-    input := &cloudwatch.GetMetricDataInput{
-        MetricDataQueries: []*cloudwatch.MetricDataQuery{
-            {
-                Id: aws.String("total_memory"),
-                MetricStat: &cloudwatch.MetricStat{
-                    Metric: &cloudwatch.Metric{
-                        Namespace:  aws.String("LambdaInsights"),
-                        MetricName: aws.String("total_memory"),
-                        Dimensions: []*cloudwatch.Dimension{
-                            {
-                                Name:  aws.String("function_name"),
-                                Value: aws.String(functionName),
-                            },
-                        },
-                    },
-                    Period: aws.Int64(300), // 5 minutes
-                    Stat:   aws.String("Average"),
-                },
-                ReturnData: aws.Bool(true),
-            },
-        },
-        StartTime: startTime,
-        EndTime:   endTime,
-    }
+	input := &cloudwatch.GetMetricDataInput{
+		MetricDataQueries: []*cloudwatch.MetricDataQuery{
+			{
+				Id: aws.String("total_memory"),
+				MetricStat: &cloudwatch.MetricStat{
+					Metric: &cloudwatch.Metric{
+						Namespace:  aws.String("LambdaInsights"),
+						MetricName: aws.String("total_memory"),
+						Dimensions: []*cloudwatch.Dimension{
+							{
+								Name:  aws.String("function_name"),
+								Value: aws.String(functionName),
+							},
+						},
+					},
+					Period: aws.Int64(300), // 5 minutes
+					Stat:   aws.String("Sum"),
+				},
+				ReturnData: aws.Bool(true),
+			},
+		},
+		StartTime: startTime,
+		EndTime:   endTime,
+	}
 
-    if cloudWatchClient == nil {
-        cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-    }
+	if cloudWatchClient == nil {
+		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
+	}
 
-    result, err := cloudWatchClient.GetMetricData(input)
-    if err != nil {
-        return 0, err
-    }
+	result, err := cloudWatchClient.GetMetricData(input)
+	if err != nil {
+		return 0, err
+	}
 
-    if len(result.MetricDataResults) == 0 || len(result.MetricDataResults[0].Values) == 0 {
-        return 0, fmt.Errorf("no data available for the specified time range")
-    }
+	if len(result.MetricDataResults) == 0 || len(result.MetricDataResults[0].Values) == 0 {
+		return 0, fmt.Errorf("no data available for the specified time range")
+	}
 
-    // If there is only one value, return it
-    if len(result.MetricDataResults[0].Values) == 1 {
-        return aws.Float64Value(result.MetricDataResults[0].Values[0]), nil
-    }
+	// If there is only one value, return it
+	if len(result.MetricDataResults[0].Values) == 1 {
+		return aws.Float64Value(result.MetricDataResults[0].Values[0]), nil
+	}
 
-    // If there are multiple values, calculate the average
-    var sum float64
-    for _, v := range result.MetricDataResults[0].Values {
-        sum += aws.Float64Value(v)
-    }
-    return sum / float64(len(result.MetricDataResults[0].Values)), nil
+	// If there are multiple values, calculate the average
+	var sum float64
+	for _, v := range result.MetricDataResults[0].Values {
+		sum += aws.Float64Value(v)
+	}
+	return sum / float64(len(result.MetricDataResults[0].Values)), nil
 }
-
 
 func init() {
 	AwsxLambdaMemoryCmd.PersistentFlags().String("elementId", "", "element id")
