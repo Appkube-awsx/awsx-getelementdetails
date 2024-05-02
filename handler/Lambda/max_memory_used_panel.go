@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -64,41 +63,9 @@ func GetLambdaMaxMemoryData(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	if err != nil {
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-	// startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	// endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	// var startTime, endTime *time.Time
-
-	// // Parse start time if provided
-	// if startTimeStr != "" {
-	// 	parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-	// 	if err != nil {
-	// 		return "", nil, err
-	// 	}
-	// 	startTime = &parsedStartTime
-	// } else {
-	// 	defaultStartTime := time.Now().Add(-5 * time.Minute)
-	// 	startTime = &defaultStartTime
-	// }
-
-	// if endTimeStr != "" {
-	// 	parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-	// 	if err != nil {
-	// 		return "", nil, err
-	// 	}
-	// 	endTime = &parsedEndTime
-	// } else {
-	// 	defaultEndTime := time.Now()
-	// 	endTime = &defaultEndTime
-	// }
-
-	// log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
-
-	// functionName := "List-Org-Github"
-	// fmt.Println("getting function", functionName)
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := metricData.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "used_memory_max", startTime, endTime, "Maximum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "used_memory_max", startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Printf("Error in getting lambda memory metric data for function: ", err)
 		return "", nil, err
@@ -115,61 +82,6 @@ func GetLambdaMaxMemoryData(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 
 	return "", cloudwatchMetricData, nil
 }
-
-// func GetLambdaMaxMemoryMetricData(clientAuth *model.Auth, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch, functionName string) (*cloudwatch.GetMetricDataOutput, error) {
-// 	input := &cloudwatch.GetMetricDataInput{
-// 		EndTime:   endTime,
-// 		StartTime: startTime,
-// 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-// 			{
-// 				Id: aws.String("m1"),
-// 				MetricStat: &cloudwatch.MetricStat{
-// 					Metric: &cloudwatch.Metric{
-// 						MetricName: aws.String("used_memory_max"),
-// 						Namespace:  aws.String("LambdaInsights"),
-// 						Dimensions: []*cloudwatch.Dimension{
-// 							{
-// 								Name:  aws.String("function_name"),
-// 								Value: aws.String(functionName),
-// 							},
-// 						},
-// 					},
-// 					Period: aws.Int64(300), // 5 minutes
-// 					Stat:   aws.String("Maximum"),
-// 				},
-// 			},
-// 		},
-// 	}
-
-// 	if cloudWatchClient == nil {
-// 		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-// 	}
-// 	result, err := cloudWatchClient.GetMetricData(input)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return result, nil
-// }
-
-// func processMaxMemoryRawData(result *cloudwatch.GetMetricDataOutput, functionName string) []*MemoryData {
-// 	var memoryDataArray []*MemoryData
-
-// 	numDataPoints := len(result.MetricDataResults[0].Timestamps)
-// 	fmt.Println("Number of data points:", numDataPoints)
-
-// 	if numDataPoints > 0 {
-// 		for i := 0; i < numDataPoints; i++ {
-// 			memoryData := &MemoryData{
-// 				FunctionName: functionName,
-// 				MemoryUnit:   *result.MetricDataResults[0].Values[i],
-// 			}
-// 			memoryDataArray = append(memoryDataArray, memoryData)
-// 		}
-// 	}
-
-// 	return memoryDataArray
-// }
 
 func init() {
 	AwsxLambdaMaxMemoryCmd.PersistentFlags().String("startTime", "", "Start time")
