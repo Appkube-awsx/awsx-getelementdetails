@@ -65,7 +65,7 @@ func GetLambdaMemoryData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "total_memory", startTime, endTime, "Average", cloudWatchClient)
+	metricValue, err := commanFunction.GetMetricData(clientAuth, instanceId, "LambdaInsights", "total_memory", startTime, endTime, "Average", "FunctionName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting memory metric value: ", err)
 		return "", nil, err

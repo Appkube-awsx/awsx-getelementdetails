@@ -65,7 +65,7 @@ func GetLambdaMaxMemoryData(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "used_memory_max", startTime, endTime, "Maximum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "LambdaInsights", "used_memory_max", startTime, endTime, "Maximum", "FunctionName", cloudWatchClient)
 	if err != nil {
 		log.Printf("Error in getting lambda memory metric data for function: ", err)
 		return "", nil, err

@@ -66,7 +66,7 @@ func GetLambdaCpuData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	CpuUsedValue, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "cpu_total_time", startTime, endTime, "Average", cloudWatchClient)
+	CpuUsedValue, err := commanFunction.GetMetricData(clientAuth, instanceId, "LambdaInsights", "cpu_total_time", startTime, endTime, "Average", "FunctionName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cpu used value: ", err)
 		return "", nil, err

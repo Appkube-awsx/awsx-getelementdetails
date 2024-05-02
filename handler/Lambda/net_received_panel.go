@@ -65,7 +65,7 @@ func GetLambdaNetReceivedData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "rx_bytes", startTime, endTime, "Average", cloudWatchClient)
+	metricValue, err := commanFunction.GetMetricData(clientAuth, instanceId, "LambdaInsights", "rx_bytes", startTime, endTime, "Average", "FunctionName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting net received metric value: ", err)
 		return "", nil, err

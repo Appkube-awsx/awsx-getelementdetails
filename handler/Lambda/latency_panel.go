@@ -64,7 +64,7 @@ func GetLambdaLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	// Fetch raw data
-	avgLatencyValue, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "Duration", startTime, endTime, "Average", cloudWatchClient)
+	avgLatencyValue, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/Lambda", "Duration", startTime, endTime, "Average", "FunctionName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average latency value: ", err)
 		return "", nil, err

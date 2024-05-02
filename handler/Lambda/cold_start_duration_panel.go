@@ -63,7 +63,7 @@ func GetLambdaColdStartData(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "LambdaInsights", "init_duration", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "LambdaInsights", "init_duration", startTime, endTime, "Average", "FunctionName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cold start duration data: ", err)
 		return "", nil, err

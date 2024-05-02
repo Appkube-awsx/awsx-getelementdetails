@@ -66,7 +66,7 @@ func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	avgErrorValue, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "Errors", startTime, endTime, "Average", cloudWatchClient)
+	avgErrorValue, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/Lambda", "Errors", startTime, endTime, "Average", "FunctionName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average error value: ", err)
 		return "", nil, err

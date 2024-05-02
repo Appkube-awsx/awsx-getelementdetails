@@ -67,7 +67,7 @@ func GetLambdaConcurrencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "ConcurrentExecutions", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/Lambda", "ConcurrentExecutions", startTime, endTime, "Average", "FunctionName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting concurrency data: ", err)
 		return "", nil, err

@@ -61,7 +61,7 @@ func GetLambdaIdleFunctionData(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	idleFunctionCount, err := commanFunction.GetMetricFunctionNameData(clientAuth, instanceId, "AWS/Lambda", "Invocations", startTime, endTime, "Sum", cloudWatchClient)
+	idleFunctionCount, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/Lambda", "Invocations", startTime, endTime, "Sum", "FunctionName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting idle function count: ", err)
 		return "", nil, err
