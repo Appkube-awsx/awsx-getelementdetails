@@ -71,7 +71,7 @@ func GetMemUsageUsed(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "CWAgent", "mem_used", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "CWAgent", "mem_used", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting memory usage used data: ", err)
 		return "", nil, err

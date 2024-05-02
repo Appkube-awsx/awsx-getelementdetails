@@ -70,7 +70,7 @@ func GetContainerMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth, clo
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ECS/ContainerInsights", "MemoryUtilized", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ECS/ContainerInsights", "MemoryUtilized", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting container memory usage  data: ", err)
 		return "", nil, err

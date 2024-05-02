@@ -3,18 +3,13 @@ package EKS
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"strconv"
-	"time"
-
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
+	"log"
+	"strconv"
 )
 
 type StorageUtilizationResult struct {
@@ -57,68 +52,19 @@ var AwsxEKSStorageUtilizationCmd = &cobra.Command{
 }
 
 func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	fmt.Println(elementType)
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
-	}
-
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
-	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Root Volume Usage
-	rootVolumeUsage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_utilization", cloudWatchClient)
+	rootVolumeUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_utilization", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting root volume usage: ", err)
 		return "", nil, err
@@ -127,7 +73,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	rootVolumeUsageStr := strconv.FormatFloat(rootVolumeUsageValue, 'f', 2, 64)
 
 	// Get EBS Volume 1 Usage
-	ebsVolume1Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_inodes", cloudWatchClient)
+	ebsVolume1Usage, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS volume 1 usage: ", err)
 		return "", nil, err
@@ -136,7 +82,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	ebsVolume1PercentageStr := strconv.FormatFloat(ebsVolume1Percentage, 'f', 2, 64)
 
 	// Get EBS Volume 2 Usage
-	ebsVolume2Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "node_filesystem_inodes", cloudWatchClient)
+	ebsVolume2Usage, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS volume 2 usage: ", err)
 		return "", nil, err
@@ -174,44 +120,6 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		return "", nil, err
 	}
 	return string(jsonString), cloudwatchMetricData, nil
-}
-
-
-func GetStorageMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "ContainerInsights"
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ClusterName"),
-								Value: aws.String(instanceId),
-							},
-							// Add dimensions for specific EBS volumes if needed
-						},
-						MetricName: aws.String(metricName),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(300),
-					Stat:   aws.String("Average"),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
 }
 
 func init() {

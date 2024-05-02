@@ -69,7 +69,7 @@ func GetDiskUsedPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "CWAgent", "disk_used", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "CWAgent", "disk_used", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting disk used data: ", err)
 		return "", nil, err

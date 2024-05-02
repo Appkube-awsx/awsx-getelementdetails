@@ -69,7 +69,7 @@ func GetCpuUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get average utilization
-	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ECS/ContainerInsights", "CpuUtilized", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ECS/ContainerInsights", "CpuUtilized", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting rawdata: ", err)
 		return "", nil, err

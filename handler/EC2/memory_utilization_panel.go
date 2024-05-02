@@ -64,7 +64,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	currentUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "mem_used_percent", startTime, endTime, "SampleCount", cloudWatchClient)
+	currentUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "mem_used_percent", startTime, endTime, "SampleCount", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
@@ -80,7 +80,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	// }
 
 	// Get average utilization
-	averageUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "mem_used_percent", startTime, endTime, "Average", cloudWatchClient)
+	averageUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "mem_used_percent", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
@@ -94,7 +94,7 @@ func GetMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	// 	MetricDataResults: []*cloudwatch.MetricDataResult{{Values: []*float64{aws.Float64(0)}}},
 	// }
 
-	maxUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "mem_used_percent", startTime, endTime, "Maximum", cloudWatchClient)
+	maxUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "mem_used_percent", startTime, endTime, "Maximum", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err

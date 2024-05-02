@@ -71,7 +71,7 @@ func GetECSReadBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ECS/ContainerInsights", "StorageReadBytes", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ECS/ContainerInsights", "StorageReadBytes", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting volume read bytes data: ", err)
 		return "", nil, err

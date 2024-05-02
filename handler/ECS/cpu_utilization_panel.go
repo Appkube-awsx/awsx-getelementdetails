@@ -60,7 +60,7 @@ func GetECScpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	currentUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "SampleCount", cloudWatchClient)
+	currentUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "SampleCount", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
@@ -73,7 +73,7 @@ func GetECScpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	}
 
 	// Get average usage
-	averageUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "Average", cloudWatchClient)
+	averageUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
@@ -86,7 +86,7 @@ func GetECScpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	}
 
 	// Get max usage
-	maxUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "Maximum", cloudWatchClient)
+	maxUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "Maximum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err

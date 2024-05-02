@@ -2,13 +2,12 @@ package EKS
 
 import (
 	"fmt"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
 	"log"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -55,60 +54,19 @@ var AwsxEKSNodeConditionCmd = &cobra.Command{
 }
 
 func GetNodeConditionPanel(cmd *cobra.Command, clientAuth *model.Auth) (map[string]float64, *NodeConditionPanel, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return nil, nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	var startTime, endTime *time.Time
-
-	// Parse start time
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return nil, nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		// Use default start time if not provided
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	// Parse end time
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return nil, nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		// Use default end time if not provided
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
-
 	// Get node condition data
 	nodeConditionData, err := GetNodeConditionData(clientAuth, instanceId, startTime, endTime)
 	if err != nil {

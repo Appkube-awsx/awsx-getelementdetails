@@ -68,7 +68,7 @@ func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "DiskWriteBytes", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "DiskWriteBytes", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting disk write data: ", err)
 		return "", nil, err

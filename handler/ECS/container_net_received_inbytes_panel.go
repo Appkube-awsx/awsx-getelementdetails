@@ -72,7 +72,7 @@ func GetECSContainerNetRxInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ECS/ContainerInsights", "NetworkTxBytes", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ECS/ContainerInsights", "NetworkTxBytes", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting net received bytes data: ", err)
 		return "", nil, err

@@ -69,7 +69,7 @@ func GetCPUUsageSysPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, elementType, "cpu_usage_system", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, elementType, "cpu_usage_system", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cpu usage system data: ", err)
 		return "", nil, err

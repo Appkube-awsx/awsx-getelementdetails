@@ -3,17 +3,12 @@ package EKS
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"time"
-
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
+	"log"
 )
 
 type NodeCapacityMetrics struct {
@@ -21,12 +16,6 @@ type NodeCapacityMetrics struct {
 	MemoryUsage  float64 `json:"Memory_Usage"`
 	StorageAvail float64 `json:"Storage_Avail"`
 }
-
-const (
-	NodeCPUMetricName     = "node_cpu_utilization"
-	NodeMemoryMetricName  = "node_memory_utilization"
-	NodeStorageMetricName = "node_filesystem_utilization"
-)
 
 type NodeCapacityPanel struct {
 	RawData  map[string]*cloudwatch.GetMetricDataOutput `json:"raw_data"`
@@ -71,44 +60,32 @@ var AwsxEKSNodeCapacityCmd = &cobra.Command{
 }
 
 func GetNodeCapacityPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (*NodeCapacityPanel, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing time: %v", err)
 	}
-
-	startTime, endTime := NodeCapacityparseTime(startTimeStr, endTimeStr)
-
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	cpuUsageRawData, err := GetNodeCapacityMetricData(clientAuth, instanceId, "", startTime, endTime, NodeCPUMetricName, cloudWatchClient)
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("error getting instance ID: %v", err)
+	}
+
+	cpuUsageRawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_cpu_utilization", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		return nil, err
 	}
 
-	memoryUsageRawData, err := GetNodeCapacityMetricData(clientAuth, instanceId, "", startTime, endTime, NodeMemoryMetricName, cloudWatchClient)
+	memoryUsageRawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_memory_utilization", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		return nil, err
 	}
 
-	storageAvailRawData, err := GetNodeCapacityMetricData(clientAuth, instanceId, "", startTime, endTime, NodeStorageMetricName, cloudWatchClient)
+	storageAvailRawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_utilization", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		return nil, err
 	}
@@ -118,9 +95,9 @@ func GetNodeCapacityPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	totalStorage := 100.0
 
 	nodeCapacity := NodeCapacityMetrics{
-		CPUUsage:     calculateCPUUsage(cpuUsageRawData, totalCPU),
-		MemoryUsage:  calculateMemoryUsage(memoryUsageRawData, totalMemory),
-		StorageAvail: calculateStorageAvailability(storageAvailRawData, totalStorage),
+		CPUUsage:     calculateComman(cpuUsageRawData, totalCPU),
+		MemoryUsage:  calculateComman(memoryUsageRawData, totalMemory),
+		StorageAvail: calculateComman(storageAvailRawData, totalStorage),
 	}
 
 	jsonData, err := json.Marshal(nodeCapacity)
@@ -137,107 +114,14 @@ func GetNodeCapacityPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	return nodeCapacityPanel, nil
 }
 
-func calculateCPUUsage(data *cloudwatch.GetMetricDataOutput, totalCPU float64) float64 {
-	// Sum up CPU usage values
+func calculateComman(data *cloudwatch.GetMetricDataOutput, commanData float64) float64 {
 	var sum float64
 	for _, result := range data.MetricDataResults {
 		for _, value := range result.Values {
 			sum += *value
 		}
 	}
-	// Calculate average CPU usage percentage
-	return (sum / float64(len(data.MetricDataResults))) / totalCPU
-}
-
-func calculateMemoryUsage(data *cloudwatch.GetMetricDataOutput, totalMemory float64) float64 {
-	// Sum up memory usage values
-	var sum float64
-	for _, result := range data.MetricDataResults {
-		for _, value := range result.Values {
-			sum += *value
-		}
-	}
-	return (sum / float64(len(data.MetricDataResults))) / totalMemory
-}
-
-func calculateStorageAvailability(data *cloudwatch.GetMetricDataOutput, totalStorage float64) float64 {
-	var sum float64
-	for _, result := range data.MetricDataResults {
-		for _, value := range result.Values {
-			sum += *value
-		}
-	}
-	// Calculate average storage availability percentage
-	return (sum / float64(len(data.MetricDataResults))) / totalStorage
-}
-
-func GetNodeCapacityMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "ContainerInsights"
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ClusterName"),
-								Value: aws.String(instanceId),
-							},
-						},
-						MetricName: aws.String(metricName),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(60),
-					Stat:   aws.String("Sum"),
-				},
-			},
-		},
-	}
-
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func NodeCapacityparseTime(startTimeStr, endTimeStr string) (*time.Time, *time.Time) {
-	var startTime, endTime *time.Time
-
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-		} else {
-			startTime = &parsedStartTime
-		}
-	} else {
-		now := time.Now()
-		startTime = &now
-		minusFiveMinutes := now.Add(-5 * time.Minute)
-		startTime = &minusFiveMinutes
-	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-		} else {
-			endTime = &parsedEndTime
-		}
-	} else {
-		now := time.Now()
-		endTime = &now
-	}
-
-	return startTime, endTime
+	return (sum / float64(len(data.MetricDataResults))) / commanData
 }
 
 func init() {

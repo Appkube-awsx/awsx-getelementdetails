@@ -68,7 +68,7 @@ func GetCPUUsageIdlePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "CWAgent", "cpu_usage_idle", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "CWAgent", "cpu_usage_idle", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cpu usage idle data: ", err)
 		return "", nil, err

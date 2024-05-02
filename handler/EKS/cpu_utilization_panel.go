@@ -3,16 +3,13 @@ package EKS
 import (
 	"encoding/json"
 
+	"fmt"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
-
-	"fmt"
-	"log"
-
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
+	"log"
 )
 
 // type Result struct {
@@ -72,21 +69,21 @@ func GetEKScpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	//if queryName == "cpu_utilization_panel" {
-	currentUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_cpu_utilization", startTime, endTime, "SampleCount", cloudWatchClient)
+	currentUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_cpu_utilization", startTime, endTime, "SampleCount", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["CurrentUsage"] = currentUsage
 	// Get average usage
-	averageUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_cpu_utilization", startTime, endTime, "Average", cloudWatchClient)
+	averageUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_cpu_utilization", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["AverageUsage"] = averageUsage
 	// Get max usage
-	maxUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_cpu_utilization", startTime, endTime, "Maximum", cloudWatchClient)
+	maxUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_cpu_utilization", startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err

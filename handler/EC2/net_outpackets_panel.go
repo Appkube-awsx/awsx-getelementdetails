@@ -73,7 +73,7 @@ func GetNetworkOutPacketsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkPacketsOut", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkPacketsOut", startTime, endTime, "Sum", "InstanceId", cloudWatchClient)
 
 	if err != nil {
 		log.Println("Error in getting network outpackets data: ", err)

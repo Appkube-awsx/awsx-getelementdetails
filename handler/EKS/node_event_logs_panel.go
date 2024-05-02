@@ -3,13 +3,12 @@ package EKS
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
 	"log"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -58,36 +57,23 @@ var AwsxEKSNodeEventLogsCmd = &cobra.Command{
 	},
 }
 
-func GetNodeEventLogsSinglePanel(cmd *cobra.Command, clientAuth *model.Auth,cloudWatchClient *cloudwatch.CloudWatch) (string, string, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+func GetNodeEventLogsSinglePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, string, error) {
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", "", err
-		}
-		instanceId = cmdbData.InstanceId
-
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	if err != nil {
+		return "", "", fmt.Errorf("error parsing time: %v", err)
 	}
-	
-	startTime, endTime := Parsetime(startTimeStr, endTimeStr)
 
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+	if err != nil {
+		return "", "", fmt.Errorf("error getting instance ID: %v", err)
+	}
 
 	// Fetch node event logs
-	nodeEventLogs, err := GetNodeEventLogs(clientAuth, instanceId, startTime, endTime,cloudWatchClient)
+	nodeEventLogs, err := GetNodeEventLogs(clientAuth, instanceId, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error fetching node event logs: ", err)
 		return "", "", err
@@ -109,8 +95,7 @@ func GetNodeEventLogsSinglePanel(cmd *cobra.Command, clientAuth *model.Auth,clou
 	return string(jsonString), rawLogs, nil
 }
 
-// Function to fetch node event logs
-func GetNodeEventLogs(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time,cloudWatchClient *cloudwatch.CloudWatch) ([]NodeEventLog, error) {
+func GetNodeEventLogs(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) ([]NodeEventLog, error) {
 	logGroupName := "/aws/containerinsights/" + instanceId + "/host"
 	startTimeMillis := startTime.UnixNano() / int64(time.Millisecond) // Convert to milliseconds
 	endTimeMillis := endTime.UnixNano() / int64(time.Millisecond)     // Convert to milliseconds
@@ -153,41 +138,6 @@ func GetNodeEventLogs(clientAuth *model.Auth, instanceId string, startTime, endT
 	}
 
 	return nodeEventLogs, nil
-}
-
-// Function to parse time strings and return time pointers
-func Parsetime(startTimeStr, endTimeStr string) (*time.Time, *time.Time) {
-	var startTime, endTime *time.Time
-
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-		} else {
-			startTime = &parsedStartTime
-		}
-	} else {
-		// If startTimeStr is empty, default to the last five minutes
-		now := time.Now()
-		startTime = &now
-		minusFiveMinutes := now.Add(-5 * time.Minute)
-		startTime = &minusFiveMinutes
-	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-		} else {
-			endTime = &parsedEndTime
-		}
-	} else {
-		// If endTimeStr is empty, default to the current time
-		now := time.Now()
-		endTime = &now
-	}
-
-	return startTime, endTime
 }
 
 func init() {

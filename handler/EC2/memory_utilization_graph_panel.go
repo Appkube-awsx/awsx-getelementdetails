@@ -69,7 +69,7 @@ func GetMemoryUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get average utilization
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "mem_used_percent", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "mem_used_percent", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting rawdata: ", err)
 		return "", nil, err

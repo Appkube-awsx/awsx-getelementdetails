@@ -3,13 +3,12 @@ package EKS
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
 	"log"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -62,35 +61,22 @@ var AwsxEKSNetworkThroughputSingleCmd = &cobra.Command{
 }
 
 func GetNetworkThroughputSinglePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, string, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	fmt.Println(elementType)
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return nil,"",err
-		}
-		instanceId = cmdbData.InstanceId
-
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	if err != nil {
+		return nil, "", fmt.Errorf("error parsing time: %v", err)
 	}
-
-	startTime, endTime := ParseTime(startTimeStr, endTimeStr)
-
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+	if err != nil {
+		return nil, "", fmt.Errorf("error getting instance ID: %v", err)
+	}
 	// Fetch network in raw data
-	networkInRawData, err := GetmetricData(clientAuth, instanceId, elementType, startTime, endTime, PodNetworkRXByte, cloudWatchClient)
+	networkInRawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, elementType, startTime, endTime, PodNetworkRXByte, cloudWatchClient)
 	if err != nil {
 		log.Println("Error fetching network in raw data: ", err)
 		return nil, "", err
@@ -114,41 +100,6 @@ func GetNetworkThroughputSinglePanel(cmd *cobra.Command, clientAuth *model.Auth,
 	}
 
 	return networkInRawData, string(jsonString), nil
-}
-
-// Function to parse time strings and return time pointers
-func ParseTime(startTimeStr, endTimeStr string) (*time.Time, *time.Time) {
-	var startTime, endTime *time.Time
-
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-		} else {
-			startTime = &parsedStartTime
-		}
-	} else {
-		// If startTimeStr is empty, default to the last five minutes
-		now := time.Now()
-		startTime = &now
-		minusFiveMinutes := now.Add(-5 * time.Minute)
-		startTime = &minusFiveMinutes
-	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-		} else {
-			endTime = &parsedEndTime
-		}
-	} else {
-		// If endTimeStr is empty, default to the current time
-		now := time.Now()
-		endTime = &now
-	}
-
-	return startTime, endTime
 }
 
 // Function to fetch CloudWatch metric data
