@@ -63,7 +63,7 @@ func GetNLBHealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricLoadBalancerData(clientAuth, instanceId, "AWS/NetworkELB", "HealthyHostCount", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "HealthyHostCount", startTime, endTime, "Average", "LoadBalancer", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting NLB healthy host count data: ", err)
 		return "", nil, err

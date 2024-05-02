@@ -63,7 +63,7 @@ func GetNLBActiveConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricLoadBalancerData(clientAuth, instanceId, "AWS/NetworkELB", "ActiveFlowCount", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "ActiveFlowCount", startTime, endTime, "Sum", "LoadBalancer", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting NLB active connections data: ", err)
 		return "", nil, err
