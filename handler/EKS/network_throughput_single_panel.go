@@ -3,9 +3,10 @@ package EKS
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
 	"log"
 	"time"
+
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
@@ -76,7 +77,7 @@ func GetNetworkThroughputSinglePanel(cmd *cobra.Command, clientAuth *model.Auth,
 		return nil, "", fmt.Errorf("error getting instance ID: %v", err)
 	}
 	// Fetch network in raw data
-	networkInRawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, elementType, startTime, endTime, PodNetworkRXByte, cloudWatchClient)
+	networkInRawData, err := GetMetricData(clientAuth, instanceId, elementType, startTime, endTime, PodNetworkRXByte, cloudWatchClient)
 	if err != nil {
 		log.Println("Error fetching network in raw data: ", err)
 		return nil, "", err
