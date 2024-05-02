@@ -1,14 +1,11 @@
 package ApiGateway
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 
@@ -16,12 +13,12 @@ import (
 	"github.com/Appkube-awsx/awsx-common/model"
 )
 
-type APIGatewayLatency struct {
-	Latency []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"Response Time"`
-}
+// type APIGatewayLatency struct {
+// 	Latency []struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	} `json:"Response Time"`
+// }
 
 var ApiResponseTimeCmd = &cobra.Command{
 	Use:   "api_response_time_panel",
@@ -57,112 +54,47 @@ var ApiResponseTimeCmd = &cobra.Command{
 }
 
 func GetApiResponseTimePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	apiName := "dev-appkube-ecommerce-api"
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	var startTime, endTime *time.Time
-
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute) // Default: 5 minutes ago
-		startTime = &defaultStartTime
+	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now() // Default: Current time
-		endTime = &defaultEndTime
+	instanceId, err = commanFunction.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetApiGatewayLatencyMetricData(clientAuth, apiName, startTime, endTime, cloudWatchClient)
+	rawData, err := commanFunction.GetMetricAPIData(clientAuth, instanceId, "AWS/ApiGateway", "Latency", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting API response time data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["Response Time"] = rawData
 
-	result := processTheRawData(rawData)
-
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling JSON to string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
+	return "", cloudwatchMetricData, nil
 }
 
-func GetApiGatewayLatencyMetricData(clientAuth *model.Auth, apiName string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for API %s latency from %v to %v", apiName, startTime, endTime)
+// func processTheRawData(result *cloudwatch.GetMetricDataOutput) APIGatewayLatency {
+// 	var rawData APIGatewayLatency
+// 	rawData.Latency = make([]struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	}, len(result.MetricDataResults[0].Timestamps))
 
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ApiName"),
-								Value: aws.String(apiName),
-							},
-						},
-						MetricName: aws.String("Latency"),
-						Namespace:  aws.String("AWS/ApiGateway"),
-					},
-					Period: aws.Int64(60),         // Period of data in seconds
-					Stat:   aws.String("Average"), // Average latency over the period
-				},
-			},
-		},
-	}
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		rawData.Latency[i].Timestamp = *timestamp
+// 		rawData.Latency[i].Value = *result.MetricDataResults[0].Values[i]
+// 	}
 
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func processTheRawData(result *cloudwatch.GetMetricDataOutput) APIGatewayLatency {
-	var rawData APIGatewayLatency
-	rawData.Latency = make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
-
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.Latency[i].Timestamp = *timestamp
-		rawData.Latency[i].Value = *result.MetricDataResults[0].Values[i]
-	}
-
-	return rawData
-}
+// 	return rawData
+// }
 
 func init() {
 	ApiResponseTimeCmd.PersistentFlags().String("startTime", "", "Start Time in RFC3339 format")
