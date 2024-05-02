@@ -70,7 +70,7 @@ func GetRDSReadIOPSPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "ReadIOPS", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "ReadIOPS", startTime, endTime, "Sum", "DBInstanceIdentifier", cloudWatchClient)
 
 	if err != nil {
 		log.Println("Error in getting read iops data: ", err)

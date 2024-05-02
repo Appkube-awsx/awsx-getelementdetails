@@ -63,7 +63,7 @@ func GetRDSDBLoadNonCPU(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "DBLoadNonCPU", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "DBLoadNonCPU", startTime, endTime, "Sum", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting non-cpu load data: ", err)
 		return "", nil, err

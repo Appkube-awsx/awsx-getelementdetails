@@ -72,7 +72,7 @@ func GetCPUSurplusCreditCharged(cmd *cobra.Command, clientAuth *model.Auth, clou
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "CPUSurplusCreditsCharged", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "CPUSurplusCreditsCharged", startTime, endTime, "Average", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cpu surplus credits charged  data: ", err)
 		return "", nil, err

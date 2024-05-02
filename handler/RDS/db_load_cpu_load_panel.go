@@ -63,7 +63,7 @@ func GetRDSDBLoadCPU(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "DBLoadCPU", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "DBLoadCPU", startTime, endTime, "Sum", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting CPU load data: ", err)
 		return "", nil, err

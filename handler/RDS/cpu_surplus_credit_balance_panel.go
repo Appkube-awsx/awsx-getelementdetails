@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Define a struct to hold the result of the CPU Surplus Credit Balance query
 // type CPUSurplusCreditBalanceResult struct {
 // 	RawData []struct {
 // 		Timestamp time.Time
@@ -73,7 +72,7 @@ func GetCPUSurplusCreditBalance(cmd *cobra.Command, clientAuth *model.Auth, clou
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "CPUSurplusCreditBalance", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "CPUSurplusCreditBalance", startTime, endTime, "Average", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cpu surplus credit balance data: ", err)
 		return "", nil, err

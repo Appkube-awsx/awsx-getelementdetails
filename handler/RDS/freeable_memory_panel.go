@@ -68,7 +68,7 @@ func GetRDSFreeableMemoryPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "FreeableMemory", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "FreeableMemory", startTime, endTime, "Average", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting freeable memory data: ", err)
 		return "", nil, err

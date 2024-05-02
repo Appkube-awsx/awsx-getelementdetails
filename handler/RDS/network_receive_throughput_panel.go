@@ -69,7 +69,7 @@ func GetRDSNetworkReceiveThroughputPanel(cmd *cobra.Command, clientAuth *model.A
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "NetworkReceiveThroughput", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "NetworkReceiveThroughput", startTime, endTime, "Sum", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting network receive throughput data: ", err)
 		return "", nil, err

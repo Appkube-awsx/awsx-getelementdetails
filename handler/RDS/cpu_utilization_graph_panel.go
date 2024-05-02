@@ -71,7 +71,7 @@ func GetRDSCPUUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "CPUUtilization", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "CPUUtilization", startTime, endTime, "Average", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cpu utilization data: ", err)
 		return "", nil, err

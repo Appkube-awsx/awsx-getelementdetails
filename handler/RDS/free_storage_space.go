@@ -68,7 +68,7 @@ func GetRDSFreeStorageSpacePanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "FreeStorageSpace", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "FreeStorageSpace", startTime, endTime, "Average", "DBInstanceIdentifier", cloudWatchClient)
 
 	if err != nil {
 		log.Println("Error in getting for free storage space data: ", err)

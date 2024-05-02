@@ -68,7 +68,7 @@ func GetRDSDBLoadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricDatabaseData(clientAuth, instanceId, "AWS/RDS", "DBLoad", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/RDS", "DBLoad", startTime, endTime, "Average", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
 		log.Println("Error getting database workload overview data: ", err)
 		return "", nil, err
