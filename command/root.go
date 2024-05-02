@@ -708,6 +708,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "resource_utilization_patterns_panel" && elementType == "EKS" {
+				jsonResp, cloudwatchMetricResp, err := EKS.GetResourceUtilizationData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting resource_utilization_panel: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "network_throughput_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetNetworkThroughputPanel(cmd, clientAuth, nil)
 				if err != nil {

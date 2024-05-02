@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -70,38 +69,15 @@ func GetNetworkInOutData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := metricData.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_network_total_bytes", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_network_total_bytes", startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["Network in and Network out"] = rawData
 
-	// result := processNetworkInOutRawData(rawData)
-
-	// jsonString, err := json.Marshal(result)
-	// if err != nil {
-	// 	log.Println("Error in marshalling json in string: ", err)
-	// 	return "", nil, err
-	// }
-
 	return "", cloudwatchMetricData, nil
 }
-
-// func processNetworkInOutRawData(result *cloudwatch.GetMetricDataOutput) NetworkInOutResult {
-// 	var rawData NetworkInOutResult
-// 	rawData.RawData = make([]struct {
-// 		Timestamp time.Time
-// 		Value     float64
-// 	}, len(result.MetricDataResults[0].Timestamps))
-
-// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-// 		rawData.RawData[i].Timestamp = *timestamp
-// 		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
-// 	}
-
-// 	return rawData
-// }
 
 func init() {
 	AwsxEKSNetworkInOutCmd.PersistentFlags().String("elementId", "", "element id")

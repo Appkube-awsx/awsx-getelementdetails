@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -71,21 +70,12 @@ func GetNodeStabilityData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := metricData.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_number_of_running_containers", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_number_of_running_containers", startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["NodeStabilityindex"] = rawData
-
-	// // Process the raw data if needed
-	// result := processNodeStabilityRawData(rawData)
-
-	// jsonString, err := json.Marshal(result)
-	// if err != nil {
-	// 	log.Println("Error in marshalling json in string: ", err)
-	// 	return "", nil, err
-	// }
 
 	return "", cloudwatchMetricData, nil
 }

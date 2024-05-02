@@ -1,14 +1,12 @@
 package EKS
 
 import (
-	"errors"
 	"fmt"
 	"log"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -32,26 +30,24 @@ var AwsxEKSIncidentResponseTimeCmd = &cobra.Command{
 			log.Printf("Error during authentication: %v\n", err)
 			err := cmd.Help()
 			if err != nil {
-				log.Println("Error displaying help: ", err)
+
 				return
 			}
 			return
 		}
-		if !authFlag {
-			log.Println("Authentication failed.")
-			return
-		}
+		if authFlag {
 
-		responseType, _ := cmd.PersistentFlags().GetString("responseType")
-		jsonResp, cloudwatchMetricResp, err := GetIncidentResponseTimeData(cmd, clientAuth, nil)
-		if err != nil {
-			log.Println("Error getting incident response time data: ", err)
-			return
-		}
-		if responseType == "frame" {
-			fmt.Println(cloudwatchMetricResp)
-		} else {
-			fmt.Println(jsonResp)
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetIncidentResponseTimeData(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting incident response time data: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				fmt.Println(jsonResp)
+			}
 		}
 	},
 }
@@ -73,39 +69,16 @@ func GetIncidentResponseTimeData(cmd *cobra.Command, clientAuth *model.Auth, clo
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-
+	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "pod_status_failed", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
-		return "", nil, errors.New("error retrieving incident response time metric data: " + err.Error())
-	}
-	// / Fetch raw data
-	rawData, err := metricData.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "pod_status_failed", startTime, endTime, "Average", cloudWatchClient)
-	if err != nil {
-		log.Println("Error in getting cpu usage nice data: ", err)
+		log.Println("Error fetching total operations raw data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CPU_Nice"] = rawData
-	// result := processIncidentResponseTimeRawData(cloudwatchMetricData)
 
-	// jsonString, err := json.Marshal(result)
-	// if err != nil {
-	// 	return "", nil, errors.New("error marshalling JSON response: " + err.Error())
-	// }
+	cloudwatchMetricData["CPU_Nice"] = rawData
 
 	return "", cloudwatchMetricData, nil
 }
-
-// func processIncidentResponseTimeRawData(result map[string]*cloudwatch.GetMetricDataOutput) IncidentResponseResult {
-// 	rawData := IncidentResponseResult{}
-// 	for _, metricData := range result {
-// 		for i, timestamp := range metricData.MetricDataResults[0].Timestamps {
-// 			rawData.RawData = append(rawData.RawData, struct {
-// 				Timestamp time.Time
-// 				Value     float64
-// 			}{*timestamp, *metricData.MetricDataResults[0].Values[i]})
-// 		}
-// 	}
-// 	return rawData
-// }
 
 func init() {
 	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("elementId", "", "element id")

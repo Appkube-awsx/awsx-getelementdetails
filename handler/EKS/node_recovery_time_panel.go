@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"log"
 
+	//"time"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -45,11 +46,6 @@ var AwsxEKSNodeRecoveryPanelCmd = &cobra.Command{
 	},
 }
 
-// type NodeRecoveryData struct {
-// 	Timestamp    time.Time     `json:"timestamp"`
-// 	RecoveryTime time.Duration `json:"recovery_time"`
-// }
-
 func GetNodeRecoveryTime(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
@@ -68,33 +64,12 @@ func GetNodeRecoveryTime(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := metricData.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_status_condition_ready", startTime, endTime, "Maximum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_status_condition_ready", startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["CPU_User"] = rawData
-	// Fetch node ready metric data
-	// nodeReadyData, err := GetNodeReadyMetricData(clientAuth, instanceId, startTime, endTime, cloudWatchClient)
-	// if err != nil {
-	// 	log.Println("Error fetching node ready metric data: ", err)
-	// 	return "", nil, err
-	// }
-
-	// Process node ready data
-	// recoveryTimeSeries := ProcessNodeReadyData(nodeReadyData)
-
-	// // Check if recoveryTimeSeries is empty
-	// if len(recoveryTimeSeries) == 0 {
-	// 	return "No node recovery events detected", nil, nil
-	// }
-
-	// // Marshal recovery time series data to JSON
-	// jsonData, err := json.Marshal(recoveryTimeSeries)
-	// if err != nil {
-	// 	log.Println("Error marshalling JSON: ", err)
-	// 	return "", nil, err
-	// }
 
 	return "", cloudwatchMetricData, nil
 

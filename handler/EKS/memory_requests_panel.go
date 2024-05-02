@@ -7,7 +7,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -70,78 +69,15 @@ func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	// Fetch raw data
-	rawData, err := metricData.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "pod_memory_request", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "pod_memory_request", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["Memory requests"] = rawData
 
-	// Debug prints
-	// log.Printf("RawData Result: %+v", rawData)
-
-	// Process the raw data if needed
-	// result := ProcessMemoryRequestRawData(rawData)
-
-	// jsonString, err := json.Marshal(result)
-	// if err != nil {
-	// 	log.Println("Error in marshalling json in string: ", err)
-	// 	return "", nil, err
-	// }
-
 	return "", cloudwatchMetricData, nil
 }
-
-// func GetMemoryRequestMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-// 	elmType := "ContainerInsights"
-// 	input := &cloudwatch.GetMetricDataInput{
-// 		EndTime:   endTime,
-// 		StartTime: startTime,
-// 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-// 			{
-// 				Id: aws.String("m1"),
-// 				MetricStat: &cloudwatch.MetricStat{
-// 					Metric: &cloudwatch.Metric{
-// 						Dimensions: []*cloudwatch.Dimension{
-// 							{
-// 								Name:  aws.String("ClusterName"),
-// 								Value: aws.String(instanceId),
-// 							},
-// 						},
-// 						MetricName: aws.String("pod_memory_request"),
-// 						Namespace:  aws.String(elmType),
-// 					},
-// 					Period: aws.Int64(60),
-// 					Stat:   aws.String("Average"),
-// 				},
-// 			},
-// 		},
-// 	}
-// 	if cloudWatchClient == nil {
-// 		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-// 	}
-// 	result, err := cloudWatchClient.GetMetricData(input)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return result, nil
-// }
-
-// func ProcessMemoryRequestRawData(result *cloudwatch.GetMetricDataOutput) memoryResult {
-// 	var rawData memoryResult
-// 	rawData.RawData = make([]struct {
-// 		Timestamp time.Time
-// 		Value     float64
-// 	}, len(result.MetricDataResults[0].Timestamps))
-
-// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-// 		rawData.RawData[i].Timestamp = *timestamp
-// 		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
-// 	}
-
-// 	return rawData
-// }
 
 func init() {
 	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("elementId", "", "element id")

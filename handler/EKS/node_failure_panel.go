@@ -8,7 +8,6 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -72,41 +71,15 @@ func GetNodeFailureData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := metricData.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "cluster_failed_node_count", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "cluster_failed_node_count", startTime, endTime, "Sum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["Node Failures"] = rawData
 
-	// Process the raw data if needed
-	// result := processNodeFailureRawData(rawData)
-
-	// jsonString, err := json.Marshal(result)
-	// if err != nil {
-	// 	log.Println("Error in marshalling JSON in string: ", err)
-	// 	return "", nil, err
-	// }
-
 	return "", cloudwatchMetricData, nil
 }
-
-// func processNodeFailureRawData(result *cloudwatch.GetMetricDataOutput) nodeFailureResult {
-// 	var rawData nodeFailureResult
-
-// 	// Initialize map to store data by date
-// 	dateMap := make(map[time.Time]float64)
-
-// 	// Iterate through timestamps and values
-// 	for i := 0; i < len(result.MetricDataResults[0].Timestamps); i++ {
-// 		timestamp := result.MetricDataResults[0].Timestamps[i]
-
-// 		// Truncate timestamp to start of day
-// 		date := time.Date(timestamp.Year(), timestamp.Month(), timestamp.Day(), 0, 0, 0, 0, timestamp.Location())
-
-// 		// Add value to corresponding date
-// 		dateMap[date] += *result.MetricDataResults[0].Values[i]
-// 	}
 
 // 	// Convert map to array of struct
 // 	for date, value := range dateMap {
