@@ -69,7 +69,7 @@ func GetNetworkInOutData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_network_total_bytes", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_network_total_bytes", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err

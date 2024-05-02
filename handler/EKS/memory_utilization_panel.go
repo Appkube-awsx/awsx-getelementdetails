@@ -7,7 +7,8 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
+
+	//"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 
 	"log"
@@ -71,19 +72,19 @@ func GeteksMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	currentUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "SampleCount", cloudWatchClient)
+	currentUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "SampleCount", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["CurrentUsage"] = currentUsage
-	averageUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Average", cloudWatchClient)
+	averageUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["AverageUsage"] = averageUsage
-	maxUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Maximum", cloudWatchClient)
+	maxUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Maximum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err

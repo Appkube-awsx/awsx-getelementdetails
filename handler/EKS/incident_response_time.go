@@ -69,7 +69,7 @@ func GetIncidentResponseTimeData(cmd *cobra.Command, clientAuth *model.Auth, clo
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "pod_status_failed", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "pod_status_failed", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error fetching total operations raw data: ", err)
 		return "", nil, err

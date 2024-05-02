@@ -71,7 +71,7 @@ func GetNodeFailureData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "cluster_failed_node_count", startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "cluster_failed_node_count", startTime, endTime, "Sum","ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err

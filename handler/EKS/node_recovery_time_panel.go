@@ -64,7 +64,7 @@ func GetNodeRecoveryTime(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_status_condition_ready", startTime, endTime, "Maximum", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_status_condition_ready", startTime, endTime, "Maximum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err

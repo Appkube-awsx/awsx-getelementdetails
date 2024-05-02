@@ -69,7 +69,7 @@ func GetEKSDiskIOPerformancePanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_diskio_io_serviced_total", startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_diskio_io_serviced_total", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error fetching total operations raw data: ", err)
 		return "", nil, err
