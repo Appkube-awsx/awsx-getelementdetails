@@ -3,23 +3,14 @@ package EKS
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-
-	"log"
-
 	"github.com/spf13/cobra"
 )
-
-// type MemoryResult struct {
-// 	CurrentUsage float64 `json:"CurrentUsage"`
-// 	AverageUsage float64 `json:"AverageUsage"`
-// 	MaxUsage     float64 `json:"MaxUsage"`
-// }
 
 var AwsxEKSMemoryUtilizationCmd = &cobra.Command{
 	Use:   "memory_utilization_panel",
@@ -59,7 +50,6 @@ func GeteksMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
-
 	startTime, endTime, err := commanFunction.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
@@ -71,30 +61,48 @@ func GeteksMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	currentUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "SampleCount", cloudWatchClient)
+	currentUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_memory_utilization", startTime, endTime, "SampleCount", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CurrentUsage"] = currentUsage
-	averageUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Average", cloudWatchClient)
+	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["CurrentUsage"] = currentUsage
+	} else {
+		log.Println("No data found for current usage")
+	}
+	// Get average utilization
+	averageUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_memory_utilization", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["AverageUsage"] = averageUsage
-	maxUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Maximum", cloudWatchClient)
+	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["AverageUsage"] = averageUsage
+	} else {
+		log.Println("No data found for average usage")
+	}
+	maxUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_memory_utilization", startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MaxUsage"] = maxUsage
-	jsonOutput := map[string]float64{
-		"CurrentUsage": *currentUsage.MetricDataResults[0].Values[0],
-		"AverageUsage": *averageUsage.MetricDataResults[0].Values[0],
-		"MaxUsage":     *maxUsage.MetricDataResults[0].Values[0],
+	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["MaxUsage"] = maxUsage
+	} else {
+		log.Println("")
+		return "null", nil, nil
 	}
-
+	jsonOutput := make(map[string]float64)
+	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["CurrentUsage"] = *currentUsage.MetricDataResults[0].Values[0]
+	}
+	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["AverageUsage"] = *averageUsage.MetricDataResults[0].Values[0]
+	}
+	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["MaxUsage"] = *maxUsage.MetricDataResults[0].Values[0]
+	}
 	jsonString, err := json.Marshal(jsonOutput)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)

@@ -2,24 +2,15 @@ package EKS
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
-
-	"fmt"
-	"log"
-
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
-
-// type Result struct {
-// 	CurrentUsage float64 `json:"CurrentUsage"`
-// 	AverageUsage float64 `json:"AverageUsage"`
-// 	MaxUsage     float64 `json:"MaxUsage"`
-// }
 
 var AwsxEKSCpuUtilizationCmd = &cobra.Command{
 	Use:   "cpu_utilization_panel",
@@ -71,31 +62,49 @@ func GetEKScpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	//if queryName == "cpu_utilization_panel" {
-	currentUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_cpu_utilization", startTime, endTime, "SampleCount", cloudWatchClient)
+
+	currentUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_cpu_utilization", startTime, endTime, "SampleCount", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["CurrentUsage"] = currentUsage
+	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["CurrentUsage"] = currentUsage
+	} else {
+		log.Println("No data available for current Usage")
+	}
 	// Get average usage
-	averageUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_cpu_utilization", startTime, endTime, "Average", cloudWatchClient)
+	averageUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_cpu_utilization", startTime, endTime, "Average", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["AverageUsage"] = averageUsage
+	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["AverageUsage"] = averageUsage
+	} else {
+		log.Println("No data available for average Usage")
+	}
 	// Get max usage
-	maxUsage, err := metricData.GetMetricClusterData(clientAuth, instanceId, "AWS/"+elementType, "node_cpu_utilization", startTime, endTime, "Maximum", cloudWatchClient)
+	maxUsage, err := commanFunction.GetMetricClusterData(clientAuth, instanceId, "ContainerInsights", "node_cpu_utilization", startTime, endTime, "Maximum", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MaxUsage"] = maxUsage
-	jsonOutput := map[string]float64{
-		"CurrentUsage": *currentUsage.MetricDataResults[0].Values[0],
-		"AverageUsage": *averageUsage.MetricDataResults[0].Values[0],
-		"MaxUsage":     *maxUsage.MetricDataResults[0].Values[0],
+	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["MaxUsage"] = maxUsage
+	} else {
+		log.Println("No data available for maximum Usage")
+	}
+
+	jsonOutput := make(map[string]float64)
+	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["CurrentUsage"] = *currentUsage.MetricDataResults[0].Values[0]
+	}
+	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["AverageUsage"] = *averageUsage.MetricDataResults[0].Values[0]
+	}
+	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["MaxUsage"] = *maxUsage.MetricDataResults[0].Values[0]
 	}
 
 	jsonString, err := json.Marshal(jsonOutput)
