@@ -1,4 +1,4 @@
-package commanFunction
+package comman_function
 
 import (
 	"github.com/Appkube-awsx/awsx-common/awsclient"

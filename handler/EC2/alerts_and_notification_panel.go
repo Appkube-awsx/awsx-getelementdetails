@@ -2,7 +2,7 @@ package EC2
 
 import (
 	"fmt"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"log"
 	"time"
 
@@ -56,12 +56,12 @@ func handleAuth(cmd *cobra.Command) (bool, *model.Auth, error) {
 }
 
 func GetAlertsAndNotificationsPanel(cmd *cobra.Command, clientAuth *model.Auth) ([]AlarmNotification, error) {
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	alarms, err := commanFunction.GetCloudWatchAlarms(clientAuth, startTime, endTime)
+	alarms, err := comman_function.GetCloudWatchAlarms(clientAuth, startTime, endTime)
 	if err != nil {
 		log.Println("Error getting CloudWatch alarms:", err)
 		return nil, err

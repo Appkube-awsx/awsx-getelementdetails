@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 	"log"
@@ -48,18 +48,18 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	instanceId, err = commanFunction.GetCmdbData(cmd)
+	instanceId, err = comman_function.GetCmdbData(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	currentUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "SampleCount", "InstanceId", cloudWatchClient)
+	currentUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "SampleCount", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
@@ -72,7 +72,7 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	}
 
 	// Get average usage
-	averageUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
+	averageUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
@@ -85,7 +85,7 @@ func GetCpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	}
 
 	// Get max usage
-	maxUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "Maximum", "InstanceId", cloudWatchClient)
+	maxUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "CPUUtilization", startTime, endTime, "Maximum", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err

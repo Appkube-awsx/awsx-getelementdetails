@@ -6,7 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -56,12 +56,12 @@ func GetCpuUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	instanceId, err = commanFunction.GetCmdbData(cmd)
+	instanceId, err = comman_function.GetCmdbData(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
@@ -69,7 +69,7 @@ func GetCpuUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get average utilization
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ECS/ContainerInsights", "CpuUtilized", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ECS/ContainerInsights", "CpuUtilized", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting rawdata: ", err)
 		return "", nil, err

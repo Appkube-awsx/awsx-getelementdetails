@@ -6,7 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
 )
@@ -45,15 +45,15 @@ var AwsxFailedServicePanelCmd = &cobra.Command{
 
 func GetECSFailedServiceEvents(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing time: %v", err)
 	}
-	logGroupName, err = commanFunction.GetCmdbLogsData(cmd)
+	logGroupName, err = comman_function.GetCmdbLogsData(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-	results, err := commanFunction.GetLogsData(clientAuth, startTime, endTime, logGroupName, `fields @timestamp, @message| filter eventSource = "ecs.amazonaws.com" and @message like /ERROR|Exception|Failed/ and @message like /service/| stats count() as FailedServiceCount by @timestamp| sort @timestamp desc`, cloudWatchLogs)
+	results, err := comman_function.GetLogsData(clientAuth, startTime, endTime, logGroupName, `fields @timestamp, @message| filter eventSource = "ecs.amazonaws.com" and @message like /ERROR|Exception|Failed/ and @message like /service/| stats count() as FailedServiceCount by @timestamp| sort @timestamp desc`, cloudWatchLogs)
 	if err != nil {
 		return nil, nil
 	}

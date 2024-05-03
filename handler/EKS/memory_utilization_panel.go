@@ -6,7 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 
 	//"github.com/Appkube-awsx/awsx-getelementdetails/global-function/metricData"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -61,30 +61,30 @@ func GeteksMemoryUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	instanceId, err = commanFunction.GetCmdbData(cmd)
+	instanceId, err = comman_function.GetCmdbData(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	currentUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "SampleCount", "ClusterName", cloudWatchClient)
+	currentUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "SampleCount", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting sample count: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["CurrentUsage"] = currentUsage
-	averageUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
+	averageUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting average: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["AverageUsage"] = averageUsage
-	maxUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Maximum", "ClusterName", cloudWatchClient)
+	maxUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "node_memory_utilization", startTime, endTime, "Maximum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err

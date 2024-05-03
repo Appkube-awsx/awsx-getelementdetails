@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 	"log"
@@ -64,28 +64,28 @@ func GetNodeCapacityPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing time: %v", err)
 	}
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
-	instanceId, err = commanFunction.GetCmdbData(cmd)
+	instanceId, err = comman_function.GetCmdbData(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
-	cpuUsageRawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_cpu_utilization", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
+	cpuUsageRawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_cpu_utilization", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		return nil, err
 	}
 
-	memoryUsageRawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_memory_utilization", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
+	memoryUsageRawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_memory_utilization", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		return nil, err
 	}
 
-	storageAvailRawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_utilization", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
+	storageAvailRawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_utilization", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		return nil, err
 	}

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 	"log"
@@ -56,7 +56,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
@@ -64,7 +64,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Root Volume Usage
-	rootVolumeUsage, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_utilization", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
+	rootVolumeUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_utilization", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting root volume usage: ", err)
 		return "", nil, err
@@ -73,7 +73,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	rootVolumeUsageStr := strconv.FormatFloat(rootVolumeUsageValue, 'f', 2, 64)
 
 	// Get EBS Volume 1 Usage
-	ebsVolume1Usage, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
+	ebsVolume1Usage, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS volume 1 usage: ", err)
 		return "", nil, err
@@ -82,7 +82,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	ebsVolume1PercentageStr := strconv.FormatFloat(ebsVolume1Percentage, 'f', 2, 64)
 
 	// Get EBS Volume 2 Usage
-	ebsVolume2Usage, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
+	ebsVolume2Usage, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS volume 2 usage: ", err)
 		return "", nil, err

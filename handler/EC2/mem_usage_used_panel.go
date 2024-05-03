@@ -6,7 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -58,12 +58,12 @@ func GetMemUsageUsed(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	instanceId, err = commanFunction.GetCmdbData(cmd)
+	instanceId, err = comman_function.GetCmdbData(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
@@ -71,7 +71,7 @@ func GetMemUsageUsed(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "CWAgent", "mem_used", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "CWAgent", "mem_used", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting memory usage used data: ", err)
 		return "", nil, err

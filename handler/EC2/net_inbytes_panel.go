@@ -6,7 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -58,12 +58,12 @@ func GetNetworkInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	fmt.Println(elementType)
 
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
-	instanceId, err = commanFunction.GetCmdbData(cmd)
+	instanceId, err = comman_function.GetCmdbData(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
@@ -71,7 +71,7 @@ func GetNetworkInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkIn", startTime, endTime, "Sum", "InstanceId", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkIn", startTime, endTime, "Sum", "InstanceId", cloudWatchClient)
 
 	if err != nil {
 		log.Println("Error in getting network inbytes data: ", err)

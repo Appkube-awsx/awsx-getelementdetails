@@ -7,7 +7,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
 )
@@ -48,11 +48,11 @@ func GetThrottlingTrendsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	// elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	// cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing time: %v", err)
 	}
-	logGroupName, err = commanFunction.GetCmdbLogsData(cmd)
+	logGroupName, err = comman_function.GetCmdbLogsData(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
@@ -106,7 +106,7 @@ func GetThrottlingTrendsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	// 	endTime = defaultEndTime
 	// }
 
-	results, err := commanFunction.GetLogsData(clientAuth, startTime, endTime, logGroupName, `fields @timestamp, InvocationCount, errorCount| filter eventSource = "lambda.amazonaws.com"| stats count() as InvocationCount, count(errorCode) as errorCount by bin(1m)`, cloudWatchLogs)
+	results, err := comman_function.GetLogsData(clientAuth, startTime, endTime, logGroupName, `fields @timestamp, InvocationCount, errorCount| filter eventSource = "lambda.amazonaws.com"| stats count() as InvocationCount, count(errorCode) as errorCount by bin(1m)`, cloudWatchLogs)
 	if err != nil {
 		return nil, err
 	}

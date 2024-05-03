@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 	"log"
@@ -60,19 +60,19 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	instanceId, err = commanFunction.GetCmdbData(cmd)
+	instanceId, err = comman_function.GetCmdbData(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Inbound Traffic
-	inboundTraffic, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "pod_network_rx_bytes", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
+	inboundTraffic, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "pod_network_rx_bytes", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
@@ -87,7 +87,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData["InboundTraffic"] = createMetricDataOutput(inboundTrafficMegabytes)
 
 	// Get Outbound Traffic
-	outboundTraffic, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "pod_network_tx_bytes", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
+	outboundTraffic, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "pod_network_tx_bytes", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err

@@ -2,7 +2,7 @@ package EKS
 
 import (
 	"fmt"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"log"
 	"time"
 
@@ -58,12 +58,12 @@ func GetNodeConditionPanel(cmd *cobra.Command, clientAuth *model.Auth) (map[stri
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	instanceId, err = commanFunction.GetCmdbData(cmd)
+	instanceId, err = comman_function.GetCmdbData(cmd)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error getting instance ID: %v", err)
 	}

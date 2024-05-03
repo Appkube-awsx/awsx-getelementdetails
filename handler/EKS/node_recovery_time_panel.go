@@ -8,7 +8,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -52,19 +52,19 @@ func GetNodeRecoveryTime(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	instanceId, err = commanFunction.GetCmdbData(cmd)
+	instanceId, err = comman_function.GetCmdbData(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := commanFunction.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_status_condition_ready", startTime, endTime, "Maximum", "ClusterName", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_status_condition_ready", startTime, endTime, "Maximum", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err

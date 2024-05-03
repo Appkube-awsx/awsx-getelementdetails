@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/global-function/commanFunction"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
 	"log"
@@ -39,16 +39,16 @@ var AwsxEc2CustomAlertPanelCmd = &cobra.Command{
 
 func GetEc2CustomAlertPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
-	startTime, endTime, err := commanFunction.ParseTimes(cmd)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing time: %v", err)
 	}
-	logGroupName, err = commanFunction.GetCmdbLogsData(cmd)
+	logGroupName, err = comman_function.GetCmdbLogsData(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
-	results, err := commanFunction.FiltercloudWatchLogs(clientAuth, startTime, endTime, logGroupName, "")
+	results, err := comman_function.FiltercloudWatchLogs(clientAuth, startTime, endTime, logGroupName, "")
 	if err != nil {
 		log.Println("Error in getting custom alert data: ", err)
 		return nil, err
