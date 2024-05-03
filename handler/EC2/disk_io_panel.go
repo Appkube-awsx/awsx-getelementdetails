@@ -1,8 +1,10 @@
 package EC2
 
 import (
-	"encoding/json"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
@@ -11,8 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
-	"log"
-	"time"
 )
 
 type DiskIOPerformanceResult struct {
@@ -127,33 +127,33 @@ func GetEC2DiskIOPerformancePanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 	}
 	cloudwatchMetricData["DiskWriteBytes"] = rawDataDiskWriteBytes
 
-	resultDiskReadBytes := processRawPanelRawData(rawDataDiskReadBytes)
-	resultDiskWriteBytes := processRawPanelRawData(rawDataDiskWriteBytes)
+	//resultDiskReadBytes := processRawPanelRawData(rawDataDiskReadBytes)
+	//resultDiskWriteBytes := processRawPanelRawData(rawDataDiskWriteBytes)
+	//
+	//// Calculate total disk I/O
+	//totalDiskIO := make([]struct {
+	//	Timestamp time.Time
+	//	Value     float64
+	//}, len(resultDiskReadBytes))
+	//
+	//for i := range resultDiskReadBytes.RawData {
+	//	totalDiskIO[i].Timestamp = resultDiskReadBytes.RawData[i].Timestamp
+	//	totalDiskIO[i].Value = resultDiskReadBytes.RawData[i].Value + resultDiskWriteBytes.RawData[i].Value
+	//}
+	//
+	//jsonResults := map[string]interface{}{
+	//	"DiskReadBytes":  resultDiskReadBytes,
+	//	"DiskWriteBytes": resultDiskWriteBytes,
+	//	"TotalDiskIO":    totalDiskIO,
+	//}
 
-	// Calculate total disk I/O
-	totalDiskIO := make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(resultDiskReadBytes.RawData))
+	//jsonString, err := json.Marshal(jsonResults)
+	//if err != nil {
+	//	log.Println("Error in marshalling json in string: ", err)
+	//	return "", nil, err
+	//}
 
-	for i := range resultDiskReadBytes.RawData {
-		totalDiskIO[i].Timestamp = resultDiskReadBytes.RawData[i].Timestamp
-		totalDiskIO[i].Value = resultDiskReadBytes.RawData[i].Value + resultDiskWriteBytes.RawData[i].Value
-	}
-
-	// jsonResults := map[string]interface{}{
-	// 	"DiskReadBytes":  resultDiskReadBytes,
-	// 	"DiskWriteBytes": resultDiskWriteBytes,
-	// 	"TotalDiskIO":    totalDiskIO,
-	// }
-
-	jsonString, err := json.Marshal(totalDiskIO)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
+	return "", cloudwatchMetricData, nil
 }
 
 func GetDiskIOMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
@@ -212,32 +212,33 @@ func GetDiskIOMetricData(clientAuth *model.Auth, instanceID, elementType string,
 	return result, nil
 }
 
-func processRawPanelRawData(result *cloudwatch.GetMetricDataOutput) DiskReadPanelData {
-	var rawData DiskReadPanelData
-
-	// Initialize an empty slice to store the raw data
-	rawData.RawData = []struct {
-		Timestamp time.Time
-		Value     float64
-	}{}
-
-	// Iterate over each metric data result
-	for _, metricDataResult := range result.MetricDataResults {
-		// Iterate over each timestamp and value pair in the current metric data result
-		for i, timestamp := range metricDataResult.Timestamps {
-			// Append the timestamp and value to the rawData slice
-			rawData.RawData = append(rawData.RawData, struct {
-				Timestamp time.Time
-				Value     float64
-			}{
-				Timestamp: *timestamp,
-				Value:     *metricDataResult.Values[i],
-			})
-		}
-	}
-
-	return rawData
-}
+//
+//func processRawPanelRawData(result *cloudwatch.GetMetricDataOutput) DiskReadPanelData {
+//	var rawData DiskReadPanelData
+//
+//	// Initialize an empty slice to store the raw data
+//	rawData.RawData = []struct {
+//		Timestamp time.Time
+//		Value     float64
+//	}{}
+//
+//	// Iterate over each metric data result
+//	for _, metricDataResult := range result.MetricDataResults {
+//		// Iterate over each timestamp and value pair in the current metric data result
+//		for i, timestamp := range metricDataResult.Timestamps {
+//			// Append the timestamp and value to the rawData slice
+//			rawData.RawData = append(rawData.RawData, struct {
+//				Timestamp time.Time
+//				Value     float64
+//			}{
+//				Timestamp: *timestamp,
+//				Value:     *metricDataResult.Values[i],
+//			})
+//		}
+//	}
+//
+//	return rawData
+//}
 
 func init() {
 	AwsxEC2DiskIOPerformanceCmd.PersistentFlags().String("elementId", "", "element id")
