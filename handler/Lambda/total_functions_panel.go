@@ -13,14 +13,13 @@ import (
 )
 
 type TotalFunctionResult struct {
-	Value float64 `json:"total_functions_panel"`
+	Value float64 `json:"Value"`
 }
-
 
 var AwsxLambdaTotalFunctionCmd = &cobra.Command{
 	Use:   "total_function_panel",
-	Short: "get total function data",
-	Long:  `command to get total function data`,
+	Short: "get total function metrics data",
+	Long:  `command to get total function metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")

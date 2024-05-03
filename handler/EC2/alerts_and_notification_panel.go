@@ -1,20 +1,13 @@
 package EC2
 
 import (
-	// "encoding/json"
-	"errors"
 	"fmt"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"log"
-	"os"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/olekukonko/tablewriter"
-
-	// "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	// "github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -48,7 +41,7 @@ var AwsxEc2AlarmandNotificationcmd = &cobra.Command{
 			if responseType == "frame" {
 				fmt.Println(notifications)
 			} else {
-				printTable(notifications)
+				//printTable(notifications)
 			}
 		}
 	},
@@ -63,43 +56,17 @@ func handleAuth(cmd *cobra.Command) (bool, *model.Auth, error) {
 }
 
 func GetAlertsAndNotificationsPanel(cmd *cobra.Command, clientAuth *model.Auth) ([]AlarmNotification, error) {
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	var startTime, endTime time.Time
-	var err error
-
-	if startTimeStr != "" {
-		startTime, err = time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return nil, err
-		}
-	} else {
-		log.Println("Start time not provided. Please provide a start time.")
-		return nil, errors.New("start time not provided")
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	if endTimeStr != "" {
-		endTime, err = time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return nil, err
-		}
-	} else {
-		endTime = time.Now()
-	}
-
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
-
-	// Retrieve CloudWatch alarms
-	alarms, err := GetCloudWatchAlarms(clientAuth, &startTime, &endTime)
+	alarms, err := comman_function.GetCloudWatchAlarms(clientAuth, startTime, endTime)
 	if err != nil {
 		log.Println("Error getting CloudWatch alarms:", err)
 		return nil, err
 	}
 
-	// Convert CloudWatch alarms to AlarmNotification struct
 	notifications := make([]AlarmNotification, len(alarms))
 	for i, alarm := range alarms {
 		notifications[i] = AlarmNotification{
@@ -112,42 +79,20 @@ func GetAlertsAndNotificationsPanel(cmd *cobra.Command, clientAuth *model.Auth) 
 	return notifications, nil
 }
 
-func GetCloudWatchAlarms(clientAuth *model.Auth, startTime, endTime *time.Time) ([]*cloudwatch.MetricAlarm, error) {
-	svc := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-
-	// Call DescribeAlarms to get all alarms
-	resp, err := svc.DescribeAlarms(&cloudwatch.DescribeAlarmsInput{})
-	if err != nil {
-		log.Println("Error describing alarms:", err)
-		return nil, err
-	}
-
-	// Filter alarms based on their last updated time within the specified range
-	filteredAlarms := make([]*cloudwatch.MetricAlarm, 0)
-	for _, alarm := range resp.MetricAlarms {
-		stateUpdatedTime := alarm.StateUpdatedTimestamp
-		if stateUpdatedTime != nil && stateUpdatedTime.After(*startTime) && stateUpdatedTime.Before(*endTime) {
-			filteredAlarms = append(filteredAlarms, alarm)
-		}
-	}
-
-	return filteredAlarms, nil
-}
-
-func printTable(notifications []AlarmNotification) {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Timestamp", "Alert", "Description"})
-
-	for _, notification := range notifications {
-		table.Append([]string{
-			notification.Timestamp.Format(time.RFC3339),
-			notification.Alert,
-			notification.Description,
-		})
-	}
-
-	table.Render()
-}
+//func printTable(notifications []AlarmNotification) {
+//	table := tablewriter.NewWriter(os.Stdout)
+//	table.SetHeader([]string{"Timestamp", "Alert", "Description"})
+//
+//	for _, notification := range notifications {
+//		table.Append([]string{
+//			notification.Timestamp.Format(time.RFC3339),
+//			notification.Alert,
+//			notification.Description,
+//		})
+//	}
+//
+//	table.Render()
+//}
 
 func init() {
 	AwsxEc2AlarmandNotificationcmd.PersistentFlags().String("rootvolumeId", "", "root volume id")

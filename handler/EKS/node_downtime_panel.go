@@ -3,13 +3,12 @@ package EKS
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"log"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -55,57 +54,20 @@ var AwsxEKSNodeDowntimeCmd = &cobra.Command{
 }
 
 func GetNodeDowntimePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, []NodeDowntimeDataPoint, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	instanceId, err = comman_function.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	// Get node metrics
 	nodeMetrics, err := GetNodeDowntimeMetrics(clientAuth, instanceId, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting node metrics: ", err)
@@ -187,23 +149,4 @@ func GetNodeDowntimeMetrics(clientAuth *model.Auth, instanceId string, startTime
 	}
 
 	return result, nil
-}
-
-func init() {
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSNodeDowntimeCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

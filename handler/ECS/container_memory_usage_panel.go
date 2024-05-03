@@ -1,27 +1,22 @@
 package ECS
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type ContainerMemoryUsageResult struct {
-	TimeSeries []struct {
-		Timestamp   time.Time
-		MemoryUsage float64
-	}
-}
+// type ContainerMemoryUsageResult struct {
+// 	TimeSeries []struct {
+// 		Timestamp   time.Time
+// 		MemoryUsage float64
+// 	} `json:"RawData"`
+// }
 
 var AwsxECSContainerMemoryUsageCmd = &cobra.Command{
 	Use:   "container_memory_usage_panel",
@@ -57,131 +52,48 @@ var AwsxECSContainerMemoryUsageCmd = &cobra.Command{
 }
 
 func GetContainerMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	fmt.Println(elementType)
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
+	instanceId, err = comman_function.GetCmdbData(cmd)
 
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	// Debug prints
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetContainerMemoryUsageMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ECS/ContainerInsights", "MemoryUtilized", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting container memory usage  data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["Container_memory_usage"] = rawData
+	return "", cloudwatchMetricData, nil
 
-	result := processContainerMemoryUsageRawData(rawData)
-
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetContainerMemoryUsageMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+// func processContainerMemoryUsageRawData(result *cloudwatch.GetMetricDataOutput) ContainerMemoryUsageResult {
+// 	var containerMemoryUsageResult ContainerMemoryUsageResult
 
-	elmType := "ECS/ContainerInsights"
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ClusterName"),
-								Value: aws.String(instanceId),
-							},
-						},
-						MetricName: aws.String("MemoryUtilized"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(300),
-					Stat:   aws.String("Average"),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
+// 	for i := range result.MetricDataResults[0].Timestamps {
+// 		timestamp := *result.MetricDataResults[0].Timestamps[i]
+// 		memoryUsage := *result.MetricDataResults[0].Values[i]
+// 		containerMemoryUsageResult.TimeSeries = append(containerMemoryUsageResult.TimeSeries, struct {
+// 			Timestamp   time.Time
+// 			MemoryUsage float64
+// 		}{Timestamp: timestamp, MemoryUsage: memoryUsage})
+// 	}
 
-	return result, nil
-}
-
-func processContainerMemoryUsageRawData(result *cloudwatch.GetMetricDataOutput) ContainerMemoryUsageResult {
-	var containerMemoryUsageResult ContainerMemoryUsageResult
-
-	for i := range result.MetricDataResults[0].Timestamps {
-		timestamp := *result.MetricDataResults[0].Timestamps[i]
-		memoryUsage := *result.MetricDataResults[0].Values[i]
-		containerMemoryUsageResult.TimeSeries = append(containerMemoryUsageResult.TimeSeries, struct {
-			Timestamp   time.Time
-			MemoryUsage float64
-		}{Timestamp: timestamp, MemoryUsage: memoryUsage})
-	}
-
-	return containerMemoryUsageResult
-}
+// 	return containerMemoryUsageResult
+// }
 
 func init() {
 	AwsxECSContainerMemoryUsageCmd.PersistentFlags().String("elementId", "", "element id")

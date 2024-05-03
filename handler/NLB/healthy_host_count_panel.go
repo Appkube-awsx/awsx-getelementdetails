@@ -1,27 +1,15 @@
 package NLB
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
-
-type HealthyHostCountData struct {
-	HealthyHostCount []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"HealthyHostCount"`
-}
 
 var AwsxNLBHealthyHostCountCmd = &cobra.Command{
 	Use:   "nlb_healthy_host_count_panel",
@@ -58,138 +46,35 @@ var AwsxNLBHealthyHostCountCmd = &cobra.Command{
 }
 
 func GetNLBHealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	//nlbArn, _ := cmd.PersistentFlags().GetString("nlbArn")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	//elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
-	}
-	var startTime, endTime *time.Time
-
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
+	instanceId, err = comman_function.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetNLBHealthyHostCountMetricData(clientAuth, instanceId, startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "HealthyHostCount", startTime, endTime, "Average", "LoadBalancer", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting NLB healthy host count data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["HealthyHostCount"] = rawData
 
-	result := processNLBHealthyHostCountRawData(rawData)
-
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
-}
-
-func GetNLBHealthyHostCountMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for NLB %s from %v to %v", instanceId, startTime, endTime)
-	elmType := "AWS/NetworkELB"
-
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("LoadBalancer"),
-								Value: aws.String(instanceId),
-							},
-							{
-								Name:  aws.String("TargetGroup"),
-								Value: aws.String("targetgroup/k8s-istiosys-istioing-30129717de/b5e55c2955f8e65f"),
-							},
-						},
-						MetricName: aws.String("HealthyHostCount"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(60),
-					Stat:   aws.String(statistic),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func processNLBHealthyHostCountRawData(result *cloudwatch.GetMetricDataOutput) HealthyHostCountData {
-	var rawData HealthyHostCountData
-	rawData.HealthyHostCount = make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
-
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.HealthyHostCount[i].Timestamp = *timestamp
-		rawData.HealthyHostCount[i].Value = *result.MetricDataResults[0].Values[i]
-	}
-
-	return rawData
+	return "", cloudwatchMetricData, nil
 }
 
 func init() {
-	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("instanceId", "", "instanceId")
+	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("nlbArn", "", "NLB ARN")
 	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("startTime", "", "start time")
 	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("endTime", "", "end time")
 	AwsxNLBHealthyHostCountCmd.PersistentFlags().String("responseType", "", "response type. json/frame")

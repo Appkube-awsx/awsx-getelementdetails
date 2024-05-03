@@ -1,206 +1,114 @@
 package ECS
 
 import (
-    "encoding/json"
-    "fmt"
-    "log"
-    "time"
+	"fmt"
+	"log"
 
-    "github.com/Appkube-awsx/awsx-common/authenticate"
-    "github.com/Appkube-awsx/awsx-common/awsclient"
-    "github.com/Appkube-awsx/awsx-common/cmdb"
-    "github.com/Appkube-awsx/awsx-common/config"
-    "github.com/Appkube-awsx/awsx-common/model"
-    "github.com/aws/aws-sdk-go/aws"
-    "github.com/aws/aws-sdk-go/service/cloudwatch"
-    "github.com/spf13/cobra"
+	"github.com/Appkube-awsx/awsx-common/authenticate"
+	"github.com/Appkube-awsx/awsx-common/model"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
+	"github.com/spf13/cobra"
 )
 
-type MemoryUtilizationGraphResult struct {
-    RawData []struct {
-        Timestamp time.Time
-        Value     float64
-    } `json:"RawData"`
+// type MemoryGraphUtilizationResult struct {
+// 	RawData []struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	} `json:"Memory utilization"`
+// }
+
+var AwsxEcsMemoryUtilizationGraphCmd = &cobra.Command{
+	Use:   "memory_utilization_graph_panel",
+	Short: "get memory utilization graph metrics data",
+	Long:  `command to get memory utilization graph metrics data`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("running from child command")
+		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		if err != nil {
+			log.Printf("Error during authentication: %v\n", err)
+			err := cmd.Help()
+			if err != nil {
+				return
+			}
+			return
+		}
+		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetMemoryUtilizationGraphPanel(cmd, clientAuth, nil)
+			if err != nil {
+				log.Println("Error getting memory utilization graph: ", err)
+				return
+			}
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				fmt.Println(jsonResp)
+			}
+		}
+
+	},
 }
 
-var AwsxECSMemoryUtilizationGraphCmd = &cobra.Command{
-    Use:   "memory_utilization_graph_panel",
-    Short: "get memory utilization graph metrics data",
-    Long:  `command to get memory utilization graph metrics data`,
+func GetMemoryUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 
-    Run: func(cmd *cobra.Command, args []string) {
-        fmt.Println("running from child command")
-        var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
-        if err != nil {
-            log.Printf("Error during authentication: %v\n", err)
-            err := cmd.Help()
-            if err != nil {
-                return
-            }
-            return
-        }
-        if authFlag {
-            responseType, _ := cmd.PersistentFlags().GetString("responseType")
-            jsonResp, cloudwatchMetricResp, err := GetMemoryUtilizationGraphData(cmd, clientAuth, nil)
-            if err != nil {
-                log.Println("Error getting memory utilization graph data : ", err)
-                return
-            }
-            if responseType == "frame" {
-                fmt.Println(cloudwatchMetricResp)
-            } else {
-                fmt.Println(jsonResp)
-            }
-        }
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
 
-    },
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
+	}
+
+	instanceId, err = comman_function.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
+	}
+
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
+
+	// Get average utilization
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ECS/ContainerInsights", "MemoryUtilized", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
+	if err != nil {
+		log.Println("Error in getting rawdata: ", err)
+		return "", nil, err
+	}
+	cloudwatchMetricData["Memory utilization"] = rawData
+
+	return "", cloudwatchMetricData, nil
 }
 
-func GetMemoryUtilizationGraphData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-    elementId, _ := cmd.PersistentFlags().GetString("elementId")
-    cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-    instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-    elementType, _ := cmd.PersistentFlags().GetString("elementType")
-    startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-    endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+// func processMemoryUtilizationGraphRawData(result *cloudwatch.GetMetricDataOutput) MemoryGraphUtilizationResult {
+// 	var rawData MemoryGraphUtilizationResult
+// 	rawData.RawData = make([]struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	}, len(result.MetricDataResults[0].Timestamps))
 
-    if elementId != "" {
-        log.Println("getting cloud-element data from cmdb")
-        apiUrl := cmdbApiUrl
-        if cmdbApiUrl == "" {
-            log.Println("using default cmdb url")
-            apiUrl = config.CmdbUrl
-        }
-        log.Println("cmdb url: " + apiUrl)
-        cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-        if err != nil {
-            return "", nil, err
-        }
-        instanceId = cmdbData.InstanceId
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		rawData.RawData[i].Timestamp = *timestamp
+// 		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+// 	}
 
-    }
-    fmt.Println("instanceId", instanceId)
-
-    var startTime, endTime *time.Time
-
-    // Parse start time if provided
-    if startTimeStr != "" {
-        parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-        if err != nil {
-            log.Printf("Error parsing start time: %v", err)
-            return "", nil, err
-        }
-        startTime = &parsedStartTime
-    } else {
-        defaultStartTime := time.Now().Add(-5 * time.Minute)
-        startTime = &defaultStartTime
-    }
-
-    if endTimeStr != "" {
-        parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-        if err != nil {
-            log.Printf("Error parsing end time: %v", err)
-            return "", nil, err
-        }
-        endTime = &parsedEndTime
-    } else {
-        defaultEndTime := time.Now()
-        endTime = &defaultEndTime
-    }
-
-    // Debug prints
-    log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
-
-    cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-
-    // Fetch raw data
-    rawData, err := GetMemoryUtilizationGraphMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
-    if err != nil {
-        log.Println("Error in getting raw data: ", err)
-        return "", nil, err
-    }
-    cloudwatchMetricData["Memory Utilization (GB)"] = rawData
-
-    result := processMemoryUtilizationGraphRawData(rawData)
-
-    jsonString, err := json.Marshal(result)
-    if err != nil {
-        log.Println("Error in marshalling json in string: ", err)
-        return "", nil, err
-    }
-
-    return string(jsonString), cloudwatchMetricData, nil
-}
-
-func GetMemoryUtilizationGraphMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-
-    elmType := "ECS/ContainerInsights"
-    input := &cloudwatch.GetMetricDataInput{
-        EndTime:   endTime,
-        StartTime: startTime,
-        MetricDataQueries: []*cloudwatch.MetricDataQuery{
-            {
-                Id: aws.String("m1"),
-                MetricStat: &cloudwatch.MetricStat{
-                    Metric: &cloudwatch.Metric{
-                        Dimensions: []*cloudwatch.Dimension{
-                            {
-                                Name:  aws.String("ClusterName"),
-                                Value: aws.String(instanceId),
-                            },
-                        },
-                        MetricName: aws.String("MemoryUtilized"),
-                        Namespace:  aws.String(elmType),
-                    },
-                    Period: aws.Int64(60),
-                    Stat:   aws.String("Average"),
-                },
-            },
-        },
-    }
-    if cloudWatchClient == nil {
-        cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-    }
-    result, err := cloudWatchClient.GetMetricData(input)
-    if err != nil {
-        return nil, err
-    }
-
-    return result, nil
-}
-
-func processMemoryUtilizationGraphRawData(result *cloudwatch.GetMetricDataOutput) MemoryUtilizationGraphResult {
-    var rawData MemoryUtilizationGraphResult
-    rawData.RawData = make([]struct {
-        Timestamp time.Time
-        Value     float64
-    }, len(result.MetricDataResults[0].Timestamps))
-
-    // Convert memory utilized from MB to GB
-    for i, timestamp := range result.MetricDataResults[0].Timestamps {
-        rawData.RawData[i].Timestamp = *timestamp
-        // Convert MB to GB
-        rawData.RawData[i].Value = (*result.MetricDataResults[0].Values[i]) / 1024.0
-    }
-
-    return rawData
-}
+// 	return rawData
+// }
 
 func init() {
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("elementId", "", "element id")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("elementType", "", "element type")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("query", "", "query")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("vaultToken", "", "vault token")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("zone", "", "aws region")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("accessKey", "", "aws access key")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("externalId", "", "aws external id")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("instanceId", "", "instance id")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("startTime", "", "start time")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("endTime", "", "endcl time")
-    AwsxECSMemoryUtilizationGraphCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("elementId", "", "element id")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("elementType", "", "element type")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("query", "", "query")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("vaultToken", "", "vault token")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("zone", "", "aws region")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("accessKey", "", "aws access key")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("secretKey", "", "aws secret key")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("externalId", "", "aws external id")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("instanceId", "", "instance id")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("startTime", "", "start time")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("endTime", "", "endcl time")
+	AwsxEcsMemoryUtilizationGraphCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }

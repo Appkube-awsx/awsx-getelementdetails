@@ -1,6 +1,7 @@
 package Lambda
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -22,30 +23,37 @@ var AwsxLambdaErrorAndWarningCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("Running from child command")
-
-		var authFlag bool
-		var clientAuth *model.Auth
-		var err error
-		authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
+		authFlag, clientAuth, err := authenticate.AuthenticateCommand(cmd)
 		if err != nil {
 			log.Printf("Error during authentication: %v\n", err)
-			err := cmd.Help()
-			if err != nil {
-				return
-			}
 			return
 		}
-		if authFlag {
-			panel, err := GetLambdaErrorAndWarningData(cmd, clientAuth, nil)
-			if err != nil {
-				return
-			}
-			fmt.Println(panel)
+		if !authFlag {
+			log.Println("Authentication failed")
+			return
+		}
+
+		responseType, _ := cmd.PersistentFlags().GetString("responseType")
+		if responseType != "json" && responseType != "frame" {
+			log.Println("Invalid response type. Valid options are 'json' or 'frame'.")
+			return
+		}
+
+		jsonResp, cloudwatchMetricResp, err := GetLambdaErrorAndWarningData(cmd, clientAuth, nil)
+		if err != nil {
+			log.Println("Error getting Lambda error and warning data: ", err)
+			return
+		}
+
+		if responseType == "frame" {
+			fmt.Println(cloudwatchMetricResp)
+		} else {
+			fmt.Println(jsonResp)
 		}
 	},
 }
 
-func GetLambdaErrorAndWarningData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func GetLambdaErrorAndWarningData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) (string, map[string]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
@@ -59,7 +67,7 @@ func GetLambdaErrorAndWarningData(cmd *cobra.Command, clientAuth *model.Auth, cl
 		log.Println("cmdb url: " + apiUrl)
 		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
 		if err != nil {
-			return nil, err
+			return "",nil, err
 		}
 		logGroupName = cmdbData.LogGroup
 
@@ -74,11 +82,7 @@ func GetLambdaErrorAndWarningData(cmd *cobra.Command, clientAuth *model.Auth, cl
 	if startTimeStr != "" {
 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
 		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-
-			}
+			return "", nil, err
 		}
 		startTime = &parsedStartTime
 	} else {
@@ -89,11 +93,7 @@ func GetLambdaErrorAndWarningData(cmd *cobra.Command, clientAuth *model.Auth, cl
 	if endTimeStr != "" {
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				// handle error
-			}
+			return "", nil, err
 		}
 		endTime = &parsedEndTime
 	} else {
@@ -102,25 +102,69 @@ func GetLambdaErrorAndWarningData(cmd *cobra.Command, clientAuth *model.Auth, cl
 	}
 
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
-    results, err := GetLambdaErrorAndWarningMetricData(clientAuth, logGroupName, startTime, endTime, cloudWatchLogs)
-	if err != nil {
-		return nil, nil
-	}
-	processedResults := processQuerysResults(results)
 
-	return processedResults, nil
+	cloudwatchMetricData := make(map[string]*cloudwatchlogs.GetQueryResultsOutput)
+
+	// Fetch raw data
+	rawData, err := GetLambdaErrorAndWarningMetricData(clientAuth,logGroupName, startTime, endTime, cloudWatchLogs)
+	if err != nil {
+		return "", nil, err
+	}
+
+	// Filter out unwanted fields and keep only "bin(1h)" and "TotalErrors"
+	filteredResults := filterResults(rawData.Results)
+
+	// Create a new GetQueryResultsOutput with filtered results
+	filteredOutput := &cloudwatchlogs.GetQueryResultsOutput{
+		Results:   filteredResults,
+		Statistics: rawData.Statistics,
+		Status:    rawData.Status,
+	}
+
+	cloudwatchMetricData["ErrorAndWarningEvents"] = filteredOutput
+
+	// Generate JSON response
+	jsonString, err := json.Marshal(filteredOutput)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return string(jsonString), cloudwatchMetricData, err
+}
+
+func filterResults(results [][]*cloudwatchlogs.ResultField) [][]*cloudwatchlogs.ResultField {
+	var filteredResults [][]*cloudwatchlogs.ResultField
+	for _, row := range results {
+		var hasTotalErrors bool
+		for _, field := range row {
+			if *field.Field == "TotalErrors" {
+				hasTotalErrors = true
+				break
+			}
+		}
+		if hasTotalErrors {
+			var filteredRow []*cloudwatchlogs.ResultField
+			for _, field := range row {
+				if *field.Field == "bin(1h)" || *field.Field == "TotalErrors" {
+					filteredRow = append(filteredRow, field)
+				}
+			}
+			filteredResults = append(filteredResults, filteredRow)
+		}
+	}
+	return filteredResults
 }
 
 
-func GetLambdaErrorAndWarningMetricData(clientAuth *model.Auth, logGroupName string, startTime, endTime *time.Time, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func GetLambdaErrorAndWarningMetricData(clientAuth *model.Auth, logGroupName string, startTime, endTime *time.Time, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) (*cloudwatchlogs.GetQueryResultsOutput, error) {
 	params := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String(logGroupName),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
 		EndTime:      aws.Int64(endTime.Unix() * 1000),
-		QueryString: aws.String(`fields @timestamp
-		| filter eventSource = 'lambda.amazonaws.com' and (errorCode != '')
-		| stats count(*) as TotalWarnings, count(errorCode) as TotalErrors by bin(1month)
-		| sort @timestamp asc`),
+		QueryString: aws.String(`fields @timestamp, errorCode
+| filter eventSource = 'lambda.amazonaws.com' and (errorCode != '')
+| stats count(*) as TotalEvents, count(errorCode) as TotalErrors by errorCode, bin(1h)
+| sort @timestamp asc`),
 	}
 
 	if cloudWatchLogs == nil {
@@ -128,61 +172,33 @@ func GetLambdaErrorAndWarningMetricData(clientAuth *model.Auth, logGroupName str
 	}
 
 	// Start the query
-	queryResult, err := cloudWatchLogs.StartQuery(params)
+	startQueryOutput, err := cloudWatchLogs.StartQuery(params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start query: %v", err)
 	}
 
 	// Get the query ID
-	queryId := queryResult.QueryId
-    var queryResults []*cloudwatchlogs.GetQueryResultsOutput // Declare queryResults outside the loop
+	queryId := startQueryOutput.QueryId
+
 	// Wait for the query to complete
 	for {
 		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
 			QueryId: queryId,
 		}
 
-		queryResult, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
+		queryResults, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get query results: %v", err)
 		}
-        
-		queryResults = append(queryResults, queryResult)
 
 		// Check if query is complete
-		if *queryResult.Status != "Complete" {
-			time.Sleep(5 * time.Second) // wait before querying again
-			continue
+		if *queryResults.Status == cloudwatchlogs.QueryStatusComplete {
+			return queryResults, nil
 		}
 
-		break // exit loop if query is complete
+		// If query is not complete, wait for some time before checking again
+		time.Sleep(5 * time.Second)
 	}
-
-	return queryResults, nil
-}
-
-func processQuerysResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
-	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
-
-	for _, result := range results {
-		if *result.Status == "Complete" {
-			for _, resultField := range result.Results {
-				for _, data := range resultField {
-					if *data.Field == "TotalErrors" {
-
-						log.Printf("TotalErrors: %s\n", *data)
-
-					}
-				}
-			}
-			processedResults = append(processedResults, result)
-
-		} else {
-			log.Println("Query status is not complete.")
-		}
-	}
-
-	return processedResults
 }
 
 

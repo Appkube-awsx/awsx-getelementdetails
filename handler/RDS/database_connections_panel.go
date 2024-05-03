@@ -1,31 +1,22 @@
 package RDS
 
 import (
-	"encoding/json"
 	"fmt"
-
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-
-	// "github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
-
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type DBResult struct {
-	RawData []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"Database_Connections"`
-}
+// type DBResult struct {
+// 	RawData []struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	} `json:"Database_Connections"`
+// }
 
 var AwsxRDSDatabaseConnectionsCmd = &cobra.Command{
 	Use:   "database_connections_panel",
@@ -62,143 +53,49 @@ var AwsxRDSDatabaseConnectionsCmd = &cobra.Command{
 }
 
 func GetDatabaseConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
+	instanceId, err = comman_function.GetCmdbData(cmd)
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			// err := cmd.Help()
-			// if err != nil {
-			// 	return "", nil, err
-			// }
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			// err := cmd.Help()
-			// if err != nil {
-			// 	return "", nil, err
-			// }
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := GetDatabaseConnectionsMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/RDS", "DatabaseConnections", startTime, endTime, "Average", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting database connection data: ", err)
 		return "", nil, err
 	}
 
 	cloudwatchMetricData["Database_Connections"] = rawData
 
-	result := processRawData(rawData)
-
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
+	return "", cloudwatchMetricData, nil
 
 }
 
-func GetDatabaseConnectionsMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
-	elmType := "AWS/RDS"
+// func processRawData(result *cloudwatch.GetMetricDataOutput) DBResult {
+// 	var rawData DBResult
+// 	rawData.RawData = make([]struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	}, len(result.MetricDataResults[0].Timestamps))
 
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("databaseConnections"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		rawData.RawData[i].Timestamp = *timestamp
+// 		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+// 	}
 
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("DBInstanceIdentifier"),
-								Value: aws.String("postgresql"), // Ensure instanceID is the identifier of your RDS instance
-							},
-						},
-						MetricName: aws.String("DatabaseConnections"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(300),        // 5 minutes (in seconds)
-					Stat:   aws.String("Average"), // You can use 'Average', 'Sum', 'Minimum', 'Maximum'
-				},
-				//ReturnData: aws.Bool(true),
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func processRawData(result *cloudwatch.GetMetricDataOutput) DBResult {
-	var rawData DBResult
-	rawData.RawData = make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
-
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
-	}
-
-	return rawData
-}
+// 	return rawData
+// }
 
 func init() {
 	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("elementId", "", "element id")

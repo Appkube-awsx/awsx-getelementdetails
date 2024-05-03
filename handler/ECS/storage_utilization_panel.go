@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
@@ -17,10 +16,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type StorageResult struct {
-	RootVolumeUtilization float64 `json:"RootVolumeUsage"`
-	EBS1VolumeUtilization float64 `json:"EBSVolume1Usage"`
-	EBS2VolumeUtilization float64 `json:"EBSVolume2Usage"`
+type StorageUtilizationResult struct {
+	RootVolumeUsage float64 `json:"rootVolumeUsage"`
+	EBSVolume1Usage float64 `json:"ebsVolume1Usage"`
+	EBSVolume2Usage float64 `json:"ebsVolume2Usage"`
 }
 
 var AwsxECSStorageUtilizationCmd = &cobra.Command{
@@ -61,8 +60,8 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	//startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	//endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
+	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
 	if elementId != "" {
 		log.Println("getting cloud-element data from cmdb")
@@ -79,9 +78,6 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		instanceId = cmdbData.InstanceId
 
 	}
-
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
 	var startTime, endTime *time.Time
 
@@ -120,63 +116,38 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	// Get Root Volume Utilization
-	rootVolumeUsage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "EphemeralStorageUtilized", cloudWatchClient)
+	// Get Root Volume Usage
+	rootVolumeUsage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "EphemeralStorageUtilized", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting root volume usage: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RootVolumeUtilization"] = rootVolumeUsage
+	cloudwatchMetricData["RootVolumeUsage"] = rootVolumeUsage
 
-	// Get EBS1 Volume  Utilization
-	ebs1VolumeUsage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "EphemeralStorageUtilized", cloudWatchClient)
+	// Get EBS Volume 1 Usage
+	ebsVolume1Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "EphemeralStorageUtilized", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting EBS1 Volume Utilization : ", err)
+		log.Println("Error in getting EBS volume 1 usage: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["EBS1Volume1Utilization"] = ebs1VolumeUsage
+	cloudwatchMetricData["EBSVolume1Usage"] = ebsVolume1Usage
 
-	// Get EBS2 Volume Utilization
-	ebs2VolumeUsage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "EphemeralStorageUtilized", cloudWatchClient)
+	// Get EBS Volume 2 Usage
+	ebsVolume2Usage, err := GetStorageMetricData(clientAuth, instanceId, elementType, startTime, endTime, "EphemeralStorageUtilized", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting EBS2 volume 2 usage: ", err)
+		log.Println("Error in getting EBS volume 2 usage: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["EBS2VolumeUtilization"] = ebs2VolumeUsage
-	// Calculate average of all three volumes
-	rootVolumeAvg := calculateAverage(rootVolumeUsage)
-	ebs1VolumeAvg := calculateAverage(ebs1VolumeUsage) / 2 // Divide by 2
-	ebs2VolumeAvg := calculateAverage(ebs2VolumeUsage) / 2 // Divide by 2
+	cloudwatchMetricData["EBSVolume2Usage"] = ebsVolume2Usage
 
-	// Format average utilizations to have two decimal places
-	rootVolumeAvgStr := strconv.FormatFloat(rootVolumeAvg, 'f', 2, 64)
-	ebs1VolumeAvgStr := strconv.FormatFloat(ebs1VolumeAvg, 'f', 2, 64)
-	ebs2VolumeAvgStr := strconv.FormatFloat(ebs2VolumeAvg, 'f', 2, 64)
-
-	// Convert formatted strings back to float64
-	rootVolumeAvgFloat, err := strconv.ParseFloat(rootVolumeAvgStr, 64)
-	if err != nil {
-		log.Println("Error converting string to float64: ", err)
-		return "", nil, err
-	}
-	ebs1VolumeAvgFloat, err := strconv.ParseFloat(ebs1VolumeAvgStr, 64)
-	if err != nil {
-		log.Println("Error converting string to float64: ", err)
-		return "", nil, err
-	}
-	ebs2VolumeAvgFloat, err := strconv.ParseFloat(ebs2VolumeAvgStr, 64)
-	if err != nil {
-		log.Println("Error converting string to float64: ", err)
-		return "", nil, err
-	}
 	// Create JSON output
-	averageStorageResult := StorageResult{
-		RootVolumeUtilization: rootVolumeAvgFloat,
-		EBS1VolumeUtilization: ebs1VolumeAvgFloat,
-		EBS2VolumeUtilization: ebs2VolumeAvgFloat,
+	jsonOutput := StorageUtilizationResult{
+		RootVolumeUsage: *rootVolumeUsage.MetricDataResults[0].Values[0],
+		EBSVolume1Usage: *ebsVolume1Usage.MetricDataResults[0].Values[0],
+		EBSVolume2Usage: *ebsVolume2Usage.MetricDataResults[0].Values[0],
 	}
 
-	jsonString, err := json.Marshal(averageStorageResult)
+	jsonString, err := json.Marshal(jsonOutput)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
@@ -185,9 +156,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetStorageMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, statistic, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	//log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
-
+func GetStorageMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	elmType := "ECS/ContainerInsights"
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
@@ -208,7 +177,7 @@ func GetStorageMetricData(clientAuth *model.Auth, instanceId, elementType string
 						Namespace:  aws.String(elmType),
 					},
 					Period: aws.Int64(300),
-					Stat:   aws.String(statistic),
+					Stat:   aws.String("Average"),
 				},
 			},
 		},
@@ -222,17 +191,6 @@ func GetStorageMetricData(clientAuth *model.Auth, instanceId, elementType string
 	}
 
 	return result, nil
-}
-
-func calculateAverage(result *cloudwatch.GetMetricDataOutput) float64 {
-	sum := 0.0
-	if len(result.MetricDataResults) > 0 && len(result.MetricDataResults[0].Values) > 0 {
-		for _, value := range result.MetricDataResults[0].Values {
-			sum += *value
-		}
-		return sum / float64(len(result.MetricDataResults[0].Values))
-	}
-	return 0
 }
 
 func init() {

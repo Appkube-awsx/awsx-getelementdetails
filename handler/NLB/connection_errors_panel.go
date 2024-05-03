@@ -9,8 +9,6 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -27,7 +25,7 @@ type ConnectionErrorsResult struct {
 }
 
 var AwsxNLBConnectionErrorsCmd = &cobra.Command{
-	Use:   "connection_errors_panel",
+	Use:   "nlb_connection_errors_panel",
 	Short: "Get NLB connection errors metrics data",
 	Long:  `Command to get NLB connection errors metrics data`,
 
@@ -59,29 +57,10 @@ var AwsxNLBConnectionErrorsCmd = &cobra.Command{
 }
 
 func GetNLBConnectionErrorsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	//loadBalancerArn, _ := cmd.PersistentFlags().GetString("loadBalancerArn")
+	loadBalancerArn, _ := cmd.PersistentFlags().GetString("loadBalancerArn")
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
-	}
 	var startTime, endTime *time.Time
 
 	// Parse start time if provided
@@ -113,7 +92,7 @@ func GetNLBConnectionErrorsData(cmd *cobra.Command, clientAuth *model.Auth, clou
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	// Fetch raw data
-	rawData, err := GetNLBConnectionErrorsMetricData(clientAuth, instanceId, startTime, endTime, cloudWatchClient)
+	rawData, err := GetNLBConnectionErrorsMetricData(clientAuth, loadBalancerArn, startTime, endTime, cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -159,9 +138,7 @@ func GetNLBConnectionErrorsData(cmd *cobra.Command, clientAuth *model.Auth, clou
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetNLBConnectionErrorsMetricData(clientAuth *model.Auth, instanceId string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "AWS/NetworkELB"
-
+func GetNLBConnectionErrorsMetricData(clientAuth *model.Auth, loadBalancerArn string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	input := &cloudwatch.GetMetricDataInput{
 		EndTime:   endTime,
 		StartTime: startTime,
@@ -173,11 +150,11 @@ func GetNLBConnectionErrorsMetricData(clientAuth *model.Auth, instanceId string,
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String(instanceId),
+								Value: aws.String(loadBalancerArn),
 							},
 						},
 						MetricName: aws.String("TCP_Client_Reset_Count"),
-						Namespace:  aws.String(elmType),
+						Namespace:  aws.String("AWS/NetworkELB"),
 					},
 					Period: aws.Int64(300), // 5-minute period
 					Stat:   aws.String("Sum"),
@@ -190,11 +167,11 @@ func GetNLBConnectionErrorsMetricData(clientAuth *model.Auth, instanceId string,
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String(instanceId),
+								Value: aws.String(loadBalancerArn),
 							},
 						},
 						MetricName: aws.String("TCP_ELB_Reset_Count"),
-						Namespace:  aws.String(elmType),
+						Namespace:  aws.String("AWS/NetworkELB"),
 					},
 					Period: aws.Int64(300), // 5-minute period
 					Stat:   aws.String("Sum"),
@@ -207,11 +184,11 @@ func GetNLBConnectionErrorsMetricData(clientAuth *model.Auth, instanceId string,
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("LoadBalancer"),
-								Value: aws.String(instanceId),
+								Value: aws.String(loadBalancerArn),
 							},
 						},
 						MetricName: aws.String("TCP_Target_Reset_Count"),
-						Namespace:  aws.String(elmType),
+						Namespace:  aws.String("AWS/NetworkELB"),
 					},
 					Period: aws.Int64(300), // 5-minute period
 					Stat:   aws.String("Sum"),
@@ -250,8 +227,9 @@ func processConnectionErrorsRawData(result *cloudwatch.GetMetricDataOutput) Conn
 	return rawData
 }
 
+
 func init() {
-	AwsxNLBConnectionErrorsCmd.PersistentFlags().String("instanceId", "", "Instance ID")
+	AwsxNLBConnectionErrorsCmd.PersistentFlags().String("loadBalancerArn", "", "NLB Load Balancer ARN")
 	AwsxNLBConnectionErrorsCmd.PersistentFlags().String("startTime", "", "Start time (RFC3339 format)")
 	AwsxNLBConnectionErrorsCmd.PersistentFlags().String("endTime", "", "End time (RFC3339 format)")
 	AwsxNLBConnectionErrorsCmd.PersistentFlags().String("responseType", "", "Response type. json/frame")

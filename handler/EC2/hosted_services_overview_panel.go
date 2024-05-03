@@ -50,6 +50,7 @@ func GetHostedServicesData(cmd *cobra.Command) ([]HostedSerivcesOverView, error)
 			Availability: "99.8%",
 			Throughput:   "800 req/s",
 		},
+		
 		{
 			ServiceName:  "LoadBalancer",
 			HealthStatus: "Degraded",

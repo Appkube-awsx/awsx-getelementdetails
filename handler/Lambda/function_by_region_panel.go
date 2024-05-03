@@ -30,71 +30,66 @@ var AwsxLambdaFunctionsByRegionCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, functionCounts, err := GetLambdaFunctionsByRegion(clientAuth)
+			jsonResp, functionCounts, totalFunctions, err := GetLambdaFunctionsByRegion(clientAuth)
 			if err != nil {
 				log.Println("Error getting Lambda functions by region: ", err)
 				return
 			}
 			if responseType == "frame" {
 				fmt.Println(functionCounts)
+				fmt.Println("Total Functions:", totalFunctions)
 			} else {
 				fmt.Println(jsonResp)
+				fmt.Println("Total Functions:", totalFunctions)
 			}
 		}
 
 	},
 }
 
-func GetLambdaFunctionsByRegion(clientAuth *model.Auth) (string, map[string]interface{}, error) {
-    cloudwatchMetricData := make(map[string]interface{})
+func GetLambdaFunctionsByRegion(clientAuth *model.Auth) (string, map[string]float64, int, error) {
+	cloudwatchMetricData := make(map[string]float64)
+	totalFunctions := 0
 
-    if clientAuth == nil {
-        log.Println("Error: Authentication failed. Client authentication credentials are nil.")
-        return "", nil, errors.New("authentication failed: clientAuth is nil")
-    }
+	if clientAuth == nil {
+		log.Println("Error: Authentication failed. Client authentication credentials are nil.")
+		return "", nil, 0, errors.New("authentication failed: clientAuth is nil")
+	}
 
-    // List of AWS regions
-    regions := []string{"us-east-1", "us-east-2", "us-west-1", "us-west-2", "eu-west-1", "eu-west-2", "ap-northeast-1"}
+	// List of AWS regions
+	regions := []string{"us-east-1", "us-east-2", "us-west-1", "us-west-2", "eu-west-1", "eu-west-2", "ap-northeast-1"}
 
-    // Initialize total functions count
-    totalFunctions := 0
+	for _, region := range regions {
+		// Create a new Auth object with the same credentials but using the region from the list
+		newAuth := model.Auth{
+			AccessKey:           clientAuth.AccessKey,
+			SecretKey:           clientAuth.SecretKey,
+			CrossAccountRoleArn: clientAuth.CrossAccountRoleArn,
+			ExternalId:          clientAuth.ExternalId,
+			Region:              region, // Use the region from the list
+		}
 
-    for _, region := range regions {
-        newAuth := model.Auth{
-            AccessKey:           clientAuth.AccessKey,
-            SecretKey:           clientAuth.SecretKey,
-            CrossAccountRoleArn: clientAuth.CrossAccountRoleArn,
-            ExternalId:          clientAuth.ExternalId,
-            Region:              region, // Use the region from the list
-        }
+		// Get Lambda client for the current region
+		lambdaClient := awsclient.GetClient(newAuth, awsclient.LAMBDA_CLIENT).(*lambda.Lambda)
 
-        // Get Lambda client for the current region
-        lambdaClient := awsclient.GetClient(newAuth, awsclient.LAMBDA_CLIENT).(*lambda.Lambda)
+		// Get total Lambda functions count for the current region
+		count, err := getTotalLambdaFunctions(lambdaClient)
+		if err != nil {
+			log.Printf("Error getting total functions in region %s: %v", region, err)
+			continue
+		}
+		cloudwatchMetricData[region] = float64(count)
+		totalFunctions += count
+	}
 
-        // Get total Lambda functions count for the current region
-        count, err := getTotalLambdaFunctions(lambdaClient)
-        if err != nil {
-            log.Printf("Error getting total functions in region %s: %v", region, err)
-            continue
-        }
-        cloudwatchMetricData[region] = count
-        totalFunctions += count
-    }
+	// Marshal the function counts map to JSON string
+	jsonString, err := json.Marshal(cloudwatchMetricData)
+	if err != nil {
+		log.Println("Error in marshalling json in string: ", err)
+		return "", nil, 0, err
+	}
 
-    // Add total functions count to the map
-    cloudwatchMetricData["TotalFunctions"] = totalFunctions
-
-    // Marshal the function counts map to JSON string
-    jsonString, err := json.Marshal(cloudwatchMetricData)
-    if err != nil {
-        log.Println("Error in marshalling json in string: ", err)
-        return "", nil, err
-    }
-
-    // Construct JSON response
-    jsonResp := string(jsonString)
-
-    return jsonResp, cloudwatchMetricData, nil
+	return string(jsonString), cloudwatchMetricData, totalFunctions, nil
 }
 
 // Function to get total Lambda functions in a region
@@ -111,6 +106,7 @@ func getTotalLambdaFunctions(lambdaClient *lambda.Lambda) (int, error) {
 
 		totalFunctions += len(resp.Functions)
 
+		// If there are more functions to fetch, update the marker
 		if resp.NextMarker != nil {
 			input.Marker = resp.NextMarker
 		} else {
@@ -120,7 +116,6 @@ func getTotalLambdaFunctions(lambdaClient *lambda.Lambda) (int, error) {
 
 	return totalFunctions, nil
 }
-
 
 func init() {
 	AwsxLambdaFunctionsByRegionCmd.PersistentFlags().String("elementId", "", "element id")

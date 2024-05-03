@@ -1,28 +1,22 @@
 package ECS
 
 import (
-	"encoding/json"
-	"log"
-	"time"
 	"fmt"
+	"log"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type WriteBytes struct {
-	RawData []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"RawData"`
-}
-
+// type WriteBytes struct {
+// 	RawData []struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	} `json:"RawData"`
+// }
 
 var AwsxECSWriteBytesCmd = &cobra.Command{
 	Use:   "write_readbytes_panel",
@@ -59,136 +53,48 @@ var AwsxECSWriteBytesCmd = &cobra.Command{
 }
 
 func GetECSWriteBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
+	instanceId, err = comman_function.GetCmdbData(cmd)
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	var startTime, endTime *time.Time
-
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetECSWriteBytesMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Sum", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ECS/ContainerInsights", "StorageWriteBytes", startTime, endTime, "Sum", "ClusterName", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting volume write bytes data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["RawData"] = rawData
+	cloudwatchMetricData["Volume_write_bytes"] = rawData
+	return "", cloudwatchMetricData, nil
 
-	result := processECSWriteBytesRawdata(rawData)
-
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
 }
 
+// func processECSWriteBytesRawdata(result *cloudwatch.GetMetricDataOutput) WriteBytes {
+// 	var rawData WriteBytes
+// 	rawData.RawData = make([]struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	}, len(result.MetricDataResults[0].Timestamps))
 
-func GetECSWriteBytesMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		rawData.RawData[i].Timestamp = *timestamp
+// 		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+// 	}
 
-	elmType := "ECS/ContainerInsights"
-	if elementType == "ECS" {
-		elmType = "AWS/" + elementType
-	}
-		input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ClusterName"),
-								Value: aws.String(instanceID),
-							},
-						},
-						MetricName: aws.String("StorageWriteBytes"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(60),
-					Stat:   aws.String("Sum"), 
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func processECSWriteBytesRawdata(result *cloudwatch.GetMetricDataOutput) WriteBytes {
-	var rawData WriteBytes
-	rawData.RawData = make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
-
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
-	}
-
-	return rawData
-}
+// 	return rawData
+// }
 
 func init() {
 	AwsxECSWriteBytesCmd.PersistentFlags().String("elementId", "", "element id")
@@ -208,4 +114,3 @@ func init() {
 	AwsxECSWriteBytesCmd.PersistentFlags().String("endTime", "", "endcl time")
 	AwsxECSWriteBytesCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 }
-

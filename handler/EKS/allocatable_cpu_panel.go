@@ -1,29 +1,24 @@
 package EKS
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type TimeSeriesData struct {
-	Timestamp      time.Time
-	AllocatableCPU float64
-}
+// type TimeSeriesData struct {
+// 	Timestamp      time.Time
+// 	AllocatableCPU float64
+// }
 
-type AllocateResult struct {
-	AllocatableCPU []TimeSeriesData `json:"AllocatableCPU"`
-}
+// type AllocateResult struct {
+// 	AllocatableCPU []TimeSeriesData `json:"AllocatableCPU"`
+// }
 
 var AwsxEKSAllocatableCpuCmd = &cobra.Command{
 	Use:   "allocatable_cpu_panel",
@@ -59,187 +54,57 @@ var AwsxEKSAllocatableCpuCmd = &cobra.Command{
 }
 
 func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	fmt.Println(elementType)
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	instanceId, err = comman_function.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	// Debug prints
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
+	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := GetAllocatableCPUMetricData(clientAuth, instanceId, elementType, startTime, endTime, cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_cpu_limit", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
 	}
 
-	// Process the raw data if needed
-	result := processCPURawData(rawData)
+	cloudwatchMetricData["Allocatble_CPU"] = rawData
 
-	// Collect all timestamps and values separately
-	timestamps := make([]time.Time, len(result.AllocatableCPU))
-	values := make([]float64, len(result.AllocatableCPU))
-
-	// Populate the slices with actual data
-	for i, data := range result.AllocatableCPU {
-		// Assigning values directly to slices without taking their addresses
-		timestamps[i] = data.Timestamp
-		values[i] = data.AllocatableCPU
-	}
-
-	// Initialize the MetricDataResults slice
-	metricDataResults := make([]*cloudwatch.MetricDataResult, len(result.AllocatableCPU))
-
-	// Populate the MetricDataResults with actual data
-	for i := range result.AllocatableCPU {
-		metricDataResults[i] = &cloudwatch.MetricDataResult{
-			Timestamps: []*time.Time{&timestamps[i]},
-			Values:     []*float64{&values[i]},
-		}
-	}
-
-	// Assign the processed data to cloudwatchMetricData
-	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{
-		"AllocatableCPU": {
-			MetricDataResults: metricDataResults,
-		},
-	}
-
-	// Log the timestamps and values
-	// for _, data := range result.AllocatableCPU {
-	// 	log.Printf("Timestamp: %v, Allocatable CPU: %v", data.Timestamp, data.AllocatableCPU)
-	// }
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
+	return "", cloudwatchMetricData, nil
 }
 
+// func processCPURawData(result *cloudwatch.GetMetricDataOutput) AllocateResult {
+// 	var rawData AllocateResult
+// 	rawData.AllocatableCPU = make([]TimeSeriesData, len(result.MetricDataResults[0].Timestamps))
 
-func GetAllocatableCPUMetricData(clientAuth *model.Auth, instanceId, elementType string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	elmType := "ContainerInsights"
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ClusterName"),
-								Value: aws.String(instanceId),
-							},
-						},
-						MetricName: aws.String("node_cpu_limit"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(60),
-					Stat:   aws.String("Average"),
-				},
-			},
-			{
-				Id: aws.String("m2"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ClusterName"),
-								Value: aws.String(instanceId),
-							},
-						},
-						MetricName: aws.String("node_cpu_reserved_capacity"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(60),
-					Stat:   aws.String("Average"),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-	// log.Println (result)
-	return result, nil
-}
+// 	// Assuming the two metrics have the same number of data points
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		rawData.AllocatableCPU[i].Timestamp = *timestamp
+// 		cpuLimit := *result.MetricDataResults[0].Values[i]
+// 		reservedCapacity := *result.MetricDataResults[1].Values[i]
 
-func processCPURawData(result *cloudwatch.GetMetricDataOutput) AllocateResult {
-	var rawData AllocateResult
-	rawData.AllocatableCPU = make([]TimeSeriesData, len(result.MetricDataResults[0].Timestamps))
+// 		// Log the values for troubleshooting
+// 		// log.Printf("Timestamp: %v, cpuLimit: %v, reservedCapacity: %v", *timestamp, cpuLimit, reservedCapacity)
 
-	// Assuming the two metrics have the same number of data points
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.AllocatableCPU[i].Timestamp = *timestamp
-		cpuLimit := *result.MetricDataResults[0].Values[i]
-		reservedCapacity := *result.MetricDataResults[1].Values[i]
+// 		allocatableCPU := cpuLimit - reservedCapacity
+// 		// log.Println(allocatableCPU)
 
-		// Log the values for troubleshooting
-		// log.Printf("Timestamp: %v, cpuLimit: %v, reservedCapacity: %v", *timestamp, cpuLimit, reservedCapacity)
-
-		allocatableCPU := cpuLimit - reservedCapacity
-		// log.Println(allocatableCPU)
-
-		// Only include the calculated allocatable CPU in the result
-		rawData.AllocatableCPU[i].AllocatableCPU = allocatableCPU
-	}
-	// log.Println(rawData)
-	return rawData
-}
+// 		// Only include the calculated allocatable CPU in the result
+// 		rawData.AllocatableCPU[i].AllocatableCPU = allocatableCPU
+// 	}
+// 	// log.Println(rawData)
+// 	return rawData
+// }
 
 func init() {
 	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("elementId", "", "element id")

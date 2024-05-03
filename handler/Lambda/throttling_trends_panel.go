@@ -2,15 +2,12 @@ package Lambda
 
 import (
 	"fmt"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
 )
@@ -48,60 +45,68 @@ var AwsxLambdaThrottlingTrendsCmd = &cobra.Command{
 }
 
 func GetThrottlingTrendsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	// elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	// cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
-
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing time: %v", err)
+	}
+	logGroupName, err = comman_function.GetCmdbLogsData(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	var startTime, endTime time.Time
+	// if elementId != "" {
+	// 	log.Println("getting cloud-element data from cmdb")
+	// 	apiUrl := cmdbApiUrl
+	// 	if cmdbApiUrl == "" {
+	// 		log.Println("using default cmdb url")
+	// 		apiUrl = config.CmdbUrl
+	// 	}
+	// 	log.Println("cmdb url: " + apiUrl)
 
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				// handle error
-			}
-			return nil, err 
-		}
-		startTime = parsedStartTime
+	// }
 
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = defaultStartTime
-	}
+	// startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
+	// endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	// var startTime, endTime time.Time
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				// handle error
-			}
-			return nil, err 
-		}
-		endTime = parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = defaultEndTime
-	}
+	// // Parse start time if provided
+	// if startTimeStr != "" {
+	// 	parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
+	// 	if err != nil {
+	// 		log.Printf("Error parsing start time: %v", err)
+	// 		err := cmd.Help()
+	// 		if err != nil {
+	// 			// handle error
+	// 		}
+	// 		return nil, err
+	// 	}
+	// 	startTime = parsedStartTime
 
-	results, err := filterCloudWatchLogsss(clientAuth, &startTime, &endTime, logGroupName, cloudWatchLogs)
+	// } else {
+	// 	defaultStartTime := time.Now().Add(-5 * time.Minute)
+	// 	startTime = defaultStartTime
+	// }
+
+	// if endTimeStr != "" {
+	// 	parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
+	// 	if err != nil {
+	// 		log.Printf("Error parsing end time: %v", err)
+	// 		err := cmd.Help()
+	// 		if err != nil {
+	// 			// handle error
+	// 		}
+	// 		return nil, err
+	// 	}
+	// 	endTime = parsedEndTime
+	// } else {
+	// 	defaultEndTime := time.Now()
+	// 	endTime = defaultEndTime
+	// }
+
+	results, err := comman_function.GetLogsData(clientAuth, startTime, endTime, logGroupName, `fields @timestamp, InvocationCount, errorCount| filter eventSource = "lambda.amazonaws.com"| stats count() as InvocationCount, count(errorCode) as errorCount by bin(1m)`, cloudWatchLogs)
 	if err != nil {
 		return nil, err
 	}
@@ -111,50 +116,50 @@ func GetThrottlingTrendsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 
 }
 
-func filterCloudWatchLogsss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
-	params := &cloudwatchlogs.StartQueryInput{
-		LogGroupName: aws.String(logGroupName),
-		StartTime:    aws.Int64(startTime.Unix() * 1000),
-		EndTime:      aws.Int64(endTime.Unix() * 1000),
-		QueryString: aws.String(`fields @timestamp, InvocationCount, errorCount
-		| filter eventSource = "lambda.amazonaws.com" 
-		| stats count(errorCode) as errorCount by bin(1m)`),
-	}
+// func filterCloudWatchLogsss(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+// 	params := &cloudwatchlogs.StartQueryInput{
+// 		LogGroupName: aws.String(logGroupName),
+// 		StartTime:    aws.Int64(startTime.Unix() * 1000),
+// 		EndTime:      aws.Int64(endTime.Unix() * 1000),
+// 		QueryString: aws.String(`fields @timestamp, InvocationCount, errorCount
+// 		| filter eventSource = "lambda.amazonaws.com"
+// 		| stats count() as InvocationCount, count(errorCode) as errorCount by bin(1m)`),
+// 	}
 
-	if cloudWatchLogs == nil {
-		cloudWatchLogs = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
-	}
+// 	if cloudWatchLogs == nil {
+// 		cloudWatchLogs = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
+// 	}
 
-	queryResult, err := cloudWatchLogs.StartQuery(params)
-	if err != nil {
-		return nil, fmt.Errorf("failed to start query: %v", err)
+// 	queryResult, err := cloudWatchLogs.StartQuery(params)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to start query: %v", err)
 
-	}
-	queryId := queryResult.QueryId
-	var queryResults []*cloudwatchlogs.GetQueryResultsOutput
+// 	}
+// 	queryId := queryResult.QueryId
+// 	var queryResults []*cloudwatchlogs.GetQueryResultsOutput
 
-	for {
-		// Check query status
-		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
-			QueryId: queryId,
-		}
+// 	for {
+// 		// Check query status
+// 		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
+// 			QueryId: queryId,
+// 		}
 
-		queryResult, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get query results: %v", err)
-		}
+// 		queryResult, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("failed to get query results: %v", err)
+// 		}
 
-		queryResults = append(queryResults, queryResult)
+// 		queryResults = append(queryResults, queryResult)
 
-		if *queryResult.Status != "Complete" {
-			time.Sleep(5 * time.Second) // wait before querying again
-			continue
-		}
+// 		if *queryResult.Status != "Complete" {
+// 			time.Sleep(5 * time.Second) // wait before querying again
+// 			continue
+// 		}
 
-		break // exit loop if query is complete
-	}
-	return queryResults, nil
-}
+// 		break // exit loop if query is complete
+// 	}
+// 	return queryResults, nil
+// }
 
 func ProcessQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
 	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)

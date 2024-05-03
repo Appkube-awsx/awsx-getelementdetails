@@ -1,25 +1,22 @@
 package RDS
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type ReadIOPS struct {
-	ReadIOPS []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"read_iops"`
-}
+// type ReadIOPS struct {
+// 	ReadIOPS []struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	} `json:"read_iops"`
+// }
 
 var AwsxRDSReadIOPSCmd = &cobra.Command{
 	Use:   "read_iops_panel",
@@ -38,115 +35,67 @@ var AwsxRDSReadIOPSCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			jsonResp, _, err := GetRDSReadIOPSPanel(cmd, clientAuth, nil)
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, cloudwatchMetricResp, err := GetRDSReadIOPSPanel(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting read IOPS data: ", err)
+				log.Println("Error getting network transmit throughput data: ", err)
 				return
 			}
-			fmt.Println("Read IOPS Data:")
-			fmt.Println(jsonResp)
+			if responseType == "frame" {
+				fmt.Println(cloudwatchMetricResp)
+			} else {
+				// Default case: print JSON
+				fmt.Println(jsonResp)
+			}
 		}
 	},
 }
 
 func GetRDSReadIOPSPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	instanceID, _ := cmd.PersistentFlags().GetString("instanceId")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	var startTime, endTime *time.Time
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
+
 	}
+	instanceId, err = comman_function.GetCmdbData(cmd)
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
+
 	}
-
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawReadIOPSData, err := GetReadIOPSMetricData(clientAuth, instanceID, startTime, endTime, cloudWatchClient)
-	if err != nil {
-		log.Println("Error in getting read IOPS data: ", err)
-		return "", nil, err
-	}
-	cloudwatchMetricData["ReadIOPS"] = rawReadIOPSData
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/RDS", "ReadIOPS", startTime, endTime, "Sum", "DBInstanceIdentifier", cloudWatchClient)
 
-	result := processRawReadIOPSData(rawReadIOPSData)
-	jsonString, err := json.Marshal(result)
 	if err != nil {
-		log.Println("Error in marshalling json: ", err)
+		log.Println("Error in getting read iops data: ", err)
 		return "", nil, err
 	}
 
-	return string(jsonString), cloudwatchMetricData, nil
+	cloudwatchMetricData["ReadIOPS"] = rawData
+
+	return "", cloudwatchMetricData, nil
 }
 
-func GetReadIOPSMetricData(clientAuth *model.Auth, instanceID string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for instance %s in namespace AWS/RDS from %v to %v", instanceID, startTime, endTime)
+// func processRawReadIOPSData(result *cloudwatch.GetMetricDataOutput) ReadIOPS {
+// 	var rawData ReadIOPS
+// 	rawData.ReadIOPS = make([]struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	}, len(result.MetricDataResults[0].Timestamps))
 
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("readIOPS"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{},
-						MetricName: aws.String("ReadIOPS"),
-						Namespace:  aws.String("AWS/RDS"),
-					},
-					Period: aws.Int64(300), // 5 minutes (in seconds)
-					Stat:   aws.String("Sum"),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		rawData.ReadIOPS[i].Timestamp = *timestamp
+// 		rawData.ReadIOPS[i].Value = *result.MetricDataResults[0].Values[i]
+// 	}
 
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func processRawReadIOPSData(result *cloudwatch.GetMetricDataOutput) ReadIOPS {
-	var rawData ReadIOPS
-	rawData.ReadIOPS = make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
-
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.ReadIOPS[i].Timestamp = *timestamp
-		rawData.ReadIOPS[i].Value = *result.MetricDataResults[0].Values[i]
-	}
-
-	return rawData
-}
+// 	return rawData
+// }
 
 func init() {
 	AwsxRDSReadIOPSCmd.PersistentFlags().String("elementId", "", "element id")

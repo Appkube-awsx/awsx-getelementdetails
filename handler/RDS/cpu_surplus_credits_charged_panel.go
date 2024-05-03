@@ -1,26 +1,23 @@
 package RDS
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
 // Define a struct to hold the result of the CPU Surplus Credit Balance query
-type CPUSurplusCreditChargedResult struct {
-	RawData []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"CPU_Surplus_Credit_Charged"`
-}
+// type CPUSurplusCreditChargedResult struct {
+// 	RawData []struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	} `json:"CPU_Surplus_Credit_Charged"`
+// }
 
 // Define a CLI command to get CPU Surplus Credit Balance for RDS instances
 var AwsxRDSSurplusCreditsChargedCmd = &cobra.Command{
@@ -61,112 +58,46 @@ var AwsxRDSSurplusCreditsChargedCmd = &cobra.Command{
 func GetCPUSurplusCreditCharged(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	fmt.Println(elementType)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
+	instanceId, err = comman_function.GetCmdbData(cmd)
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := GetCPUSurplusCreditChargedMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/RDS", "CPUSurplusCreditsCharged", startTime, endTime, "Average", "DBInstanceIdentifier", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting raw data: ", err)
+		log.Println("Error in getting cpu surplus credits charged  data: ", err)
 		return "", nil, err
 	}
 
 	cloudwatchMetricData["CPU_Surplus_Credit_Balance"] = rawData
 
-	result := CPUsurplusCreditChargedRawData(rawData)
-
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
-}
-
-// Function to retrieve CPU Surplus Credit Balance metric data
-func GetCPUSurplusCreditChargedMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting CPU Surplus Credit Balance metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
-	elmType := "AWS/RDS"
-
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("cpuSurplusCreditsCharged"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("DBInstanceIdentifier"),
-								Value: aws.String("postgresql"), // Ensure instanceID is the identifier of your RDS instance
-							},
-						},
-						MetricName: aws.String("CPUSurplusCreditsCharged"),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(300),        // 5 minutes (in seconds)
-					Stat:   aws.String("Average"), // You can use 'Average', 'Sum', 'Minimum', 'Maximum'
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return "", cloudwatchMetricData, nil
 }
 
 // Function to process raw CPU Surplus Credit Charged metric data
-func CPUsurplusCreditChargedRawData(result *cloudwatch.GetMetricDataOutput) CPUSurplusCreditChargedResult {
-	var rawData CPUSurplusCreditChargedResult
-	rawData.RawData = make([]struct {
-		Timestamp time.Time
-		Value     float64
-	}, len(result.MetricDataResults[0].Timestamps))
+// func CPUsurplusCreditChargedRawData(result *cloudwatch.GetMetricDataOutput) CPUSurplusCreditChargedResult {
+// 	var rawData CPUSurplusCreditChargedResult
+// 	rawData.RawData = make([]struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	}, len(result.MetricDataResults[0].Timestamps))
 
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		rawData.RawData[i].Timestamp = *timestamp
-		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
-	}
+// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
+// 		rawData.RawData[i].Timestamp = *timestamp
+// 		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
+// 	}
 
-	return rawData
-}
+// 	return rawData
+// }
 
 func init() {
 	AwsxRDSSurplusCreditsChargedCmd.PersistentFlags().String("elementId", "", "element id")
