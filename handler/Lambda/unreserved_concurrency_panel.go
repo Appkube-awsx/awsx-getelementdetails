@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxLambdaFullConcurrencyCommmand = &cobra.Command{
+var AwsxLambdaUnreservedConcurrencyCommmand = &cobra.Command{
 	Use:   "full_concurrency_panel",
 	Short: "get full concurrency metrics data",
 	Long:  `command to get full concurrency metrics data`,
@@ -29,9 +29,9 @@ var AwsxLambdaFullConcurrencyCommmand = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, resp, err := GetLambdaFullConcurrencyData(cmd, clientAuth)
+			jsonResp, resp, err := GetLambdaUnreservedConcurrencyCommmand(cmd, clientAuth)
 			if err != nil {
-				log.Println("Error getting full concurrency data : ", err)
+				log.Println("Error getting unreserved concurrency data : ", err)
 				return
 			}
 			if responseType == "json" {
@@ -43,16 +43,16 @@ var AwsxLambdaFullConcurrencyCommmand = &cobra.Command{
 	},
 }
 
-func GetLambdaFullConcurrencyData(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]int, error) {
+func GetLambdaUnreservedConcurrencyCommmand(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]int, error) {
 	lambdaClient := awsclient.GetClient(*clientAuth, awsclient.LAMBDA_CLIENT).(*lambda.Lambda)
     input := lambda.GetAccountSettingsInput{}
 	result, err := lambdaClient.GetAccountSettings(&input)
 	if err != nil {
 		log.Printf("Error getting full concurrency of lambda")
 	}
-    fullConcurrency :=  int(*result.AccountLimit.ConcurrentExecutions)
+    unreservedConcurrency :=  int(*result.AccountLimit.UnreservedConcurrentExecutions)
     data := make(map[string]int)
-    data["full_concurrency"] = fullConcurrency
+    data["full_concurrency"] = unreservedConcurrency
     jsonData,err := json.Marshal(data)    
     if err != nil {
 		log.Printf("error parsing data: %s", err)
