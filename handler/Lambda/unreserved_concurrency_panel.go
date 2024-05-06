@@ -13,9 +13,9 @@ import (
 )
 
 var AwsxLambdaUnreservedConcurrencyCommmand = &cobra.Command{
-	Use:   "full_concurrency_panel",
-	Short: "get full concurrency metrics data",
-	Long:  `command to get full concurrency metrics data`,
+	Use:   "unreserved_concurrency_panel",
+	Short: "get unreserved concurrency metrics data",
+	Long:  `command to get unreserved concurrency metrics data`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
@@ -48,11 +48,11 @@ func GetLambdaUnreservedConcurrencyCommmand(cmd *cobra.Command, clientAuth *mode
     input := lambda.GetAccountSettingsInput{}
 	result, err := lambdaClient.GetAccountSettings(&input)
 	if err != nil {
-		log.Printf("Error getting full concurrency of lambda")
+		log.Printf("Error getting unreserved concurrency of lambda")
 	}
     unreservedConcurrency :=  int(*result.AccountLimit.UnreservedConcurrentExecutions)
     data := make(map[string]int)
-    data["full_concurrency"] = unreservedConcurrency
+    data["unreserved_concurrency"] = unreservedConcurrency
     jsonData,err := json.Marshal(data)    
     if err != nil {
 		log.Printf("error parsing data: %s", err)
