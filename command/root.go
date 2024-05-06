@@ -1595,6 +1595,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(jsonResp)
 
+			} else if queryName == "message_count_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, err := ApiGateway.GetMessageCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting error logs data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+
 			} else if queryName == "successful_event_details_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, err := ApiGateway.GetSuccessEventData(cmd, clientAuth, nil)
 				if err != nil {
