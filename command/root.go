@@ -1540,6 +1540,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 
+			} else if queryName == "unreserved_concurrency_panel" && elementType == "Lambda" {
+				jsonResp, resp, err := Lambda.GetLambdaUnreservedConcurrencyCommmand(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting lambda unreserved concurrency count: ", err)
+					return
+				}
+				if responseType == "json" {
+					fmt.Println(jsonResp)
+				} else {
+					fmt.Println(resp)
+				}
+
 			} else if queryName == "rest_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayRestAPIData(clientAuth, nil)
 				if err != nil {
@@ -2438,6 +2450,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaUnreservedConcurrencyCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaNumberOfCallsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSCpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
