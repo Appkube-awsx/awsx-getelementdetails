@@ -1540,6 +1540,30 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 
+			} else if queryName == "unreserved_concurrency_panel" && elementType == "Lambda" {
+				jsonResp, resp, err := Lambda.GetLambdaUnreservedConcurrencyCommmand(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting lambda unreserved concurrency count: ", err)
+					return
+				}
+				if responseType == "json" {
+					fmt.Println(jsonResp)
+				} else {
+					fmt.Println(resp)
+				}
+
+			} else if queryName == "full_concurrency_panel" && elementType == "Lambda" {
+				jsonResp, resp, err := Lambda.GetLambdaFullConcurrencyData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting lambda full concurrency data: ", err)
+					return
+				}
+				if responseType == "json" {
+					fmt.Println(jsonResp)
+				} else {
+					fmt.Println(resp)
+				}
+
 			} else if queryName == "rest_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayRestAPIData(clientAuth, nil)
 				if err != nil {
@@ -1567,6 +1591,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, err := ApiGateway.GetTopEventsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting top events data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+
+			} else if queryName == "message_count_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, err := ApiGateway.GetMessageCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting error logs data: ", err)
 					return
 				}
 				fmt.Println(jsonResp)
@@ -2091,24 +2123,24 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 
 			} else if queryName == "recent_error_log_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err := RDS.GetRdsErrorLogsPanel(cmd, clientAuth, nil)
+				jsonResp, err := RDS.GetRdsErrorLogsPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting recent error logs: ", err)
 					return
 				}
 				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
+					fmt.Println(jsonResp)
 				} else {
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "recent_event_log_panel" && (elementType == "RDS" || elementType == "AWS/RDS") {
-				jsonResp, cloudwatchMetricResp, err := RDS.GetRecentEventLogsPanel(cmd, clientAuth, nil)
+				jsonResp, err := RDS.GetRecentEventLogsPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting recent events logs: ", err)
 					return
 				}
 				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
+					fmt.Println(jsonResp)
 				} else {
 					fmt.Println(jsonResp)
 				}
@@ -2438,7 +2470,9 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(ECS.AwsxECSUptimeCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFailureCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaUnreservedConcurrencyCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaNumberOfCallsCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFullConcurrencyCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSCpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkUtilizationCmd)
