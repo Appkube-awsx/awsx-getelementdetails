@@ -1,25 +1,22 @@
 package ApiGateway
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
 
-type ApiCallsResult struct {
-	TimeSeries []struct {
-		Timestamp time.Time
-		Value     float64
-	} `json:"timeSeries"`
-}
+// type ApiCallsResult struct {
+// 	TimeSeries []struct {
+// 		Timestamp time.Time
+// 		Value     float64
+// 	} `json:"timeSeries"`
+// }
 
 var AwsxApiCallsCmd = &cobra.Command{
 	Use:   "total_api_calls_panel",
@@ -54,119 +51,31 @@ var AwsxApiCallsCmd = &cobra.Command{
 }
 
 func GetApiCallsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	ApiName := "dev-hrms"
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
+	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
+	instanceId, err = comman_function.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	// Debug prints
-	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := GetApiCallsMetricValue(clientAuth, startTime, endTime, ApiName, cloudWatchClient)
+	metricValue, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/ApiGateway", "Count", startTime, endTime, "Sum", "ApiName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting total API calls metric value: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["TotalApiCalls"] = metricValue
 
-	// Debug prints
-	// log.Printf("Total API Calls Metric Value: %f", metricValue)
-
-	result := processApiCallsRawData(metricValue)
-
-	jsonString, err := json.Marshal(result)
-	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
-		return "", nil, err
-	}
-
-	return string(jsonString), cloudwatchMetricData, nil
-}
-
-func GetApiCallsMetricValue(clientAuth *model.Auth, startTime, endTime *time.Time, ApiName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	input := &cloudwatch.GetMetricDataInput{
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("apiCalls"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Namespace:  aws.String("AWS/ApiGateway"),
-						MetricName: aws.String("Count"),
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("ApiName"),
-								Value: aws.String(ApiName),
-							},
-						},
-					},
-					Period: aws.Int64(300),
-					Stat:   aws.String("Sum"), // Sum to get the total count
-				},
-				ReturnData: aws.Bool(true),
-			},
-		},
-		StartTime: startTime,
-		EndTime:   endTime,
-	}
-
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func processApiCallsRawData(result *cloudwatch.GetMetricDataOutput) ApiCallsResult {
-	var timeSeries []struct {
-		Timestamp time.Time
-		Value     float64
-	}
-
-	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-		timeSeries = append(timeSeries, struct {
-			Timestamp time.Time
-			Value     float64
-		}{
-			Timestamp: *timestamp,
-			Value:     *result.MetricDataResults[0].Values[i],
-		})
-	}
-
-	return ApiCallsResult{TimeSeries: timeSeries}
+	return "", cloudwatchMetricData, nil
 }
 
 func init() {
