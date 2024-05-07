@@ -76,6 +76,15 @@ func GetLambdaDurationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	} else {
 		log.Println("No data available for average Usage")
 	}
+	minimum, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/"+elementType, metricName, startTime, endTime, "Minimum", dimensionsName, cloudWatchClient)
+	if err != nil {
+		return "", nil, err
+	}
+	if len(minimum.MetricDataResults) > 0 && len(minimum.MetricDataResults[0].Values) > 0 {
+		cloudwatchMetricData["MinUsage"] = minimum
+	} else {
+		log.Println("No data available for minimum Usage")
+	}
 	maximum, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/"+elementType, metricName, startTime, endTime, "Maximum", dimensionsName, cloudWatchClient)
 	if err != nil {
 		return "", nil, err
@@ -85,26 +94,17 @@ func GetLambdaDurationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	} else {
 		log.Println("No data available for maximum Usage")
 	}
-	minimum, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/"+elementType, metricName, startTime, endTime, "Minimum", dimensionsName, cloudWatchClient)
-	if err != nil {
-		return "", nil, err
-	}
-	if len(minimum.MetricDataResults) > 0 && len(minimum.MetricDataResults[0].Values) > 0 {
-		cloudwatchMetricData["MinUsage"] = minimum
-	} else {
-		log.Println("No data available for maximum Usage")
-	}
 
 	jsonOutput := make(map[string]float64)
 
 	if len(average.MetricDataResults) > 0 && len(average.MetricDataResults[0].Values) > 0 {
 		jsonOutput["AverageUsage"] = *average.MetricDataResults[0].Values[0]
 	}
-	if len(maximum.MetricDataResults) > 0 && len(maximum.MetricDataResults[0].Values) > 0 {
-		jsonOutput["MaxUsage"] = *maximum.MetricDataResults[0].Values[0]
-	}
 	if len(minimum.MetricDataResults) > 0 && len(minimum.MetricDataResults[0].Values) > 0 {
 		jsonOutput["MinUsage"] = *minimum.MetricDataResults[0].Values[0]
+	}
+	if len(maximum.MetricDataResults) > 0 && len(maximum.MetricDataResults[0].Values) > 0 {
+		jsonOutput["MaxUsage"] = *maximum.MetricDataResults[0].Values[0]
 	}
 
 	jsonString, err := json.Marshal(jsonOutput)
