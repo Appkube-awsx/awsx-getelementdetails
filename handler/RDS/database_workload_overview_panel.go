@@ -93,20 +93,5 @@ func GetRDSDBLoadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 // }
 
 func init() {
-	AwsxRDSDBLoadCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSDBLoadCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSDBLoadCmd)
 }
