@@ -1403,17 +1403,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "error_breakdown_panel" && elementType == "Lambda" {
-				jsonResp, err := Lambda.GetErrorBreakdownnewData(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting lambda failure  data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(jsonResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
+			// } else if queryName == "error_breakdown_panel" && elementType == "Lambda" {
+			// 	jsonResp, err := Lambda.GetErrorBreakdownnewData(cmd, clientAuth, nil)
+			// 	if err != nil {
+			// 		log.Println("Error getting lambda failure  data: ", err)
+			// 		return
+			// 	}
+			// 	if responseType == "frame" {
+			// 		fmt.Println(jsonResp)
+			// 	} else {
+			// 		fmt.Println(jsonResp)
+			// 	}
 			} else if queryName == "error_messages_count_panel" && elementType == "Lambda" {
 				jsonResp, err := Lambda.GetErrorMessageCountData(cmd, clientAuth, nil)
 				if err != nil {
