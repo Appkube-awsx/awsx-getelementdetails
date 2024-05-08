@@ -1575,6 +1575,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(resp)
 				}
 
+			} else if queryName == "top_lambda_warnings" && elementType == "Lambda" {
+				jsonResp, resp, err := Lambda.GetLambdaTopLambdaWarningsData(cmd, clientAuth)
+				if err != nil {
+					log.Println("Error getting top lambda warnings data: ", err)
+					return
+				}
+				if responseType == "json" {
+					fmt.Println(jsonResp)
+				} else {
+					fmt.Println(resp)
+				}
 			} else if queryName == "rest_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetApiGatewayRestAPIData(clientAuth, nil)
 				if err != nil {
@@ -2484,6 +2495,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaUnreservedConcurrencyCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaNumberOfCallsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaFullConcurrencyCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(Lambda.AwsxLambdaTopLambdaWarningsCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSCpuUtilizationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkTrafficCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(RDS.AwsxRDSNetworkUtilizationCmd)
