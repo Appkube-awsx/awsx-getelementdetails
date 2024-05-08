@@ -31,13 +31,16 @@ var AwsxLambdaTopLambdaWarningsCommmand = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, err := GetLambdaTopLambdaWarningsData(cmd, clientAuth)
+			jsonResp, resp, err := GetLambdaTopLambdaWarningsData(cmd, clientAuth)
 			if err != nil {
 				log.Println("Error getting top lambda zones data : ", err)
 				return
 			}
 			if responseType == "json" {
 				fmt.Println(jsonResp)
+				}else{
+				fmt.Println(resp)
+
 			}
 		}
 	},
