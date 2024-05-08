@@ -1156,7 +1156,19 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "top_errors_in_lambda_panel" && elementType == "Lambda" {
+			} else if queryName == "error_breakdown_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetErrorBreakdownData(cmd, clientAuth, nil)
+				// fmt.Println(cloudwatchMetricResp)
+				if err != nil {
+					log.Println("Error getting lambda error  data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			}else if queryName == "top_errors_in_lambda_panel" && elementType == "Lambda" {
 				toperrors, err := Lambda.GetLambdaTopErrorsEvents(cmd, clientAuth, nil)
 				if err != nil {
 
