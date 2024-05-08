@@ -76,9 +76,5 @@ func GetErrorAnalysisData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 }
 
 func init() {
-	AwsxRDSErrorAnalysisCmd.PersistentFlags().String("elementId", "", "Element ID")
-	AwsxRDSErrorAnalysisCmd.PersistentFlags().String("cmdbApiUrl", "", "CMDB API URL")
-	AwsxRDSErrorAnalysisCmd.PersistentFlags().String("logGroupName", "", "Log Group Name")
-	AwsxRDSErrorAnalysisCmd.PersistentFlags().String("startTime", "", "Start Time")
-	AwsxRDSErrorAnalysisCmd.PersistentFlags().String("endTime", "", "End Time")
+	comman_function.InitAwsCmdFlags(AwsxRDSErrorAnalysisCmd)
 }

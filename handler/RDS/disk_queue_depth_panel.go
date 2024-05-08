@@ -93,20 +93,5 @@ func GetRDSDiskQueueDepthPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 // }
 
 func init() {
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSDiskQueueDepthCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSDiskQueueDepthCmd)
 }
