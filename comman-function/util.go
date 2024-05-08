@@ -3,11 +3,12 @@ package comman_function
 import (
 	"errors"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/spf13/cobra"
-	"log"
-	"time"
 )
 
 func ParseTimes(cmd *cobra.Command) (*time.Time, *time.Time, error) {
@@ -111,4 +112,9 @@ func InitAwsCmdFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().String("endTime", "", "endcl time")
 	cmd.PersistentFlags().String("responseType", "", "response type. json/frame")
 	cmd.PersistentFlags().String("logGroupName", "", "log group name")
+	cmd.PersistentFlags().String("ApiName", "", "api name")
+	cmd.PersistentFlags().String("FunctionName", "", "function name")
+	cmd.PersistentFlags().String("LoadBalancer", "", "loadbalancer name")
+	cmd.PersistentFlags().String("DBInstanceIdentifier", "", "dbinstance identifier name")
+
 }

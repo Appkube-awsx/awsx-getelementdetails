@@ -97,20 +97,5 @@ func GetIndexSizePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 // }
 
 func init() {
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSIndexSizeCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSIndexSizeCmd)
 }

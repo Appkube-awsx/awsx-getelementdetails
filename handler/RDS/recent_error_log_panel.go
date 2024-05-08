@@ -93,9 +93,5 @@ func GetRdsErrorLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 // }
 
 func init() {
-	AwsxRdsErrorLogsCmd.PersistentFlags().String("elementId", "", "Element ID")
-	AwsxRdsErrorLogsCmd.PersistentFlags().String("cmdbApiUrl", "", "CMDB API URL")
-	AwsxRdsErrorLogsCmd.PersistentFlags().String("logGroupName", "", "Log Group Name")
-	AwsxRdsErrorLogsCmd.PersistentFlags().String("startTime", "", "Start Time")
-	AwsxRdsErrorLogsCmd.PersistentFlags().String("endTime", "", "End Time")
+	comman_function.InitAwsCmdFlags(AwsxRdsErrorLogsCmd)
 }
