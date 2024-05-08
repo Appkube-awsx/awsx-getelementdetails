@@ -78,7 +78,5 @@ func GetLambdaConcurrencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 }
 
 func init() {
-	AwsxLambdaConcurrencyCmd.PersistentFlags().String("startTime", "", "Start time")
-	AwsxLambdaConcurrencyCmd.PersistentFlags().String("endTime", "", "End time")
-	AwsxLambdaConcurrencyCmd.PersistentFlags().String("responseType", "", "Response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxLambdaConcurrencyCmd)
 }

@@ -86,8 +86,5 @@ func processQuerysResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cl
 }
 
 func init() {
-	AwsxLambdaErrorAndWarningCmd.PersistentFlags().String("startTime", "", "Start time in RFC3339 format, e.g., 2024-02-20T00:00:00Z")
-	AwsxLambdaErrorAndWarningCmd.PersistentFlags().String("endTime", "", "End time in RFC3339 format, e.g., 2024-03-26T23:59:59Z")
-
-	AwsxLambdaErrorAndWarningCmd.PersistentFlags().String("responseType", "", "Response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxLambdaErrorAndWarningCmd)
 }

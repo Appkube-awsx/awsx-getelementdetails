@@ -67,53 +67,6 @@ func GetLambdaConcurrencyGraphData(cmd *cobra.Command, clientAuth *model.Auth, c
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
-	// if elementId != "" {
-	// 	log.Println("getting cloud-element data from cmdb")
-	// 	apiUrl := cmdbApiUrl
-	// 	if cmdbApiUrl == "" {
-	// 		log.Println("using default cmdb url")
-	// 		apiUrl = config.CmdbUrl
-	// 	}
-	// 	log.Println("cmdb url: " + apiUrl)
-	// 	cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-	// 	if err != nil {
-	// 		return "", nil, err
-	// 	}
-	// 	instanceId = cmdbData.InstanceId
-
-	// }
-
-	// startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	// endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	// var startTime, endTime *time.Time
-
-	// if startTimeStr != "" {
-	// 	parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-	// 	if err != nil {
-	// 		log.Printf("Error parsing start time: %v", err)
-	// 		return "", nil, err
-	// 	}
-	// 	startTime = &parsedStartTime
-	// } else {
-	// 	defaultStartTime := time.Now().Add(-5 * time.Minute)
-	// 	startTime = &defaultStartTime
-	// }
-
-	// if endTimeStr != "" {
-	// 	parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-	// 	if err != nil {
-	// 		log.Printf("Error parsing end time: %v", err)
-	// 		return "", nil, err
-	// 	}
-	// 	endTime = &parsedEndTime
-	// } else {
-	// 	defaultEndTime := time.Now()
-	// 	endTime = &defaultEndTime
-	// }
-
-	// log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
-
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
@@ -136,67 +89,6 @@ func GetLambdaConcurrencyGraphData(cmd *cobra.Command, clientAuth *model.Auth, c
 	return "", cloudwatchMetricData, nil
 }
 
-// func GetLambdaConcurrencyCountMetricValue(clientAuth *model.Auth, instanceId string, elementType string, startTime, endTime *time.Time, statistic string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-// 	input := &cloudwatch.GetMetricDataInput{
-// 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-// 			{
-// 				Id: aws.String("concurrency"),
-// 				MetricStat: &cloudwatch.MetricStat{
-// 					Metric: &cloudwatch.Metric{
-
-// 						Namespace:  aws.String("AWS/Lambda"),
-// 						MetricName: aws.String("ConcurrentExecutions"),
-// 					},
-// 					Period: aws.Int64(300),
-// 					Stat:   aws.String(statistic),
-// 				},
-// 			},
-// 		},
-// 		StartTime: startTime,
-// 		EndTime:   endTime,
-// 	}
-
-// 	if cloudWatchClient == nil {
-// 		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-// 	}
-
-// 	result, err := cloudWatchClient.GetMetricData(input)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return result, nil
-// }
-
-// func ProcessLambdaConcurrencyRawData(result *cloudwatch.GetMetricDataOutput) ConcurrencyGraph {
-// 	var rawData ConcurrencyGraph
-// 	rawData.RawData = make([]struct {
-// 		Timestamp time.Time
-// 		Value     float64
-// 	}, len(result.MetricDataResults[0].Timestamps))
-
-// 	for i, timestamp := range result.MetricDataResults[0].Timestamps {
-// 		rawData.RawData[i].Timestamp = *timestamp
-// 		rawData.RawData[i].Value = *result.MetricDataResults[0].Values[i]
-// 	}
-// 	return rawData
-// }
-
 func init() {
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("query", "", "query")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxLambdaConcurrencyGraphCmd.PersistentFlags().String("ApiName", "", "api name")
+	comman_function.InitAwsCmdFlags(AwsxLambdaConcurrencyGraphCmd)
 }

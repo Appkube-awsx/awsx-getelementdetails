@@ -74,7 +74,5 @@ func GetLambdaColdStartData(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 }
 
 func init() {
-	AwsxLambdaColdStartCmd.PersistentFlags().String("startTime", "", "Start time")
-	AwsxLambdaColdStartCmd.PersistentFlags().String("endTime", "", "End time")
-	AwsxLambdaColdStartCmd.PersistentFlags().String("responseType", "", "Response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxLambdaColdStartCmd)
 }
