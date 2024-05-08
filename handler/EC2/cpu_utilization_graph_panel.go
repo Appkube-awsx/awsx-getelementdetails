@@ -2,12 +2,13 @@ package EC2
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 //type CpuUtilizationsResult struct {
@@ -104,20 +105,5 @@ func GetCpuUtilizationGraphPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 //}
 
 func init() {
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2CpuUtilizationGraphsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2CpuUtilizationGraphsCmd)
 }

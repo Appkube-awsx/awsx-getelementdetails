@@ -102,20 +102,5 @@ func GetCPUUsageSysPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 //		return rawData
 //	}
 func init() {
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2CpuSysTimeCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2CpuSysTimeCmd)
 }
