@@ -86,9 +86,5 @@ func GetRecentEventLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 
 
 func init() {
-	AwsxRecentEventLogsCmd.PersistentFlags().String("elementId", "", "Element ID")
-	AwsxRecentEventLogsCmd.PersistentFlags().String("cmdbApiUrl", "", "CMDB API URL")
-	AwsxRecentEventLogsCmd.PersistentFlags().String("logGroupName", "", "Log Group Name")
-	AwsxRecentEventLogsCmd.PersistentFlags().String("startTime", "", "Start Time")
-	AwsxRecentEventLogsCmd.PersistentFlags().String("endTime", "", "End Time")
+	comman_function.InitAwsCmdFlags(AwsxRecentEventLogsCmd)
 }
