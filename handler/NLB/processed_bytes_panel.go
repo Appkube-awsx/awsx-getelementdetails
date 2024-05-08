@@ -74,8 +74,5 @@ func GetNLBProcessedBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 }
 
 func init() {
-	AwsxNLBProcessedBytesCmd.PersistentFlags().String("nlbArn", "", "NLB ARN")
-	AwsxNLBProcessedBytesCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxNLBProcessedBytesCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxNLBProcessedBytesCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxNLBProcessedBytesCmd)
 }

@@ -72,7 +72,5 @@ func GetTargetDeregistrationspanel(cmd *cobra.Command, clientAuth *model.Auth, c
 	
 
 func init() {
-	AwsxTargetDeregistrationsCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxTargetDeregistrationsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxTargetDeregistrationsCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxTargetDeregistrationsCmd)
 }
