@@ -3,12 +3,13 @@ package EC2
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var AwsxEc2DiskReadCmd = &cobra.Command{
@@ -82,20 +83,5 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 }
 
 func init() {
-	AwsxEc2DiskReadCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2DiskReadCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2DiskReadCmd)
 }

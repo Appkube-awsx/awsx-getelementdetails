@@ -96,20 +96,5 @@ func GetNetworkOutBytesPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 // }
 
 func init() {
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2NetworkOutBytesCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2NetworkOutBytesCmd)
 }

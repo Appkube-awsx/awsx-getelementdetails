@@ -2,12 +2,13 @@ package EC2
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 //type DiskUsedPanelData struct {
@@ -117,20 +118,5 @@ func GetDiskUsedPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 //}
 
 func init() {
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2DiskUsedCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2DiskUsedCmd)
 }

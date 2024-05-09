@@ -97,20 +97,5 @@ func GetMemUsageUsed(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 // }
 
 func init() {
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2MemoryUsageUsedCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2MemoryUsageUsedCmd)
 }
