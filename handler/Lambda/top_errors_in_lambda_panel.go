@@ -119,7 +119,7 @@ func FilterTopErrorsTasks(clientAuth *model.Auth, startTime, endTime *time.Time,
         QueryString: aws.String(`fields errorCount, errorMessage
 		| filter eventSource = "lambda.amazonaws.com"
 		| filter ispresent(errorMessage)
-		| stats count(*) as errorCount by errorMessage
+		| stats count(*) as errorCount by errorMessage, eventName
 		| sort errorCount desc
 		| limit 20`),
     }

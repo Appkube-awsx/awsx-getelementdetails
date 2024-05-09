@@ -161,8 +161,8 @@ func GetLambdaThrottlesCountMetricValue(clientAuth *model.Auth, instanceId strin
 	return result, nil
 }
 
-func ProcessLambdaThrottlesRawData(result *cloudwatch.GetMetricDataOutput) ErrorGraph {
-	var rawData ErrorGraph
+func ProcessLambdaThrottlesRawData(result *cloudwatch.GetMetricDataOutput) ThrottlesGraph {
+	var rawData ThrottlesGraph
 	rawData.RawData = make([]struct {
 		Timestamp time.Time
 		Value     float64

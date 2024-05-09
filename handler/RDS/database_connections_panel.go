@@ -98,20 +98,5 @@ func GetDatabaseConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 // }
 
 func init() {
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSDatabaseConnectionsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSDatabaseConnectionsCmd)
 }

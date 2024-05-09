@@ -95,20 +95,5 @@ func GetRDSNetworkTransmitThroughputPanel(cmd *cobra.Command, clientAuth *model.
 // }
 
 func init() {
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSNetworkTransmitThroughputCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags( AwsxRDSNetworkTransmitThroughputCmd)
 }

@@ -77,20 +77,5 @@ func GetLambdaCpuData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 }
 
 func init() {
-	AwsxLambdaCpuCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxLambdaCpuCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxLambdaCpuCmd.PersistentFlags().String("query", "", "query")
-	AwsxLambdaCpuCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxLambdaCpuCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxLambdaCpuCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxLambdaCpuCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxLambdaCpuCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxLambdaCpuCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxLambdaCpuCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxLambdaCpuCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxLambdaCpuCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxLambdaCpuCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxLambdaCpuCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxLambdaCpuCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxLambdaCpuCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxLambdaCpuCmd)
 }

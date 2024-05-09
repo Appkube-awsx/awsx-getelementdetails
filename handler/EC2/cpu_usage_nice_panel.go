@@ -2,12 +2,13 @@ package EC2
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 //type CpuUsageNice struct {
@@ -102,20 +103,5 @@ func GetCPUUsageNicePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 //		return rawData
 //	}
 func init() {
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2CpuUsageNiceCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2CpuUsageNiceCmd)
 }

@@ -98,20 +98,5 @@ func GetTransactionLogsGenerationPanel(cmd *cobra.Command, clientAuth *model.Aut
 // }
 
 func init() {
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSTransactionLogsGenCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSTransactionLogsGenCmd)
 }

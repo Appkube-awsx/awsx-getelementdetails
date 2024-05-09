@@ -98,19 +98,5 @@ func GetRDSReadIOPSPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 // }
 
 func init() {
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSReadIOPSCmd.PersistentFlags().String("endTime", "", "endcl time")
+	comman_function.InitAwsCmdFlags(AwsxRDSReadIOPSCmd)
 }

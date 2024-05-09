@@ -100,20 +100,5 @@ func GetCPUSurplusCreditBalance(cmd *cobra.Command, clientAuth *model.Auth, clou
 // }
 
 func init() {
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSCPUSurplusCreditBalanceCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSCPUSurplusCreditBalanceCmd)
 }
