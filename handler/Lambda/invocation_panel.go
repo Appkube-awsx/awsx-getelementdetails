@@ -85,7 +85,7 @@ func GetLambdaInvocationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	} else {
 		log.Println("No data available for Error Usage")
 	}
-	coldstart, err := comman_function.GetMetricData(clientAuth, instanceID, "LambdaInsights", "init_duration", startTime, endTime, "Sum", "function_name", cloudWatchClient)
+	coldstart, err := comman_function.GetMetricData(clientAuth, instanceID, elementType+"Insights", "init_duration", startTime, endTime, "Sum", "function_name", cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
