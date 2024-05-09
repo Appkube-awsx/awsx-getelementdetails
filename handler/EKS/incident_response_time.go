@@ -81,20 +81,6 @@ func GetIncidentResponseTimeData(cmd *cobra.Command, clientAuth *model.Auth, clo
 }
 
 func init() {
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSIncidentResponseTimeCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	
+	comman_function.InitAwsCmdFlags(AwsxEKSIncidentResponseTimeCmd)
 }
