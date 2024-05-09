@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type LatencyResult struct {
-	Value float64 `json:"Value"`
-}
+// type LatencyResult struct {
+// 	Value float64 `json:"Value"`
+// }
 
 var AwsxLambdaLatencyCmd = &cobra.Command{
 	Use:   "latency_panel",
@@ -75,20 +75,5 @@ func GetLambdaLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 }
 
 func init() {
-	AwsxLambdaLatencyCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("query", "", "query")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxLambdaLatencyCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxLambdaLatencyCmd)
 }
