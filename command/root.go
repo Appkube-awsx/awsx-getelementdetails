@@ -1168,7 +1168,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			}else if queryName == "top_errors_in_lambda_panel" && elementType == "Lambda" {
+			} else if queryName == "top_errors_in_lambda_panel" && elementType == "Lambda" {
 				toperrors, err := Lambda.GetLambdaTopErrorsEvents(cmd, clientAuth, nil)
 				if err != nil {
 
@@ -1190,12 +1190,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(errortrend)
 			} else if queryName == "top_errors_messages_panel" && elementType == "Lambda" {
-				toperrorsmessages, err := Lambda.GetLambdaTopErrorsMessagesEvents(cmd, clientAuth, nil)
+				jsonResp, resp, err := Lambda.GetLambdaTopErrorsMessagesEvents(cmd, clientAuth)
 				if err != nil {
-
+					log.Println("Error getting top lambda warnings data: ", err)
 					return
 				}
-				fmt.Println(toperrorsmessages)
+				if responseType == "json" {
+					fmt.Println(jsonResp)
+				} else {
+					fmt.Println(resp)
+				}
 			} else if queryName == "error_and_warning_events_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaErrorAndWarningData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1415,17 +1419,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			// } else if queryName == "error_breakdown_panel" && elementType == "Lambda" {
-			// 	jsonResp, err := Lambda.GetErrorBreakdownnewData(cmd, clientAuth, nil)
-			// 	if err != nil {
-			// 		log.Println("Error getting lambda failure  data: ", err)
-			// 		return
-			// 	}
-			// 	if responseType == "frame" {
-			// 		fmt.Println(jsonResp)
-			// 	} else {
-			// 		fmt.Println(jsonResp)
-			// 	}
+				// } else if queryName == "error_breakdown_panel" && elementType == "Lambda" {
+				// 	jsonResp, err := Lambda.GetErrorBreakdownnewData(cmd, clientAuth, nil)
+				// 	if err != nil {
+				// 		log.Println("Error getting lambda failure  data: ", err)
+				// 		return
+				// 	}
+				// 	if responseType == "frame" {
+				// 		fmt.Println(jsonResp)
+				// 	} else {
+				// 		fmt.Println(jsonResp)
+				// 	}
 			} else if queryName == "error_messages_count_panel" && elementType == "Lambda" {
 				jsonResp, err := Lambda.GetErrorMessageCountData(cmd, clientAuth, nil)
 				if err != nil {
