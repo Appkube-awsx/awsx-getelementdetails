@@ -84,7 +84,5 @@ func processQueryResultss(results []*cloudwatchlogs.GetQueryResultsOutput) []*cl
 }
 
 func init() {
-	AwsxActiveConnectionPanelCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxActiveConnectionPanelCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxActiveConnectionPanelCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxActiveConnectionPanelCmd)
 }

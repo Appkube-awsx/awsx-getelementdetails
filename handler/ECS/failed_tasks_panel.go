@@ -85,7 +85,5 @@ func processQuerysResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cl
 }
 
 func init() {
-	AwsxFailedTasksPanelCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxFailedTasksPanelCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxFailedTasksPanelCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxFailedTasksPanelCmd)
 }
