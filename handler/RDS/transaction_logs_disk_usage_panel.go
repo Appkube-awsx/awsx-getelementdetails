@@ -98,20 +98,5 @@ func GetTransactionLogsDiskUsagePanel(cmd *cobra.Command, clientAuth *model.Auth
 // }
 
 func init() {
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSTransactionLogsDiskCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSTransactionLogsDiskCmd)
 }

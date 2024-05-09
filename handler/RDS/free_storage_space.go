@@ -95,20 +95,5 @@ func GetRDSFreeStorageSpacePanel(cmd *cobra.Command, clientAuth *model.Auth, clo
 // }
 
 func init() {
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSFreeStorageSpaceCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSFreeStorageSpaceCmd)
 }

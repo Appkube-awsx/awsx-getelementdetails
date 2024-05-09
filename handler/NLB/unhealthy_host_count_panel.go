@@ -74,8 +74,5 @@ func GetNLBUnhealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, c
 }
 
 func init() {
-	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("nlbArn", "", "NLB ARN")
-	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxNLBUnhealthyHostCountCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxNLBUnhealthyHostCountCmd )
 }

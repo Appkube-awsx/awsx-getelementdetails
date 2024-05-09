@@ -74,8 +74,5 @@ func GetNLBNewConnectionsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 }
 
 func init() {
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("nlbArn", "", "NLB ARN")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxNLBNewConnectionsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxNLBNewConnectionsCmd)
 }

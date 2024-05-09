@@ -3,14 +3,10 @@ package ApiGateway
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
 )
@@ -43,133 +39,59 @@ var AwsxApiDowntimeIncidentsCmd = &cobra.Command{
 				return
 			}
 			// Print the results
-			for _, result := range results {
-				fmt.Println(result)
-			}
+			// for _, result := range results {
+			fmt.Println(results)
+			// }
 		}
 	},
 }
 
-func GetDowntimeIncidentsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]string, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+func GetDowntimeIncidentsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return nil, err
-		}
-		logGroupName = cmdbData.LogGroup
-
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing time: %v", err)
 	}
-	startTime, endTime := parseStartEndTime(cmd)
+	logGroupName, err = comman_function.GetCmdbLogsData(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("error getting instance ID: %v", err)
+	}
 
-	results, err := FilterDowntimeIncidentsLogs(clientAuth, startTime, endTime, logGroupName, cloudWatchLogs)
+	results, err := comman_function.GetLogsData(clientAuth, startTime, endTime, logGroupName, `fields @timestamp, eventType, errorMessage| filter eventSource = 'apigateway.amazonaws.com'| sort @timestamp desc`, cloudWatchLogs)
 	if err != nil {
 		return nil, err
 	}
+	processedResult := processQueryResult(results)
 
-	return results, nil
+	return processedResult, nil
 }
 
-func parseStartEndTime(cmd *cobra.Command) (*time.Time, *time.Time) {
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+func processQueryResult(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+	processedResult := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
 
-	var startTime, endTime *time.Time
+	for _, result := range results {
+		if *result.Status == "Complete" {
+			for _, resultField := range result.Results {
+				for _, data := range resultField {
+					if *data.Field == "errorMessage" {
 
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-		} else {
-			startTime = &parsedStartTime
-		}
-	}
+						log.Printf("errorMessage: %s\n", *data)
 
-	// Parse end time if provided
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-		} else {
-			endTime = &parsedEndTime
-		}
-	}
+					}
+					if *data.Field == "@timestamp" {
 
-	return startTime, endTime
-}
+						log.Printf("timestamp: %s\n", *data)
 
-func FilterDowntimeIncidentsLogs(clientAuth *model.Auth, startTime, endTime *time.Time, logGroupName string, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]string, error) {
-	params := &cloudwatchlogs.StartQueryInput{
-		LogGroupName: aws.String(logGroupName),
-		StartTime:    aws.Int64(startTime.Unix() * 1000),
-		EndTime:      aws.Int64(endTime.Unix() * 1000),
-		QueryString: aws.String(`
-            fields @timestamp, eventType, errorMessage
-            | filter eventSource = 'apigateway.amazonaws.com'
-            | sort @timestamp desc
-        `),
-	}
-
-	if cloudWatchLogs == nil {
-		cloudWatchLogs = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
-	}
-
-	queryResult, err := cloudWatchLogs.StartQuery(params)
-	if err != nil {
-		return nil, fmt.Errorf("failed to start query: %v", err)
-	}
-
-	// Wait for query to complete
-	for {
-		queryStatusInput := &cloudwatchlogs.GetQueryResultsInput{
-			QueryId: queryResult.QueryId,
-		}
-		queryResults, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get query results: %v", err)
-		}
-
-		// If query is complete, return results
-		if *queryResults.Status == "Complete" {
-			// Process the query results to extract lines below and above
-			results := processQueryResult(queryResults.Results)
-			return results, nil
-		}
-
-		// If query is still running, wait before checking again
-		time.Sleep(5 * time.Second)
-	}
-}
-
-func processQueryResult(results [][]*cloudwatchlogs.ResultField) []string {
-	var output []string
-	for _, event := range results {
-		var parsedResult string
-		var errorMessage string
-		for _, field := range event {
-			if *field.Field == "errorMessage" {
-				errorMessage = *field.Value
+					}
+				}
 			}
-			if *field.Field == "@timestamp" || *field.Field == "eventType" {
-				parsedResult += fmt.Sprintf("%s: %s\n", *field.Field, *field.Value)
-			}
-		}
-		if errorMessage != "" {
-			parsedResult += fmt.Sprintf("errorMessage: %s\n", errorMessage)
-			output = append(output, parsedResult)
+			processedResult = append(processedResult, result)
+		} else {
+			log.Println("Query status is not complete.")
 		}
 	}
-	return output
+
+	return processedResult
 }
 
 func init() {
