@@ -11,10 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// type ErrorResult struct {
-// 	Value float64 `json:"Value"`
-// }
-
 var AwsxLambdaErrorCmd = &cobra.Command{
 	Use:   "error_panel",
 	Short: "get error metrics data",
@@ -44,11 +40,10 @@ var AwsxLambdaErrorCmd = &cobra.Command{
 				fmt.Println(jsonResp)
 			}
 		}
-
 	},
 }
 
-func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]interface{}, error) {
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
@@ -63,15 +58,49 @@ func GetLambdaErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
-	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
+	cloudwatchMetricData := map[string]interface{}{}
 
-	// Fetch raw data
-	avgErrorValue, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/Lambda", "Errors", startTime, endTime, "Average", "FunctionName", cloudWatchClient)
+	// Fetch raw data for last month and current month
+	lastMonthStartTime := startTime.AddDate(0, -1, 0)
+	lastMonthEndTime := endTime.AddDate(0, -1, 0)
+	lastMonthMemory, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/Lambda", "Errors", &lastMonthStartTime, &lastMonthEndTime, "Sum", "FunctionName", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting average error value: ", err)
+		log.Println("Error in getting error metric value for last month: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["AverageErrors"] = avgErrorValue
+
+	lastMonthValue := float64(0)
+	if len(lastMonthMemory.MetricDataResults) > 0 && len(lastMonthMemory.MetricDataResults[0].Values) > 0 {
+		lastMonthValue = *lastMonthMemory.MetricDataResults[0].Values[0]
+	}
+	cloudwatchMetricData["LastMonthMemory"] = lastMonthValue
+
+	currentMonthMemory, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/Lambda", "Errors", startTime, endTime, "Sum", "FunctionName", cloudWatchClient)
+	if err != nil {
+		log.Println("Error in getting error metric value for current month: ", err)
+		return "", nil, err
+	}
+    fmt.Println(currentMonthMemory)
+	currentMonthValue := float64(0)
+	if len(currentMonthMemory.MetricDataResults) > 0 && len(currentMonthMemory.MetricDataResults[0].Values) > 0 {
+		currentMonthValue = *currentMonthMemory.MetricDataResults[0].Values[0]
+	}
+	cloudwatchMetricData["CurrentMemory"] = currentMonthValue
+
+	// Calculate percentage change
+	var percentageChange float64
+	if lastMonthValue != 0 {
+		percentageChange = ((currentMonthValue - lastMonthValue) / lastMonthValue) * 100
+	} 
+
+	// Determine if it's an increment or decrement
+	changeType := "increment"
+	if percentageChange < 0 {
+		changeType = "decrement"
+	}
+
+	cloudwatchMetricData["PercentageChange"] = percentageChange
+	cloudwatchMetricData["ChangeType"] = changeType
 
 	return "", cloudwatchMetricData, nil
 }
