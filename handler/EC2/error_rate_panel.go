@@ -2,12 +2,13 @@ package EC2
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var AwsxEc2ErrorRatePanelCmd = &cobra.Command{
@@ -86,29 +87,7 @@ func ProcessQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*clo
 }
 
 func init() {
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("ebsvolume2Id", "", "ebs volume 2 id")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("accountId", "", "aws account number")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("ServiceName", "", "Service Name")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("clusterName", "", "cluster name")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxEc2ErrorRatePanelCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	comman_function.InitAwsCmdFlags(AwsxEc2ErrorRatePanelCmd)
 }
 
 // package EC2

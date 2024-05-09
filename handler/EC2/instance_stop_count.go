@@ -62,8 +62,5 @@ func GetInstanceStopCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 }
 
 func init() {
-	AwsxEc2InstanceStopCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxEc2InstanceStopCmd.PersistentFlags().String("filterPattern", "", "filter pattern")
-	AwsxEc2InstanceStopCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2InstanceStopCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxEc2InstanceStopCmd)
 }

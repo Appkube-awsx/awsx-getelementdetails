@@ -79,20 +79,5 @@ func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 }
 
 func init() {
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2DiskWriteCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2DiskWriteCmd)
 }

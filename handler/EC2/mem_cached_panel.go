@@ -97,20 +97,5 @@ func GetMemCachePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 // }
 
 func init() {
-	AwsxEc2MemCachedCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2MemCachedCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2MemCachedCmd)
 }

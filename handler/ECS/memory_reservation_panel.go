@@ -95,20 +95,6 @@ func GetMemoryReservationData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 // }
 
 func init() {
-	AwsxMemoryReservedCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxMemoryReservedCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxMemoryReservedCmd.PersistentFlags().String("query", "", "query")
-	AwsxMemoryReservedCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxMemoryReservedCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxMemoryReservedCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxMemoryReservedCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxMemoryReservedCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxMemoryReservedCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxMemoryReservedCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxMemoryReservedCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxMemoryReservedCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxMemoryReservedCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxMemoryReservedCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxMemoryReservedCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxMemoryReservedCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxMemoryReservedCmd)
+
 }

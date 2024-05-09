@@ -1516,6 +1516,39 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "memory_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, _ := Lambda.GetLambdaMemoryUsageData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda error graph count data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "duration_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, _ := Lambda.GetLambdaDurationData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda error graph count data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "invocation_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, _ := Lambda.GetLambdaInvocationData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda error graph count data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "invocations_graph_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, err := Lambda.GetLambdaInvocationsGraphData(cmd, clientAuth, nil)
 				if err != nil {

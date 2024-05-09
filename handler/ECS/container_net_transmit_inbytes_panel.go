@@ -98,20 +98,5 @@ func GetECSContainerNetTxInBytesPanel(cmd *cobra.Command, clientAuth *model.Auth
 // }
 
 func init() {
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("query", "", "query")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxECSContainerNetTxInBytesCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxECSContainerNetTxInBytesCmd)
 }

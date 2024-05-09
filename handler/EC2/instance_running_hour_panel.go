@@ -2,12 +2,13 @@ package EC2
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var AwsxEc2InstanceRunningHourCmd = &cobra.Command{
@@ -62,8 +63,5 @@ func GetInstanceRunningHour(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 }
 
 func init() {
-	AwsxEc2InstanceRunningHourCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxEc2InstanceRunningHourCmd.PersistentFlags().String("filterPattern", "", "filter pattern")
-	AwsxEc2InstanceRunningHourCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2InstanceRunningHourCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxEc2InstanceRunningHourCmd)
 }
