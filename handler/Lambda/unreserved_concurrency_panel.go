@@ -29,7 +29,7 @@ var AwsxLambdaUnreservedConcurrencyCommmand = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, resp, err := GetLambdaUnreservedConcurrencyCommmand(cmd, clientAuth)
+			jsonResp, resp, err := GetLambdaUnreservedConcurrencyCommmand(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting unreserved concurrency data : ", err)
 				return
@@ -43,21 +43,22 @@ var AwsxLambdaUnreservedConcurrencyCommmand = &cobra.Command{
 	},
 }
 
-func GetLambdaUnreservedConcurrencyCommmand(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]int, error) {
-	lambdaClient := awsclient.GetClient(*clientAuth, awsclient.LAMBDA_CLIENT).(*lambda.Lambda)
-    input := lambda.GetAccountSettingsInput{}
+func GetLambdaUnreservedConcurrencyCommmand(cmd *cobra.Command, clientAuth *model.Auth, lambdaClient *lambda.Lambda) (string, map[string]int, error) {
+	if lambdaClient == nil {
+		lambdaClient = awsclient.GetClient(*clientAuth, awsclient.LAMBDA_CLIENT).(*lambda.Lambda)
+	}
+	input := lambda.GetAccountSettingsInput{}
 	result, err := lambdaClient.GetAccountSettings(&input)
 	if err != nil {
 		log.Printf("Error getting unreserved concurrency of lambda")
 	}
-    unreservedConcurrency :=  int(*result.AccountLimit.UnreservedConcurrentExecutions)
-    data := make(map[string]int)
-    data["unreserved_concurrency"] = unreservedConcurrency
-    jsonData,err := json.Marshal(data)    
-    if err != nil {
+	unreservedConcurrency := int(*result.AccountLimit.UnreservedConcurrentExecutions)
+	data := make(map[string]int)
+	data["unreserved_concurrency"] = unreservedConcurrency
+	jsonData, err := json.Marshal(data)
+	if err != nil {
 		log.Printf("error parsing data: %s", err)
-        return "", nil, err
+		return "", nil, err
 	}
-    return string(jsonData), data, nil  
+	return string(jsonData), data, nil
 }
-

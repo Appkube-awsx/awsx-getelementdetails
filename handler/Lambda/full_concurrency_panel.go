@@ -29,7 +29,7 @@ var AwsxLambdaFullConcurrencyCommmand = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, resp, err := GetLambdaFullConcurrencyData(cmd, clientAuth)
+			jsonResp, resp, err := GetLambdaFullConcurrencyData(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting full concurrency data : ", err)
 				return
@@ -43,21 +43,22 @@ var AwsxLambdaFullConcurrencyCommmand = &cobra.Command{
 	},
 }
 
-func GetLambdaFullConcurrencyData(cmd *cobra.Command, clientAuth *model.Auth) (string, map[string]int, error) {
-	lambdaClient := awsclient.GetClient(*clientAuth, awsclient.LAMBDA_CLIENT).(*lambda.Lambda)
-    input := lambda.GetAccountSettingsInput{}
+func GetLambdaFullConcurrencyData(cmd *cobra.Command, clientAuth *model.Auth, lambdaClient *lambda.Lambda) (string, map[string]int, error) {
+	if lambdaClient == nil {
+		lambdaClient = awsclient.GetClient(*clientAuth, awsclient.LAMBDA_CLIENT).(*lambda.Lambda)
+	}
+	input := lambda.GetAccountSettingsInput{}
 	result, err := lambdaClient.GetAccountSettings(&input)
 	if err != nil {
 		log.Printf("Error getting full concurrency of lambda")
 	}
-    fullConcurrency :=  int(*result.AccountLimit.ConcurrentExecutions)
-    data := make(map[string]int)
-    data["full_concurrency"] = fullConcurrency
-    jsonData,err := json.Marshal(data)    
-    if err != nil {
+	fullConcurrency := int(*result.AccountLimit.ConcurrentExecutions)
+	data := make(map[string]int)
+	data["full_concurrency"] = fullConcurrency
+	jsonData, err := json.Marshal(data)
+	if err != nil {
 		log.Printf("error parsing data: %s", err)
-        return "", nil, err
+		return "", nil, err
 	}
-    return string(jsonData), data, nil  
+	return string(jsonData), data, nil
 }
-
