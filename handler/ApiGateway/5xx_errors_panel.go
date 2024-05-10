@@ -68,14 +68,21 @@ func GetApi5xxErrorData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCl
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	metricValue, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/ApiGateway", "5XXError", startTime, endTime, "Sum", "ApiName", cloudWatchClient)
+	metricValues, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/ApiGateway", "5XXError", startTime, endTime, "Sum", "ApiName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting 5xx error metric value: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["5XXError"] = metricValue
+	cloudwatchMetricData["5XXError"] = metricValues
 
-	return "", cloudwatchMetricData, nil
+	var totalSum float64
+	for _, value := range metricValues.MetricDataResults {
+		for _, data := range value.Values {
+			totalSum += *data
+		}
+	}
+	totalSumStr := fmt.Sprintf("{request count: %f}", totalSum)
+	return totalSumStr, cloudwatchMetricData, nil
 }
 
 // func process5xxErrorRawData(result *cloudwatch.GetMetricDataOutput) Api5xxResult {
