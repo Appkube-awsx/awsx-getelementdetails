@@ -116,7 +116,5 @@ func GetLambdaInvocationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 }
 
 func init() {
-	AwsxLambdaInvocationCmd.PersistentFlags().String("elementId", "", "Lambda function name or ID")
-	AwsxLambdaInvocationCmd.PersistentFlags().String("elementType", "", "Element type")
-	AwsxLambdaInvocationCmd.PersistentFlags().String("startTime", "", "Start time for metrics collection (RFC333)")
+	comman_function.InitAwsCmdFlags(AwsxLambdaInvocationCmd)
 }
