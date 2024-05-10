@@ -76,7 +76,7 @@ func GetLambdaDurationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	} else {
 		log.Println("No data available for average Usage")
 	}
-	minimum, err := comman_function.GetMetricData(clientAuth, instanceID, "AWSLambda", metricName, startTime, endTime, "Minimum", dimensionsName, cloudWatchClient)
+	minimum, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/Lambda", metricName, startTime, endTime, "Minimum", dimensionsName, cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
