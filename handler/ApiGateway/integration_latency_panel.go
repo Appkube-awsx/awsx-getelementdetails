@@ -75,7 +75,14 @@ func GetApiIntegrationLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cl
 	}
 	cloudwatchMetricData["IntegrationLatency"] = metricValue
 
-	return "", cloudwatchMetricData, nil
+	var totalSum float64
+	for _, value := range metricValue.MetricDataResults {
+		for _, datum := range value.Values {
+			totalSum += *datum
+		}
+	}
+	totalSumStr := fmt.Sprintf("{request count: %f}", totalSum)
+	return totalSumStr, cloudwatchMetricData, nil
 }
 
 // func processIntegrationLatencyRawData(result *cloudwatch.GetMetricDataOutput) ApiIntegrationLatencyResult {
