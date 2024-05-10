@@ -38,7 +38,7 @@ var AwsxTopErrorsMessagesPanelCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, resp, err := GetLambdaTopErrorsMessagesEvents(cmd, clientAuth)
+			jsonResp, resp, err := GetLambdaTopErrorsMessagesEvents(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting top lambda zones data : ", err)
 				return
@@ -61,13 +61,13 @@ type ResultData struct {
 	FunctionName string `json:"functionName"`
 }
 
-func GetLambdaTopErrorsMessagesEvents(cmd *cobra.Command, clientAuth *model.Auth) (string, []ResultData, error) {
+func GetLambdaTopErrorsMessagesEvents(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) (string, []ResultData, error) {
 
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
-	logClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
+	cloudWatchLogs = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
 	input := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String("CloudTrail/DefaultLogGroup"),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
@@ -80,11 +80,11 @@ func GetLambdaTopErrorsMessagesEvents(cmd *cobra.Command, clientAuth *model.Auth
 			| sort frequency desc
 			| limit 10`),
 	}
-	res, err := logClient.StartQuery(input)
+	res, err := cloudWatchLogs.StartQuery(input)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to start query: %v", err)
 	}
-	fmt.Println("---------", res)
+	
 	queryId := res.QueryId
 	var queryResults []*cloudwatchlogs.GetQueryResultsOutput // Declare queryResults outside the loop
 
@@ -94,11 +94,11 @@ func GetLambdaTopErrorsMessagesEvents(cmd *cobra.Command, clientAuth *model.Auth
 			QueryId: queryId,
 		}
 
-		queryResult, err := logClient.GetQueryResults(queryStatusInput)
+		queryResult, err := cloudWatchLogs.GetQueryResults(queryStatusInput)
 		if err != nil {
 			return "", nil, fmt.Errorf("failed to get query results: %v", err)
 		}
-		fmt.Println("queryResult", queryResult)
+
 		queryResults = append(queryResults, queryResult) // Append each query result to queryResults
 		if *queryResult.Status != "Complete" {
 			time.Sleep(5 * time.Second) // wait before querying again
@@ -108,7 +108,7 @@ func GetLambdaTopErrorsMessagesEvents(cmd *cobra.Command, clientAuth *model.Auth
 	}
 	resArrMap := make([]ResultData, 0)
 	for i := 0; i < len(queryResults); i++ {
-		fmt.Println(i)
+		// fmt.Println(i)
 		if *queryResults[i].Status == "Complete" {
 			res := queryResults[i].Results
 			for _, resFields := range res {
@@ -136,7 +136,6 @@ func GetLambdaTopErrorsMessagesEvents(cmd *cobra.Command, clientAuth *model.Auth
 	}
 	return string(jsonData), resArrMap, nil
 
-	
 }
 
 func init() {
