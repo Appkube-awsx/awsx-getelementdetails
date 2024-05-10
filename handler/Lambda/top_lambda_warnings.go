@@ -31,14 +31,14 @@ var AwsxLambdaTopLambdaWarningsCommmand = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, resp, err := GetLambdaTopLambdaWarningsData(cmd, clientAuth)
+			jsonResp, resp, err := GetLambdaTopLambdaWarningsData(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting top lambda zones data : ", err)
 				return
 			}
 			if responseType == "json" {
 				fmt.Println(jsonResp)
-				}else{
+			} else {
 				fmt.Println(resp)
 
 			}
@@ -46,7 +46,7 @@ var AwsxLambdaTopLambdaWarningsCommmand = &cobra.Command{
 	},
 }
 
-func GetLambdaTopLambdaWarningsData(cmd *cobra.Command, clientAuth *model.Auth) (string, []ResData ,error) {
+func GetLambdaTopLambdaWarningsData(cmd *cobra.Command, clientAuth *model.Auth, logClient *cloudwatchlogs.CloudWatchLogs) (string, []ResData, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -81,7 +81,9 @@ func GetLambdaTopLambdaWarningsData(cmd *cobra.Command, clientAuth *model.Auth) 
 		defaultEndTime := time.Now()
 		endTime = &defaultEndTime
 	}
-	logClient := awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
+	if logClient == nil {
+		logClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
+	}
 	input := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String("CloudTrail/DefaultLogGroup"),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
@@ -138,7 +140,7 @@ func GetLambdaTopLambdaWarningsData(cmd *cobra.Command, clientAuth *model.Auth) 
 	}
 	jsonData, err := json.Marshal(resArrMap)
 	if err != nil {
-		return "", nil,  fmt.Errorf("error paring json: %v", err)
+		return "", nil, fmt.Errorf("error paring json: %v", err)
 	}
 	return string(jsonData), resArrMap, nil
 

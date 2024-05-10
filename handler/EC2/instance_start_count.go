@@ -2,12 +2,13 @@ package EC2
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var AwsxEc2InstanceStartCmd = &cobra.Command{
@@ -72,8 +73,5 @@ func GetInstanceStartCountPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 }
 
 func init() {
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("filterPattern", "", "filter pattern")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2InstanceStartCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxEc2InstanceStartCmd)
 }

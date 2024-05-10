@@ -2,12 +2,13 @@ package EC2
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var AwsxEc2InstanceStoppedHourCmd = &cobra.Command{
@@ -63,8 +64,5 @@ func GetInstanceStoppedCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 }
 
 func init() {
-	AwsxEc2InstanceStoppedHourCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxEc2InstanceStoppedHourCmd.PersistentFlags().String("filterPattern", "", "filter pattern")
-	AwsxEc2InstanceStoppedHourCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2InstanceStoppedHourCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxEc2InstanceStoppedHourCmd)
 }

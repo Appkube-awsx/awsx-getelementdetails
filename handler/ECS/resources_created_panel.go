@@ -65,7 +65,5 @@ func GetECSResourceCreatedEvents(cmd *cobra.Command, clientAuth *model.Auth, clo
 }
 
 func init() {
-	AwsxResourceCreatedPanelCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxResourceCreatedPanelCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxResourceCreatedPanelCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxResourceCreatedPanelCmd)
 }

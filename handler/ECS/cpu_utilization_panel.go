@@ -118,20 +118,5 @@ func GetECScpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 }
 
 func init() {
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("query", "", "query")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEcsCpuUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags( AwsxEcsCpuUtilizationCmd)
 }

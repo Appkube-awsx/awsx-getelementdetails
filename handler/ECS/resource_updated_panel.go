@@ -89,7 +89,5 @@ func GetECSResourceUpdatedEvents(cmd *cobra.Command, clientAuth *model.Auth, clo
 // }
 
 func init() {
-	AwsxResourceUpdatedPanelCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxResourceUpdatedPanelCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxResourceUpdatedPanelCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxResourceUpdatedPanelCmd)
 }

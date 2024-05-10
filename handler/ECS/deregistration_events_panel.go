@@ -103,8 +103,5 @@ func ProcessQueryResultss(results []*cloudwatchlogs.GetQueryResultsOutput) []*cl
 }
 
 func init() {
-	AwsxECSDeRegistrationEventsCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxECSDeRegistrationEventsCmd.PersistentFlags().String("clusterName", "", "ECS cluster name")
-	AwsxECSDeRegistrationEventsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxECSDeRegistrationEventsCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxECSDeRegistrationEventsCmd)
 }

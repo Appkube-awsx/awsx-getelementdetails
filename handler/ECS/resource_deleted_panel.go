@@ -65,7 +65,5 @@ func GetECSResourceDeletedEvents(cmd *cobra.Command, clientAuth *model.Auth, clo
 }
 
 func init() {
-	AwsxResourceDeletedPanelCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxResourceDeletedPanelCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxResourceDeletedPanelCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxResourceDeletedPanelCmd)
 }

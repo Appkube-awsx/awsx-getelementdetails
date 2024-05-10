@@ -6,7 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
+	 "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -80,20 +80,5 @@ func GetMemoryRequestData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 }
 
 func init() {
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSMemoryRequestsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEKSMemoryRequestsCmd)
 }

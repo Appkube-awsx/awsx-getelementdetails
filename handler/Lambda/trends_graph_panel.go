@@ -161,8 +161,8 @@ func GetLambdaTrendsCountMetricValue(clientAuth *model.Auth, instanceId string, 
 	return result, nil
 }
 
-func ProcessLambdaTrendsRawData(result *cloudwatch.GetMetricDataOutput) InvocationsGraph {
-	var rawData InvocationsGraph
+func ProcessLambdaTrendsRawData(result *cloudwatch.GetMetricDataOutput) TrendsGraph {
+	var rawData TrendsGraph
 	rawData.RawData = make([]struct {
 		Timestamp time.Time
 		Value     float64

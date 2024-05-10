@@ -80,20 +80,6 @@ func GetEKSDiskIOPerformancePanel(cmd *cobra.Command, clientAuth *model.Auth, cl
 }
 
 func init() {
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSDiskIOPerformanceCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	
+	comman_function.InitAwsCmdFlags(AwsxEKSDiskIOPerformanceCmd)
 }

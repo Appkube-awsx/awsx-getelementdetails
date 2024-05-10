@@ -79,20 +79,5 @@ func GetMemoryLimitsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 }
 
 func init() {
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSMemoryLimitsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEKSMemoryLimitsCmd)
 }

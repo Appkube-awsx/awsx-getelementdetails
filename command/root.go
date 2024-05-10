@@ -1156,6 +1156,18 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "error_breakdown_panel" && elementType == "Lambda" {
+				jsonResp, cloudwatchMetricResp, err := Lambda.GetErrorBreakdownData(cmd, clientAuth, nil)
+				// fmt.Println(cloudwatchMetricResp)
+				if err != nil {
+					log.Println("Error getting lambda error  data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "top_errors_in_lambda_panel" && elementType == "Lambda" {
 				toperrors, err := Lambda.GetLambdaTopErrorsEvents(cmd, clientAuth, nil)
 				if err != nil {
@@ -1178,12 +1190,16 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(errortrend)
 			} else if queryName == "top_errors_messages_panel" && elementType == "Lambda" {
-				toperrorsmessages, err := Lambda.GetLambdaTopErrorsMessagesEvents(cmd, clientAuth, nil)
+				jsonResp, resp, err := Lambda.GetLambdaTopErrorsMessagesEvents(cmd, clientAuth)
 				if err != nil {
-
+					log.Println("Error getting top lambda warnings data: ", err)
 					return
 				}
-				fmt.Println(toperrorsmessages)
+				if responseType == "json" {
+					fmt.Println(jsonResp)
+				} else {
+					fmt.Println(resp)
+				}
 			} else if queryName == "error_and_warning_events_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp := Lambda.GetLambdaErrorAndWarningData(cmd, clientAuth, nil)
 				if err != nil {
@@ -1585,7 +1601,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 
 			} else if queryName == "unreserved_concurrency_panel" && elementType == "Lambda" {
-				jsonResp, resp, err := Lambda.GetLambdaUnreservedConcurrencyCommmand(cmd, clientAuth)
+				jsonResp, resp, err := Lambda.GetLambdaUnreservedConcurrencyCommmand(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda unreserved concurrency count: ", err)
 					return
@@ -1597,7 +1613,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 
 			} else if queryName == "full_concurrency_panel" && elementType == "Lambda" {
-				jsonResp, resp, err := Lambda.GetLambdaFullConcurrencyData(cmd, clientAuth)
+				jsonResp, resp, err := Lambda.GetLambdaFullConcurrencyData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda full concurrency data: ", err)
 					return
@@ -1609,7 +1625,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 
 			} else if queryName == "top_lambda_warnings" && elementType == "Lambda" {
-				jsonResp, resp, err := Lambda.GetLambdaTopLambdaWarningsData(cmd, clientAuth)
+				jsonResp, resp, err := Lambda.GetLambdaTopLambdaWarningsData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting top lambda warnings data: ", err)
 					return
