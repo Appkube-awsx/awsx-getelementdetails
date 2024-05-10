@@ -7,7 +7,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
+	comman_function "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -67,7 +67,7 @@ func GetLambdaDurationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	// 	return "", nil, fmt.Errorf("error getting element ID: %v", err)
 	// }
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	average, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/"+elementType, metricName, startTime, endTime, "Average", dimensionsName, cloudWatchClient)
+	average, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/Lambda", metricName, startTime, endTime, "Average", dimensionsName, cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
@@ -76,7 +76,7 @@ func GetLambdaDurationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	} else {
 		log.Println("No data available for average Usage")
 	}
-	minimum, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/"+elementType, metricName, startTime, endTime, "Minimum", dimensionsName, cloudWatchClient)
+	minimum, err := comman_function.GetMetricData(clientAuth, instanceID, "AWSLambda", metricName, startTime, endTime, "Minimum", dimensionsName, cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
@@ -85,7 +85,7 @@ func GetLambdaDurationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 	} else {
 		log.Println("No data available for minimum Usage")
 	}
-	maximum, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/"+elementType, metricName, startTime, endTime, "Maximum", dimensionsName, cloudWatchClient)
+	maximum, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/Lambda", metricName, startTime, endTime, "Maximum", dimensionsName, cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}

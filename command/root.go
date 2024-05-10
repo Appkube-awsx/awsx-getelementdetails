@@ -1538,7 +1538,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "invocation_panel" && elementType == "Lambda" || elementType == "LAMBDA" {
+			} else if queryName == "invocation_panel" && elementType == "Lambda" {
 				jsonResp, cloudwatchMetricResp, _ := Lambda.GetLambdaInvocationData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting lambda error graph count data: ", err)
