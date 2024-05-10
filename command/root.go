@@ -1190,7 +1190,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(errortrend)
 			} else if queryName == "top_errors_messages_panel" && elementType == "Lambda" {
-				jsonResp, resp, err := Lambda.GetLambdaTopErrorsMessagesEvents(cmd, clientAuth)
+				jsonResp, resp, err := Lambda.GetLambdaTopErrorsMessagesEvents(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting top lambda warnings data: ", err)
 					return
