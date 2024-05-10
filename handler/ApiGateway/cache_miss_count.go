@@ -6,7 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
+	comman_function "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -74,8 +74,15 @@ func GetApiCacheMissData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 		return "", nil, err
 	}
 	cloudwatchMetricData["CacheMiss"] = metricValue
+	var totalSum float64
+	for _, value := range metricValue.MetricDataResults {
+		for _, datum := range value.Values {
+			totalSum += *datum
+		}
+	}
+	totalSumStr := fmt.Sprintf("{request count: %f}", totalSum)
+	return totalSumStr, cloudwatchMetricData, nil
 
-	return "", cloudwatchMetricData, nil
 }
 
 // func processCacheMissRawData(result *cloudwatch.GetMetricDataOutput) CacheMissResult {
