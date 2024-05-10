@@ -17,7 +17,7 @@ import (
 )
 
 type BreakdownResult struct {
-	ErrorPercentage  float64 `json:ErrorPecentage`
+	ErrorPercentage  float64 `json:"ErrorPecentage"`
 	Value            float64 `json:"Value"`
 	PercentageChange float64 `json:"PercentageChange"`
 	ChangeType       string  `json:"ChangeType"`
