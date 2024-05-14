@@ -70,7 +70,7 @@ func GetCPULimitsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "pod_cpu_limit", startTime, endTime, "Average","ClusterName", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "pod_cpu_limit", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting raw data: ", err)
 		return "", nil, err
@@ -99,20 +99,5 @@ func GetCPULimitsData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 // }
 
 func init() {
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSCpuLimitsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEKSCpuLimitsCmd)
 }
