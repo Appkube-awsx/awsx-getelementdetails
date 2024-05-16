@@ -685,7 +685,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "cpu_node_utilization_panel" && elementType == "EKS" {
+			} else if queryName == "cpu_utilization_node_graph_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPUUtilizationNodeData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting cpu utilization node graph panel: ", err)

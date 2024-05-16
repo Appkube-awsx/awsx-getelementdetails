@@ -95,5 +95,5 @@ func GetCPUUtilizationNodeData(cmd *cobra.Command, clientAuth *model.Auth, cloud
 // }
 
 func init() {
-	comman_function.InitAwsCmdFlags(AwsxEKSCpuUtilizationGraphCmd)
+	comman_function.InitAwsCmdFlags(AwsxEKSCpuUtilizationNodeGraphCmd)
 }
