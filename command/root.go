@@ -1715,6 +1715,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			}  else if queryName == "concurrent_execution_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp := ApiGateway.GetConcurrentExecutionData(cmd,clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting total api data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "failed_event_details" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, err := ApiGateway.GetFailedEventData(cmd, clientAuth, nil)
 				if err != nil {
