@@ -7,7 +7,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	comman_function "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -55,6 +55,7 @@ func GetLambdaMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	fmt.Println(elementId)
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
@@ -65,7 +66,7 @@ func GetLambdaMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 	// 	return "", nil, fmt.Errorf("error getting element ID: %v", err)
 	// }
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	Average, err := comman_function.GetMetricData(clientAuth, instanceID, elementType+"Insights", "used_memory_max", startTime, endTime, "Average", "function_name", cloudWatchClient)
+	Average, err := comman_function.GetMetricData(clientAuth, instanceID, "LambdaInsights", "used_memory_max", startTime, endTime, "Average", "function_name", cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
@@ -75,7 +76,7 @@ func GetLambdaMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 		log.Println("No data available for Average ")
 	}
 
-	Maximum, err := comman_function.GetMetricData(clientAuth, instanceID, elementType+"Insights", "used_memory_max", startTime, endTime, "Maximum", "function_name", cloudWatchClient)
+	Maximum, err := comman_function.GetMetricData(clientAuth, instanceID, "LambdaInsights", "used_memory_max", startTime, endTime, "Maximum", "function_name", cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
@@ -84,7 +85,7 @@ func GetLambdaMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 	} else {
 		log.Println("No data available for Maximum Usage")
 	}
-	Minimum, err := comman_function.GetMetricData(clientAuth, instanceID, elementType+"Insights", "used_memory_max", startTime, endTime, "Minimum", "function_name", cloudWatchClient)
+	Minimum, err := comman_function.GetMetricData(clientAuth, instanceID, "LambdaInsights", "used_memory_max", startTime, endTime, "Minimum", "function_name", cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
@@ -115,7 +116,5 @@ func GetLambdaMemoryUsageData(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 }
 
 func init() {
-	AwsxLambdaMemoryUsageCmd.PersistentFlags().String("elementId", "", "Lambda function name or ID")
-	AwsxLambdaMemoryUsageCmd.PersistentFlags().String("elementType", "", "Element type")
-	AwsxLambdaMemoryUsageCmd.PersistentFlags().String("startTime", "", "Start time for metrics collection (RFC333)")
+	comman_function.InitAwsCmdFlags(AwsxLambdaMemoryUsageCmd)
 }

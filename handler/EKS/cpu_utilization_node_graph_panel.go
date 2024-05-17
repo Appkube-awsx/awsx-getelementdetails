@@ -95,20 +95,5 @@ func GetCPUUtilizationNodeData(cmd *cobra.Command, clientAuth *model.Auth, cloud
 // }
 
 func init() {
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSCpuUtilizationNodeGraphCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEKSCpuUtilizationNodeGraphCmd)
 }

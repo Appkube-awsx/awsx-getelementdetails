@@ -96,20 +96,5 @@ func GetNodeStabilityData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatch
 // }
 
 func init() {
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSNodeStabilityCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEKSNodeStabilityCmd)
 }

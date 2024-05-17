@@ -107,20 +107,5 @@ func GetAllocatableCPUData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatc
 // }
 
 func init() {
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSAllocatableCpuCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEKSAllocatableCpuCmd)
 }

@@ -6,7 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
+	comman_function "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -104,20 +104,5 @@ func GetResourceUtilizationData(cmd *cobra.Command, clientAuth *model.Auth, clou
 // }
 
 func init() {
-	AwsxResourceUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("query", "", "query")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxResourceUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxResourceUtilizationCmd)
 }

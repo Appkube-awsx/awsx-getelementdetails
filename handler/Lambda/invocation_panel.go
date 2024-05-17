@@ -7,7 +7,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
+	comman_function "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -66,7 +66,7 @@ func GetLambdaInvocationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	// 	return "", nil, fmt.Errorf("error getting element ID: %v", err)
 	// }
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
-	success, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/"+elementType, "Invocations", startTime, endTime, "Sum", "FunctionName", cloudWatchClient)
+	success, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/Lambda", "Invocations", startTime, endTime, "Sum", "FunctionName", cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
@@ -76,7 +76,7 @@ func GetLambdaInvocationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 		log.Println("No data available for Successfull ")
 	}
 
-	errordata, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/"+elementType, "Errors", startTime, endTime, "Sum", "FunctionName", cloudWatchClient)
+	errordata, err := comman_function.GetMetricData(clientAuth, instanceID, "AWS/Lambda", "Errors", startTime, endTime, "Sum", "FunctionName", cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
@@ -85,7 +85,7 @@ func GetLambdaInvocationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 	} else {
 		log.Println("No data available for Error Usage")
 	}
-	coldstart, err := comman_function.GetMetricData(clientAuth, instanceID, elementType+"Insights", "init_duration", startTime, endTime, "Sum", "function_name", cloudWatchClient)
+	coldstart, err := comman_function.GetMetricData(clientAuth, instanceID, "LambdaInsights", "init_duration", startTime, endTime, "Sum", "function_name", cloudWatchClient)
 	if err != nil {
 		return "", nil, err
 	}
@@ -116,7 +116,5 @@ func GetLambdaInvocationData(cmd *cobra.Command, clientAuth *model.Auth, cloudWa
 }
 
 func init() {
-	AwsxLambdaInvocationCmd.PersistentFlags().String("elementId", "", "Lambda function name or ID")
-	AwsxLambdaInvocationCmd.PersistentFlags().String("elementType", "", "Element type")
-	AwsxLambdaInvocationCmd.PersistentFlags().String("startTime", "", "Start time for metrics collection (RFC333)")
+	comman_function.InitAwsCmdFlags(AwsxLambdaInvocationCmd)
 }

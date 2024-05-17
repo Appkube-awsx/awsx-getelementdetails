@@ -685,7 +685,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "cpu_node_utilization_panel" && elementType == "EKS" {
+			} else if queryName == "cpu_utilization_node_graph_panel" && elementType == "EKS" {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetCPUUtilizationNodeData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting cpu utilization node graph panel: ", err)
@@ -1175,7 +1175,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(toperrors)
-			} else if queryName == "dead_letter_errors_trends_panel" && elementType == "Lambda" {
+			} else if queryName == "top_lambda_zones_panel" && elementType == "Lambda" {
+				topzones, err := Lambda.GetTopLambdaZonesData(cmd, clientAuth, nil)
+				if err != nil {
+
+					return
+				}
+				fmt.Println(topzones)
+		} else if queryName == "dead_letter_errors_trends_panel" && elementType == "Lambda" {
 				deadletter, err := Lambda.GetLambdaDeadLetterErrorsTrendsEvents(cmd, clientAuth, nil)
 				if err != nil {
 
@@ -1706,6 +1713,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 			} else if queryName == "total_api_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, cloudwatchMetricResp, err := ApiGateway.GetTotalApiData(clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting total api data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "concurrent_execution_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp := ApiGateway.GetConcurrentExecutionData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting total api data: ", err)
 					return
@@ -2247,6 +2265,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
+			} else if queryName == "active_flow_count_tcp_panel" && (elementType == "AWS/NetworkELB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBActiveFlowCountTCP(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting NLB active flow count TCP data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "target_health_check_configuration_panel" && (elementType == "AWS/NetworkELB") {
 				jsonResp, err := NLB.GetNLBTargetHealthCheckData(cmd, clientAuth, nil)
 				if err != nil {
