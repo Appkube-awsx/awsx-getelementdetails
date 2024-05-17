@@ -1182,7 +1182,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(topzones)
-		} else if queryName == "dead_letter_errors_trends_panel" && elementType == "Lambda" {
+			} else if queryName == "dead_letter_errors_trends_panel" && elementType == "Lambda" {
 				deadletter, err := Lambda.GetLambdaDeadLetterErrorsTrendsEvents(cmd, clientAuth, nil)
 				if err != nil {
 
@@ -2498,6 +2498,12 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "loadbalancer_count_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				loadbalancerCount, err := NLB.GetNLBCount(cmd, clientAuth, nil)
+				if err != nil {
+					return
+				}
+				fmt.Println(loadbalancerCount)
 			} else if queryName == "ssl_tls_negotiation_time_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
 				jsonResp, cloudwatchMetricResp, err := NLB.GetSSLTLSNegotiationDataData(cmd, clientAuth, nil)
 				if err != nil {
