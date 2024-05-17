@@ -2436,6 +2436,39 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "tcp_client_reset_count_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTCPClientResetCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tcp reset count data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "tcp_elb_reset_count_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTCPElbResetCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tcp reset count data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "new_flow_count_tcp_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBNewFlowTCPCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tcp reset count data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "ssl_tls_negotiation_time_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
 				jsonResp, cloudwatchMetricResp, err := NLB.GetSSLTLSNegotiationDataData(cmd, clientAuth, nil)
 				if err != nil {
@@ -2590,6 +2623,9 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBUnhealthyHostCountCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBSSLTLSNegotiationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBTargetHealthChecksCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBTCPClientResetCountCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBTCPElbResetCountCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBNewFlowTCPCountCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
