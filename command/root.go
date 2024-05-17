@@ -1715,8 +1715,8 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			}  else if queryName == "concurrent_execution_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
-				jsonResp, cloudwatchMetricResp := ApiGateway.GetConcurrentExecutionData(cmd,clientAuth, nil)
+			} else if queryName == "concurrent_execution_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, cloudwatchMetricResp := ApiGateway.GetConcurrentExecutionData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting total api data: ", err)
 					return
@@ -2258,6 +2258,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
+			} else if queryName == "active_flow_count_tcp_panel" && (elementType == "AWS/NetworkELB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBActiveFlowCountTCP(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting NLB active flow count TCP data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "target_health_check_configuration_panel" && (elementType == "AWS/NetworkELB") {
 				jsonResp, err := NLB.GetNLBTargetHealthCheckData(cmd, clientAuth, nil)
 				if err != nil {
