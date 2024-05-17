@@ -58,19 +58,15 @@ func GetNLBTCPResetCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
-	
 
-	
-		if err != nil {
-			return "", nil, fmt.Errorf("error parsing time: %v", err)
-		}
-		instanceId, err = comman_function.GetCmdbData(cmd)
-		if err != nil {
-			return "", nil, fmt.Errorf("error getting instance ID: %v", err)
-		}
-		
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
+	}
+	instanceId, err = comman_function.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
+	}
 
-	
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
@@ -81,13 +77,15 @@ func GetNLBTCPResetCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudW
 	}
 	cloudwatchMetricData["TCP Target Reset Count"] = rawData
 
-	return "", cloudwatchMetricData, nil
+	var totalSum float64
+	for _, value := range rawData.MetricDataResults {
+		for _, datum := range value.Values {
+			totalSum += *datum
+		}
+	}
+	totalSumStr := fmt.Sprintf("{request count: %f}", totalSum)
+	return totalSumStr, cloudwatchMetricData, nil
 }
-
-
-
-
-
 
 func init() {
 	comman_function.InitAwsCmdFlags(AwsxNLBTCPResetCountCmd)
