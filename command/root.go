@@ -1175,7 +1175,14 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(toperrors)
-			} else if queryName == "dead_letter_errors_trends_panel" && elementType == "Lambda" {
+			} else if queryName == "top_lambda_zones_panel" && elementType == "Lambda" {
+				topzones, err := Lambda.GetTopLambdaZonesData(cmd, clientAuth, nil)
+				if err != nil {
+
+					return
+				}
+				fmt.Println(topzones)
+		} else if queryName == "dead_letter_errors_trends_panel" && elementType == "Lambda" {
 				deadletter, err := Lambda.GetLambdaDeadLetterErrorsTrendsEvents(cmd, clientAuth, nil)
 				if err != nil {
 
