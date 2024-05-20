@@ -53,7 +53,7 @@ func GetNLBTcpProcesedBytes(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "ProcessedBytes_TCP", startTime, endTime, "Average", "LoadBalancer", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "ProcessedBytes_TCP", startTime, endTime, "Sum", "LoadBalancer", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting NLB Tcp processed bytes data: ", err)
 		return "", nil, err

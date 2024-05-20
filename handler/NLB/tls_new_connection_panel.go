@@ -53,12 +53,12 @@ func GetNLBTlsNewConnection(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "ActiveFlowCount_TLS", startTime, endTime, "Average", "LoadBalancer", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "NewFlowCount_TLS", startTime, endTime, "Sum", "LoadBalancer", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting NLB Tls new connections data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["TlsNewConnection"] = rawData
+	cloudwatchMetricData["NewFlowCount_TLS"] = rawData
 
 	var totalSum float64
 	for _, value := range rawData.MetricDataResults {

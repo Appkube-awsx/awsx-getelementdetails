@@ -53,7 +53,7 @@ func GetNLBTlsActiveConnection(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "ActiveFlowCount", startTime, endTime, "Average", "LoadBalancer", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "ActiveFlowCount_TLS", startTime, endTime, "Sum", "LoadBalancer", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting NLB Tls active connections data: ", err)
 		return "", nil, err
