@@ -1747,6 +1747,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
+			} else if queryName == "request_count_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, err := ApiGateway.GetRequestCountData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting integration count data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
 			} else if queryName == "error_logs_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, err := ApiGateway.GetErrorLogsData(cmd, clientAuth, nil)
 				if err != nil {
