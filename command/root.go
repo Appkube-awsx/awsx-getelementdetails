@@ -1740,6 +1740,13 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
+			} else if queryName == "integration_count_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, err := ApiGateway.GetIntegrationCountData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting integration count data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
 			} else if queryName == "error_logs_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
 				jsonResp, err := ApiGateway.GetErrorLogsData(cmd, clientAuth, nil)
 				if err != nil {
@@ -2436,39 +2443,6 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBNewFlowCountTLSPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting new flow count tls data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
-			} else if queryName == "tls_active_connection_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
-				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTlsActiveConnection(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting tls active connection data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
-			} else if queryName == "tcp_procesed_bytes_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
-				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTcpProcesedBytes(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting tcp procesed bytes data: ", err)
-					return
-				}
-				if responseType == "frame" {
-					fmt.Println(cloudwatchMetricResp)
-				} else {
-					fmt.Println(jsonResp)
-				}
-			} else if queryName == "tls_new_connection_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
-				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTlsNewConnection(cmd, clientAuth, nil)
-				if err != nil {
-					log.Println("Error getting new fconnection tls data: ", err)
 					return
 				}
 				if responseType == "frame" {
