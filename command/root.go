@@ -2513,7 +2513,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					fmt.Println(jsonResp)
 				}
 			} else if queryName == "tls_new_connection_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
-				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTlsNewConnection(cmd, clientAuth, nil)
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTlsNewConnectionPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting tls new connection data: ", err)
 					return

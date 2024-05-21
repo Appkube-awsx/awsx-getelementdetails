@@ -29,7 +29,7 @@ var AwsxNLBTlsNewConnectionCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetNLBTlsNewConnection(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetNLBTlsNewConnectionPanel(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting NLB tls new connection data: ", err)
 				return
@@ -43,7 +43,7 @@ var AwsxNLBTlsNewConnectionCmd = &cobra.Command{
 	},
 }
 
-func GetNLBTlsNewConnection(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetNLBTlsNewConnectionPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
