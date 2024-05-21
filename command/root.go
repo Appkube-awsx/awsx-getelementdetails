@@ -2512,6 +2512,39 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "tls_new_connection_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTlsNewConnection(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tls new connection data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "tls_active_connection_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTlsActiveConnection(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tls active connection data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "tcp_procesed_bytes_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTcpProcesedBytes(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tcp procesed bytes data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "loadbalancer_count_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
 				loadbalancerCount, err := NLB.GetNLBCount(cmd, clientAuth, nil)
 				if err != nil {
