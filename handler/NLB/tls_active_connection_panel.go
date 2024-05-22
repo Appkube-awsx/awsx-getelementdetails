@@ -11,10 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxNLBUnhealthyHostCountCmd = &cobra.Command{
-	Use:   "nlb_unhealthy_host_count_panel",
-	Short: "Get NLB unhealthy host count metrics data",
-	Long:  `Command to get NLB unhealthy host count metrics data`,
+var AwsxNLBTlsActiveConnectionCmd = &cobra.Command{
+	Use:   "tls_active_connection_panel",
+	Short: "Get NLB active connection",
+	Long:  `Command to get NLB active connection`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Running from child command..")
@@ -29,46 +29,36 @@ var AwsxNLBUnhealthyHostCountCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetNLBUnhealthyHostCountPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetNLBTlsActiveConnection(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting NLB unhealthy host count: ", err)
+				log.Println("Error getting NLB tls new connection data: ", err)
 				return
 			}
 			if responseType == "frame" {
 				fmt.Println(cloudwatchMetricResp)
 			} else {
-				// Default case. It prints JSON
 				fmt.Println(jsonResp)
 			}
 		}
-
 	},
 }
 
-func GetNLBUnhealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetNLBTlsActiveConnection(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
-	if err != nil {
-		return "", nil, fmt.Errorf("error parsing time: %v", err)
-	}
-
-	instanceId, err = comman_function.GetCmdbData(cmd)
-	if err != nil {
-		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
-	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "UnHealthyHostCount", startTime, endTime, "Average", "LoadBalancer", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "ActiveFlowCount_TLS", startTime, endTime, "Sum", "LoadBalancer", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting NLB unhealthy host count data: ", err)
+		log.Println("Error in getting NLB Tls active connections data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["UnhealthyHostCount"] = rawData
+	cloudwatchMetricData["ActiveFlowCount"] = rawData
 
 	var totalSum float64
 	for _, value := range rawData.MetricDataResults {
@@ -76,10 +66,10 @@ func GetNLBUnhealthyHostCountPanel(cmd *cobra.Command, clientAuth *model.Auth, c
 			totalSum += *datum
 		}
 	}
-	totalSumStr := fmt.Sprintf("{request count: %f}", totalSum)
+	totalSumStr := fmt.Sprintf("{active connection count: %f}", totalSum)
 	return totalSumStr, cloudwatchMetricData, nil
 }
 
 func init() {
-	comman_function.InitAwsCmdFlags(AwsxNLBUnhealthyHostCountCmd)
+	comman_function.InitAwsCmdFlags(AwsxNLBTlsActiveConnectionCmd)
 }

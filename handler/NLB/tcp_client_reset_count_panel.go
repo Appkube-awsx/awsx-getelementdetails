@@ -6,7 +6,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
+	comman_function "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -18,10 +18,10 @@ import (
 // 	} `json:"TCPResetCount"`
 // }
 
-var AwsxNLBTCPResetCountCmd = &cobra.Command{
-	Use:   "tcp_target_reset_count_panel",
-	Short: "Get NLB TCP target reset count metrics data",
-	Long:  `Command to get NLB TCP target reset count metrics data`,
+var AwsxNLBTCPClientResetCountCmd = &cobra.Command{
+	Use:   "tcp_client_reset_count_panel",
+	Short: "Get NLB TCP client reset count metrics data",
+	Long:  `Command to get NLB TCP client reset count metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Running from child command..")
@@ -36,7 +36,7 @@ var AwsxNLBTCPResetCountCmd = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, cloudwatchMetricResp, err := GetNLBTCPResetCountPanel(cmd, clientAuth, nil)
+			jsonResp, cloudwatchMetricResp, err := GetNLBTCPClientResetCountPanel(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting NLB TCP target reset count: ", err)
 				return
@@ -52,42 +52,44 @@ var AwsxNLBTCPResetCountCmd = &cobra.Command{
 	},
 }
 
-func GetNLBTCPResetCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
+func GetNLBTCPClientResetCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	
 
-	if err != nil {
-		return "", nil, fmt.Errorf("error parsing time: %v", err)
-	}
-	instanceId, err = comman_function.GetCmdbData(cmd)
-	if err != nil {
-		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
-	}
+	
+		if err != nil {
+			return "", nil, fmt.Errorf("error parsing time: %v", err)
+		}
+		instanceId, err = comman_function.GetCmdbData(cmd)
+		if err != nil {
+			return "", nil, fmt.Errorf("error getting instance ID: %v", err)
+		}
+		
 
+	
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "TCP_Target_Reset_Count", startTime, endTime, "Sum", "LoadBalancer", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/NetworkELB", "TCP_Client_Reset_Count", startTime, endTime, "Sum", "LoadBalancer", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting NLB TCP target reset count data: ", err)
+		log.Println("Error in getting NLB TCP reset count data: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["TCP Target Reset Count"] = rawData
+	cloudwatchMetricData["TCP Client Reset Count"] = rawData
 
-	var totalSum float64
-	for _, value := range rawData.MetricDataResults {
-		for _, datum := range value.Values {
-			totalSum += *datum
-		}
-	}
-	totalSumStr := fmt.Sprintf("{request count: %f}", totalSum)
-	return totalSumStr, cloudwatchMetricData, nil
+	return "", cloudwatchMetricData, nil
 }
 
+
+
+
+
+
 func init() {
-	comman_function.InitAwsCmdFlags(AwsxNLBTCPResetCountCmd)
+	comman_function.InitAwsCmdFlags(AwsxNLBTCPClientResetCountCmd)
 
 }

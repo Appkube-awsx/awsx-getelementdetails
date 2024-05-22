@@ -465,6 +465,27 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				// 	fmt.Println(cloudwatchMetricResp)
 				// } else {
 				fmt.Println(jsonResp)
+			} else if queryName == "list_of_ec2_instances_failure_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, err := EC2.GetListOfInstancesFailureData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting list of ec2 instances failure data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "ec2_instance_events_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, err := EC2.GetEc2InstanceEventsData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting  ec2 instances events data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "Instance_Failure_Count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, err := EC2.GetInstanceFailureCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting  ec2 instances failure count data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
 			} else if queryName == "storage_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetStorageUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -1182,7 +1203,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(topzones)
-		} else if queryName == "dead_letter_errors_trends_panel" && elementType == "Lambda" {
+			} else if queryName == "dead_letter_errors_trends_panel" && elementType == "Lambda" {
 				deadletter, err := Lambda.GetLambdaDeadLetterErrorsTrendsEvents(cmd, clientAuth, nil)
 				if err != nil {
 
@@ -1737,6 +1758,20 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, err := ApiGateway.GetFailedEventData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting failed events data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "integration_count_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, err := ApiGateway.GetIntegrationCountData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting integration count data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "request_count_panel" && (elementType == "AWS/ApiGateway" || elementType == "ApiGateway") {
+				jsonResp, err := ApiGateway.GetRequestCountData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting integration count data: ", err)
 					return
 				}
 				fmt.Println(jsonResp)
@@ -2465,6 +2500,78 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "tcp_client_reset_count_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTCPClientResetCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tcp reset count data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "tcp_elb_reset_count_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTCPElbResetCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tcp reset count data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "new_flow_count_tcp_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBNewFlowTCPCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tcp reset count data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "tls_new_connection_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTlsNewConnectionPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tls new connection data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "tls_active_connection_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTlsActiveConnection(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tls active connection data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "tcp_procesed_bytes_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				jsonResp, cloudwatchMetricResp, err := NLB.GetNLBTcpProcesedBytes(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting tcp procesed bytes data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "loadbalancer_count_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
+				loadbalancerCount, err := NLB.GetNLBCount(cmd, clientAuth, nil)
+				if err != nil {
+					return
+				}
+				fmt.Println(loadbalancerCount)
 			} else if queryName == "ssl_tls_negotiation_time_panel" && (elementType == "AWS/NetworkELB" || elementType == "AWS/NLB") {
 				jsonResp, cloudwatchMetricResp, err := NLB.GetSSLTLSNegotiationDataData(cmd, clientAuth, nil)
 				if err != nil {
@@ -2619,6 +2726,9 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBUnhealthyHostCountCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBSSLTLSNegotiationCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBTargetHealthChecksCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBTCPClientResetCountCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBTCPElbResetCountCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBNewFlowTCPCountCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")

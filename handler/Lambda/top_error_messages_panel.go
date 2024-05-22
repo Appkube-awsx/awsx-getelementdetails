@@ -67,7 +67,9 @@ func GetLambdaTopErrorsMessagesEvents(cmd *cobra.Command, clientAuth *model.Auth
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
-	cloudWatchLogs = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
+	if cloudWatchLogs != nil {
+		cloudWatchLogs = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH_LOG).(*cloudwatchlogs.CloudWatchLogs)
+	}
 	input := &cloudwatchlogs.StartQueryInput{
 		LogGroupName: aws.String("CloudTrail/DefaultLogGroup"),
 		StartTime:    aws.Int64(startTime.Unix() * 1000),
@@ -84,7 +86,7 @@ func GetLambdaTopErrorsMessagesEvents(cmd *cobra.Command, clientAuth *model.Auth
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to start query: %v", err)
 	}
-	
+
 	queryId := res.QueryId
 	var queryResults []*cloudwatchlogs.GetQueryResultsOutput // Declare queryResults outside the loop
 
