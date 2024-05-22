@@ -465,6 +465,27 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				// 	fmt.Println(cloudwatchMetricResp)
 				// } else {
 				fmt.Println(jsonResp)
+			} else if queryName == "list_of_ec2_instances_failure_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, err := EC2.GetListOfInstancesFailureData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting list of ec2 instances failure data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "ec2_instance_events_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, err := EC2.GetEc2InstanceEventsData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting  ec2 instances events data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "Instance_Failure_Count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, err := EC2.GetInstanceFailureCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting  ec2 instances failure count data: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
 			} else if queryName == "storage_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetStorageUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
