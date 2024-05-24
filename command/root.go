@@ -508,6 +508,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "disk_io_read_bytes" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.DiskIOReadBytesData(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error getting storage utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "disk_io_write_bytes" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.DiskIOWriteBytesData(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error getting storage utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_utilization_panel" && (elementType == "AWS/EKS" || elementType == "EKS") {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetEKScpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -2646,6 +2668,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2ErrorRatePanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceHealthCheckCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxCpuUtilizationPerInstanceTypeCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxDiskIOReadBytesCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxDiskIOWriteBytesCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)
