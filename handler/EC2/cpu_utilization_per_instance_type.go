@@ -47,18 +47,16 @@ var AwsxCpuUtilizationPerInstanceTypeCommmand = &cobra.Command{
 	},
 }
 
-func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, string, error) {
+func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, []Ec2CpuUtilizationResult, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
 	var startTime, endTime *time.Time
-
-	// Parse start time if provided
 	if startTimeStr != "" {
 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
 		if err != nil {
 			log.Printf("Error parsing start time: %v", err)
-			return "", "", err
+			return "", nil, err
 		}
 		startTime = &parsedStartTime
 	} else {
@@ -70,7 +68,7 @@ func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, e
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
 			log.Printf("Error parsing end time: %v", err)
-			return "", "", err
+			return "", nil, err
 		}
 		endTime = &parsedEndTime
 	} else {
@@ -83,7 +81,7 @@ func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, e
 	ec2Input := ec2.DescribeInstancesInput{}
 	instancesResult, err := ec2Client.DescribeInstances(&ec2Input)
 	if err != nil {
-		log.Printf("Error getting cpu utilization per instance type data")
+		return "", nil, fmt.Errorf("Error getting cpu utilization per instance type data")
 	}
 	var instances []Ec2InstanceOutputData
 	for _, reserv := range instancesResult.Reservations {
@@ -95,9 +93,6 @@ func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, e
 			instances = append(instances, temp)
 		}
 	}
-	// data := make(map[string]int)
-	// data["full_concurrency"] = fullConcurrency
-	fmt.Println("instances : ", instances)
 	if cloudWatchClient == nil {
 		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
 	}
@@ -121,12 +116,10 @@ func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, e
 	}
 
 	jsonData, err := json.Marshal(data)
-	fmt.Println("data : ", jsonData)
 	if err != nil {
-		log.Printf("error parsing data: %s", err)
-		return "", "", err
+		return "", nil, err
 	}
-	return string(jsonData), string(jsonData), nil
+	return string(jsonData), data, nil
 }
 
 type Ec2InstanceOutputData struct {
@@ -142,26 +135,42 @@ type Ec2CpuUtilizationResult struct {
 func getCpuUtilization(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- Ec2CpuUtilizationResult) {
 	defer wg.Done()
 
-	cwInput := cloudwatch.GetMetricStatisticsInput{
-		Namespace:  aws.String("AWS/EC2"),
-		MetricName: aws.String("CPUUtilization"),
-		Dimensions: []*cloudwatch.Dimension{
+	cwInput := cloudwatch.GetMetricDataInput{
+		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Name:  aws.String("InstanceId"),
-				Value: aws.String(instance.InstanceId),
+				Id: aws.String("diskReadOps"),
+				MetricStat: &cloudwatch.MetricStat{
+					Metric: &cloudwatch.Metric{
+						Namespace:  aws.String("AWS/EC2"),
+						MetricName: aws.String("CPUUtilization"),
+						Dimensions: []*cloudwatch.Dimension{
+							{
+								Name:  aws.String("InstanceId"),
+								Value: aws.String(instance.InstanceId),
+							},
+						},
+					},
+					Period: aws.Int64(3600), // 1 hour in seconds
+					Stat:   aws.String("Sum"),
+				},
+				ReturnData: aws.Bool(true),
 			},
 		},
-		StartTime:  startTime,
-		EndTime:    endTime,
-		Period:     aws.Int64(300), // 5-minute intervals
-		Statistics: []*string{aws.String("Average")},
+		StartTime: aws.Time(time.Now().Add(-7 * 24 * time.Hour)), // 1 week ago
+		EndTime:   aws.Time(time.Now()),
 	}
-	result, err := cloudWatchClient.GetMetricStatistics(&cwInput)
+	result, err := cloudWatchClient.GetMetricData(&cwInput)
 	if err != nil {
 		log.Printf("internal server error : %w", err)
 	}
+	dataMap := make(map[*time.Time]*float64)
+	for i := 0; i < len(result.MetricDataResults[0].Timestamps); i++ {
+		k := result.MetricDataResults[0].Timestamps[i]
+		v := result.MetricDataResults[0].Values[i]
+		dataMap[k] = v
+	}
 	ch <- Ec2CpuUtilizationResult{
 		InstanceType: instance.InstanceType,
-		items:        result.Datapoints,
+		items:        dataMap,
 	}
 }
