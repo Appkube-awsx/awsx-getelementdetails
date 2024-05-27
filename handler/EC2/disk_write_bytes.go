@@ -16,10 +16,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxDiskIOReadBytesCommmand = &cobra.Command{
-	Use:   "disk_io_read_bytes",
-	Short: "get disk io read bytes metrics data",
-	Long:  `command to get disk io read bytes metrics data`,
+var AwsxDiskWriteBytesCommmand = &cobra.Command{
+	Use:   "disk_write_bytes",
+	Short: "get disk write bytes metrics data",
+	Long:  `command to get disk write bytes metrics data`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
@@ -33,9 +33,9 @@ var AwsxDiskIOReadBytesCommmand = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, resp, err := DiskIOReadBytesData(cmd, clientAuth, nil, nil)
+			jsonResp, resp, err := DiskWriteBytesData(cmd, clientAuth, nil, nil)
 			if err != nil {
-				log.Println("Error getting disk io read bytes data : ", err)
+				log.Println("Error getting disk write bytes data : ", err)
 				return
 			}
 			if responseType == "json" {
@@ -47,7 +47,7 @@ var AwsxDiskIOReadBytesCommmand = &cobra.Command{
 	},
 }
 
-func DiskIOReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, string, error) {
+func DiskWriteBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, string, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -83,7 +83,7 @@ func DiskIOReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *
 	ec2Input := ec2.DescribeInstancesInput{}
 	instancesResult, err := ec2Client.DescribeInstances(&ec2Input)
 	if err != nil {
-		log.Printf("Error getting disk io read bytes type data")
+		log.Printf("Error getting disk write bytes data")
 	}
 	var instances []Ec2InstanceOutputData
 	for _, reserv := range instancesResult.Reservations {
@@ -103,11 +103,11 @@ func DiskIOReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *
 	}
 	var wg sync.WaitGroup
 
-	ch := make(chan DiscIoReadBytesRes)
+	ch := make(chan DiscWriteBytesRes)
 
 	for _, instance := range instances {
 		wg.Add(1)
-		go getDiskIOReadBytes(cloudWatchClient, instance, startTime, endTime, &wg, ch)
+		go getDiskWriteBytes(cloudWatchClient, instance, startTime, endTime, &wg, ch)
 	}
 
 	go func() {
@@ -115,7 +115,7 @@ func DiskIOReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *
 		close(ch)
 	}()
 
-	var data []DiscIoReadBytesRes
+	var data []DiscWriteBytesRes
 	for result := range ch {
 		data = append(data, result)
 	}
@@ -129,22 +129,22 @@ func DiskIOReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *
 	return string(jsonData), string(jsonData), nil
 }
 
-type DiscIoReadBytesRes struct {
+type DiscWriteBytesRes struct {
 	InstanceType string
 	bytes        int64
 }
 
-func getDiskIOReadBytes(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- DiscIoReadBytesRes) {
+func getDiskWriteBytes(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- DiscWriteBytesRes) {
 	defer wg.Done()
 
 	cwInput := cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Id: aws.String("diskIoReadBytes"),
+				Id: aws.String("diskWriteBytes"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
-						Namespace:  aws.String("CWAgent"),
-						MetricName: aws.String("diskio_read_bytes"),
+						Namespace:  aws.String("AWS/EC2"),
+						MetricName: aws.String("DiskWriteBytes"),
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("InstanceId"),
@@ -170,7 +170,7 @@ func getDiskIOReadBytes(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2Ins
 	for _, item := range values {
 		sum += *item
 	}
-	ch <- DiscIoReadBytesRes{
+	ch <- DiscWriteBytesRes{
 		InstanceType: instance.InstanceType,
 		bytes:        int64(sum),
 	}
