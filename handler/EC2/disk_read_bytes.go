@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxDiskReadBytesCommmand = &cobra.Command{
+var AwsxEC2DiskReadBytesCommmand = &cobra.Command{
 	Use:   "disk_read_bytes",
 	Short: "get disk read bytes metrics data",
 	Long:  `command to get disk read bytes metrics data`,
