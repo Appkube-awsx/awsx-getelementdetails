@@ -1,26 +1,23 @@
-package Lambda
+package EC2
 
 import (
 	"fmt"
-	// "github.com/Appkube-awsx/awsx-common/cmdb"
-	"log"
-	"strconv"
-
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/model"
 	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/spf13/cobra"
+	"log"
 )
 
-var AwsxLambdaInvocationTrendCmd = &cobra.Command{
+var AwsxInstanceFailureCountCmd = &cobra.Command{
 
-	Use:   "invocation_trend_panel",
-	Short: "Get invocation trend metrics data",
-	Long:  `Command to get invocation trend metrics data`,
+	Use:   "instance_failure_count_panel",
+	Short: "Get instance failure count metrics data",
+	Long:  `Command to get instance failure count metrics data`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Running invocation trend panel command")
+		fmt.Println("Running instance failure count panel command")
 
 		var authFlag bool
 		var clientAuth *model.Auth
@@ -36,7 +33,7 @@ var AwsxLambdaInvocationTrendCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			panel, err := GetInvocationTrendData(cmd, clientAuth, nil)
+			panel, err := GetInstanceFailureCountPanel(cmd, clientAuth, nil)
 			if err != nil {
 				return
 			}
@@ -45,7 +42,7 @@ var AwsxLambdaInvocationTrendCmd = &cobra.Command{
 	},
 }
 
-func GetInvocationTrendData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
+func GetInstanceFailureCountPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
@@ -55,34 +52,31 @@ func GetInvocationTrendData(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 	if err != nil {
 		return nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
-
-	results, err := comman_function.GetLogsData(clientAuth, startTime, endTime, logGroupName, `fields @timestamp, eventSource| filter eventSource = "lambda.amazonaws.com"| stats count() as InvocationCount by bin(1h)`, cloudWatchLogs)
+	results, err := comman_function.GetLogsData(clientAuth, startTime, endTime, logGroupName, `fields @timestamp, @message| filter eventSource=="ec2.amazonaws.com"| filter  eventName=="RunInstances" and failureCount!=""| filter ispresent(responseElements) or ispresent(failureCount)| stats count() as failureCount by eventName,@timestamp`, cloudWatchLogs)
 	if err != nil {
 		return nil, nil
 	}
-	processedResults := processQueryResults(results)
+	processedResults := comman_function.ProcessQueryResult(results)
 
 	return processedResults, nil
-
 }
-
-func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
+func ProcessQuerysResult(results []*cloudwatchlogs.GetQueryResultsOutput) []*cloudwatchlogs.GetQueryResultsOutput {
 	processedResults := make([]*cloudwatchlogs.GetQueryResultsOutput, 0)
 
 	for _, result := range results {
 		if *result.Status == "Complete" {
 			for _, resultField := range result.Results {
 				for _, data := range resultField {
-					if *data.Field == "InvocationCount" {
-						invocationCount, err := strconv.Atoi(*data.Value)
-						if err != nil {
-							log.Println("Failed to convert InvocationCount to integer:", err)
-							continue
-						}
-						log.Printf("Invocation Count: %d\n", invocationCount)
+					if *data.Field == "eventTime" {
 
-						// You can perform further processing or store the invocation count data as needed
-					}
+						log.Printf("eventTime: %s\n", *data)
+
+					} else if *data.Field == "eventName" {
+
+						log.Printf("eventName: %s\n", *data)
+
+					} 
+
 				}
 			}
 			processedResults = append(processedResults, result)
@@ -95,5 +89,5 @@ func processQueryResults(results []*cloudwatchlogs.GetQueryResultsOutput) []*clo
 }
 
 func init() {
-	comman_function.InitAwsCmdFlags(AwsxLambdaInvocationTrendCmd)
+	comman_function.InitAwsCmdFlags(AwsxInstanceFailureCountCmd)
 }

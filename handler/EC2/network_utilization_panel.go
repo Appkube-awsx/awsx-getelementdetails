@@ -4,14 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	comman_function "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -61,115 +57,41 @@ var AwsxEc2NetworkUtilizationCmd = &cobra.Command{
 }
 
 func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-		if err != nil {
-			return "", nil, err
-		}
-		instanceId = cmdbData.InstanceId
-
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	}
-
-	// Parse end time if provided
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	}
-
-	// If start time is not provided, use last 15 minutes
-	if startTime == nil {
-		defaultStartTime := time.Now().Add(-15 * time.Minute)
-		startTime = &defaultStartTime
-	}
-
-	// If end time is not provided, use current time
-	if endTime == nil {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	// If start time is after end time, return null
-	if startTime.After(*endTime) {
-		log.Println("Start time is after end time")
-		return "null", nil, nil
+	instanceId, err = comman_function.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Inbound Traffic
-	inboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "NetworkIn", cloudWatchClient)
+	inboundTraffic, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkIn", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
 	}
-
-	// Check if any metric data is returned for inbound traffic
-	if len(inboundTraffic.MetricDataResults) == 0 || len(inboundTraffic.MetricDataResults[0].Values) == 0 {
-		log.Println("")
-		return "null", nil, nil
-	}
-
-	// Convert inbound traffic from bytes to megabytes
 	inboundTrafficMegabytes := *inboundTraffic.MetricDataResults[0].Values[0] / bytesToMegabytes
 	cloudwatchMetricData["InboundTraffic"] = createMetricDataOutput(inboundTrafficMegabytes)
 
 	// Get Outbound Traffic
-	outboundTraffic, err := GetNetworkUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "NetworkOut", cloudWatchClient)
+	outboundTraffic, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/EC2", "NetworkOut", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
 	}
-
-	// Check if any metric data is returned for outbound traffic
-	if len(outboundTraffic.MetricDataResults) == 0 || len(outboundTraffic.MetricDataResults[0].Values) == 0 {
-		log.Println("")
-		return "null", nil, nil
-	}
-
-	// Convert outbound traffic from bytes to megabytes
 	outboundTrafficMegabytes := *outboundTraffic.MetricDataResults[0].Values[0] / bytesToMegabytes
 	cloudwatchMetricData["OutboundTraffic"] = createMetricDataOutput(outboundTrafficMegabytes)
 
-	// Calculate Data Transferred (sum of inbound and outbound) and convert to megabytes
+	// Calculate Data Transferred (sum of inbound and outbound)
 	dataTransferred := inboundTrafficMegabytes + outboundTrafficMegabytes
 	cloudwatchMetricData["DataTransferred"] = createMetricDataOutput(dataTransferred)
 
@@ -181,52 +103,11 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 
 	jsonString, err := json.Marshal(jsonOutput)
 	if err != nil {
-		log.Println("Error in marshalling json in string: ", err)
+		log.Println("Error in marshalling json: ", err)
 		return "", nil, err
 	}
 
 	return string(jsonString), cloudwatchMetricData, nil
-}
-
-func GetNetworkUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic string, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
-	elmType := "AWS/EC2"
-	if elementType == "EC2" {
-		elmType = "AWS/" + elementType
-	}
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("InstanceId"),
-								Value: aws.String(instanceID),
-							},
-						},
-						MetricName: aws.String(metricName),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(300),
-					Stat:   aws.String(statistic),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
 }
 
 func createMetricDataOutput(value float64) *cloudwatch.GetMetricDataOutput {
@@ -238,21 +119,7 @@ func createMetricDataOutput(value float64) *cloudwatch.GetMetricDataOutput {
 		},
 	}
 }
+
 func init() {
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2NetworkUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2NetworkUtilizationCmd)
 }
