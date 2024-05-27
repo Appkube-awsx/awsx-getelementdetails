@@ -150,14 +150,14 @@ func getCpuUtilization(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2Inst
 							},
 						},
 					},
-					Period: aws.Int64(3600), // 1 hour in seconds
-					Stat:   aws.String("Sum"),
+					Period: aws.Int64(300),
+					Stat:   aws.String("Average"),
 				},
 				ReturnData: aws.Bool(true),
 			},
 		},
-		StartTime: aws.Time(time.Now().Add(-7 * 24 * time.Hour)), // 1 week ago
-		EndTime:   aws.Time(time.Now()),
+		StartTime: aws.Time(*startTime),
+		EndTime:   aws.Time(*endTime),
 	}
 	result, err := cloudWatchClient.GetMetricData(&cwInput)
 	if err != nil {

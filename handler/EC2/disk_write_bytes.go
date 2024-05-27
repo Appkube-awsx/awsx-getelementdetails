@@ -95,9 +95,6 @@ func DiskWriteBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *e
 			instances = append(instances, temp)
 		}
 	}
-	// data := make(map[string]int)
-	// data["full_concurrency"] = fullConcurrency
-	fmt.Println("instances : ", instances)
 	if cloudWatchClient == nil {
 		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
 	}
@@ -158,8 +155,8 @@ func getDiskWriteBytes(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2Inst
 				ReturnData: aws.Bool(true),
 			},
 		},
-		StartTime: aws.Time(time.Now().Add(-7 * 24 * time.Hour)), // 1 week ago
-		EndTime:   aws.Time(time.Now()),
+		StartTime: aws.Time(*startTime),
+		EndTime:   aws.Time(*endTime),
 	}
 	result, err := cloudWatchClient.GetMetricData(&cwInput)
 	if err != nil {

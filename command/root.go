@@ -541,6 +541,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "disk_write_ops" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.DiskWriteOpsPerInstanceType(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error getting storage utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_utilization_panel" && (elementType == "AWS/EKS" || elementType == "EKS") {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetEKScpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -2682,6 +2693,7 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskReadBytesCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskWriteBytesCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskReadOpsPerInstanceTypeCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskWriteOpsPerInstanceTypeCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)

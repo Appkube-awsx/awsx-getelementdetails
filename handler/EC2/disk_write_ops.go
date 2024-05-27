@@ -16,10 +16,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxEC2DiskReadOpsPerInstanceTypeCommmand = &cobra.Command{
-	Use:   "disk_read_ops",
-	Short: "get disk read ops per instance type metrics data",
-	Long:  `command to disk read ops per instance type metrics data`,
+var AwsxEC2DiskWriteOpsPerInstanceTypeCommmand = &cobra.Command{
+	Use:   "disk_write_ops",
+	Short: "get disk write ops per instance type metrics data",
+	Long:  `command to disk write ops per instance type metrics data`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
@@ -33,9 +33,9 @@ var AwsxEC2DiskReadOpsPerInstanceTypeCommmand = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, resp, err := DiskReadOpsPerInstanceType(cmd, clientAuth, nil, nil)
+			jsonResp, resp, err := DiskWriteOpsPerInstanceType(cmd, clientAuth, nil, nil)
 			if err != nil {
-				log.Println("Error getting disk read ops per instance type data : ", err)
+				log.Println("Error getting disk write ops per instance type data : ", err)
 				return
 			}
 			if responseType == "json" {
@@ -47,7 +47,7 @@ var AwsxEC2DiskReadOpsPerInstanceTypeCommmand = &cobra.Command{
 	},
 }
 
-func DiskReadOpsPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, []Ec2DiskReadOpsResult, error) {
+func DiskWriteOpsPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, []Ec2DiskWriteOpsResult, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -81,7 +81,7 @@ func DiskReadOpsPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2C
 	ec2Input := ec2.DescribeInstancesInput{}
 	instancesResult, err := ec2Client.DescribeInstances(&ec2Input)
 	if err != nil {
-		return "", nil, fmt.Errorf("Error getting disk read ops per instance type data")
+		return "", nil, fmt.Errorf("Error getting disk write ops per instance type data")
 	}
 	var instances []Ec2InstanceOutputData
 	for _, reserv := range instancesResult.Reservations {
@@ -98,11 +98,11 @@ func DiskReadOpsPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2C
 	}
 	var wg sync.WaitGroup
 
-	ch := make(chan Ec2DiskReadOpsResult)
+	ch := make(chan Ec2DiskWriteOpsResult)
 
 	for _, instance := range instances {
 		wg.Add(1)
-		go getDiskReadOps(cloudWatchClient, instance, startTime, endTime, &wg, ch)
+		go getWriteWriteOps(cloudWatchClient, instance, startTime, endTime, &wg, ch)
 	}
 
 	go func() {
@@ -110,34 +110,34 @@ func DiskReadOpsPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2C
 		close(ch)
 	}()
 
-	var data []Ec2DiskReadOpsResult
+	var data []Ec2DiskWriteOpsResult
 	for result := range ch {
 		data = append(data, result)
 	}
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return "", nil, fmt.Errorf("Error getting disk read ops per instance type data")
+		return "", nil, fmt.Errorf("Error getting disk write ops per instance type data")
 	}
 	return string(jsonData), data, nil
 }
 
-type Ec2DiskReadOpsResult struct {
+type Ec2DiskWriteOpsResult struct {
 	InstanceType string
 	items        interface{}
 }
 
-func getDiskReadOps(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- Ec2DiskReadOpsResult) {
+func getWriteWriteOps(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- Ec2DiskWriteOpsResult) {
 	defer wg.Done()
 
 	cwInput := cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Id: aws.String("diskReadOps"),
+				Id: aws.String("diskWriteOps"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
 						Namespace:  aws.String("AWS/EC2"),
-						MetricName: aws.String("DiskReadOps"),
+						MetricName: aws.String("DiskWriteOps"),
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("InstanceId"),
@@ -164,7 +164,7 @@ func getDiskReadOps(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2Instanc
 		v := result.MetricDataResults[0].Values[i]
 		dataMap[k] = v
 	}
-	ch <- Ec2DiskReadOpsResult{
+	ch <- Ec2DiskWriteOpsResult{
 		InstanceType: instance.InstanceType,
 		items:        dataMap,
 	}
