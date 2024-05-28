@@ -16,10 +16,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var AwsxEC2CpuUtilizationPerInstanceTypeCommmand = &cobra.Command{
-	Use:   "cpu_utilization_per_type",
-	Short: "get cpu utilization per instance type metrics data",
-	Long:  `command to cpu utilization per instance type metrics data`,
+var AwsxEC2NetworkOutInstanceTypeCommmand = &cobra.Command{
+	Use:   "network_out_per_type",
+	Short: "get network in per instance type metrics data",
+	Long:  `command to network in per instance type metrics data`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("running from child command")
 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
@@ -33,9 +33,9 @@ var AwsxEC2CpuUtilizationPerInstanceTypeCommmand = &cobra.Command{
 		}
 		if authFlag {
 			responseType, _ := cmd.PersistentFlags().GetString("responseType")
-			jsonResp, resp, err := CpuUtilizationPerInstanceType(cmd, clientAuth, nil, nil)
+			jsonResp, resp, err := NetworkOutPerInstanceType(cmd, clientAuth, nil, nil)
 			if err != nil {
-				log.Println("Error getting cpu utilization per instance type data : ", err)
+				log.Println("Error getting network out per instance type data : ", err)
 				return
 			}
 			if responseType == "json" {
@@ -47,7 +47,7 @@ var AwsxEC2CpuUtilizationPerInstanceTypeCommmand = &cobra.Command{
 	},
 }
 
-func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, []Ec2CpuUtilizationResult, error) {
+func NetworkOutPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, []Ec2NetworkOutResult, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -81,7 +81,7 @@ func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, e
 	ec2Input := ec2.DescribeInstancesInput{}
 	instancesResult, err := ec2Client.DescribeInstances(&ec2Input)
 	if err != nil {
-		return "", nil, fmt.Errorf("Error getting cpu utilization per instance type data")
+		return "", nil, fmt.Errorf("Error getting network in per instance type data")
 	}
 	var instances []Ec2InstanceOutputData
 	for _, reserv := range instancesResult.Reservations {
@@ -98,11 +98,11 @@ func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, e
 	}
 	var wg sync.WaitGroup
 
-	ch := make(chan Ec2CpuUtilizationResult)
+	ch := make(chan Ec2NetworkOutResult)
 
 	for _, instance := range instances {
 		wg.Add(1)
-		go getCpuUtilization(cloudWatchClient, instance, startTime, endTime, &wg, ch)
+		go getNetworkOut(cloudWatchClient, instance, startTime, endTime, &wg, ch)
 	}
 
 	go func() {
@@ -110,39 +110,34 @@ func CpuUtilizationPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, e
 		close(ch)
 	}()
 
-	var data []Ec2CpuUtilizationResult
+	var data []Ec2NetworkOutResult
 	for result := range ch {
 		data = append(data, result)
 	}
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return "", nil, err
+		return "", nil, fmt.Errorf("Error getting network in per instance type data")
 	}
 	return string(jsonData), data, nil
 }
 
-type Ec2InstanceOutputData struct {
-	InstanceType string
-	InstanceId   string
-}
-
-type Ec2CpuUtilizationResult struct {
+type Ec2NetworkOutResult struct {
 	InstanceType string
 	items        interface{}
 }
 
-func getCpuUtilization(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- Ec2CpuUtilizationResult) {
+func getNetworkOut(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- Ec2NetworkOutResult) {
 	defer wg.Done()
 
 	cwInput := cloudwatch.GetMetricDataInput{
 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
 			{
-				Id: aws.String("diskReadOps"),
+				Id: aws.String("diskWriteOps"),
 				MetricStat: &cloudwatch.MetricStat{
 					Metric: &cloudwatch.Metric{
 						Namespace:  aws.String("AWS/EC2"),
-						MetricName: aws.String("CPUUtilization"),
+						MetricName: aws.String("NetworkOut"),
 						Dimensions: []*cloudwatch.Dimension{
 							{
 								Name:  aws.String("InstanceId"),
@@ -169,7 +164,7 @@ func getCpuUtilization(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2Inst
 		v := result.MetricDataResults[0].Values[i]
 		dataMap[k] = v
 	}
-	ch <- Ec2CpuUtilizationResult{
+	ch <- Ec2NetworkOutResult{
 		InstanceType: instance.InstanceType,
 		items:        dataMap,
 	}

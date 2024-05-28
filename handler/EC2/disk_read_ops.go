@@ -17,7 +17,7 @@ import (
 )
 
 var AwsxEC2DiskReadOpsPerInstanceTypeCommmand = &cobra.Command{
-	Use:   "disk_read_ops",
+	Use:   "disk_read_ops_per_type",
 	Short: "get disk read ops per instance type metrics data",
 	Long:  `command to disk read ops per instance type metrics data`,
 	Run: func(cmd *cobra.Command, args []string) {

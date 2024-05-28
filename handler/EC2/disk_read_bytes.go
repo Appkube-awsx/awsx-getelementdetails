@@ -17,7 +17,7 @@ import (
 )
 
 var AwsxEC2DiskReadBytesCommmand = &cobra.Command{
-	Use:   "disk_read_bytes",
+	Use:   "disk_read_bytes_per_type",
 	Short: "get disk read bytes metrics data",
 	Long:  `command to get disk read bytes metrics data`,
 	Run: func(cmd *cobra.Command, args []string) {
