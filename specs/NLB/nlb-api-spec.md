@@ -18,8 +18,8 @@
    - [target_health_check_panel](#target-health-check-panel)
    - [availability_zone_failure_panel](#availability-zone-failure-panel)
    - [port_allocation_error_count_panel](#port-allocation-error-count-panel)
-   - [new_flowcount_tls_panel](#new-flowcount-tls-panel)
-   - [new_flowcount_udp_panel](#new-flowcount-udp-panel)
+   - [new_flow_count_tls_panel](#new-flow-count-tls-panel)
+   - [new_flow_count_udp_panel](#new-flow-count-udp-panel)
    - [processed_packets_panel](#processed-packets-panel)
    - [tcp_target_reset_count_panel](#tcp-target-reset-count-panel)
 
@@ -31,6 +31,27 @@ It implements the awsx plugin getElementDetails.
 
 # ui analysis and listing methods
 ![Alt text](nlb_screen1.png)
+
+ 1. active_connections_panel
+ 2. new_connections_panel
+ 3. processed_bytes_panel
+ 4. healthy_host_count_panel
+ 5. unhealthy_host_count_panel
+ 6. ssl_tls_negotiation_time_panel
+ 7. error_log_panel
+ 8. target_health_check_configuration_panel
+ 9. security_group_configuration_panel
+10. target_status_panel
+11. connection_errors_panel
+12. target_deregistrations_panel
+13. target_tls_negotiation_error_count_panel
+14. target_health_check_panel
+15. availability_zone_failure_panel
+16. port_allocation_error_count_panel
+17. new_flow_count_tls_panel
+18. new_flow_count_udp_panel
+19. processed_packets_panel
+20. tcp_target_reset_count_panel
 
 
 ## Algorithm for Metric-Based Panels
@@ -566,7 +587,7 @@ Display unhealthy_host_count
 ```
 
 # ui-analysys-and listing-methods
-## SSL/TLS Negotiation Time Panel
+## SSL TLS Negotiation Time Panel
 
 ![Alt text](nlb_screen1.png)
 6. ssl_tls_negotiation_time_panel
@@ -930,7 +951,7 @@ awsx --vaultUrl=<afreenxxxx1309> --elementId=14933 --query="target_tls_negotiati
 [http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=NLB&elementId=14933&query=target_tls_negotiation_error_count_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenxxxx1309>&elementType=NLB&elementId=14933&query=target_tls_negotiation_error_count_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 **Desired Output in json / graph format:**
-13. Target TLS Negotiation Errors Count Panel
+13. Target TLS Negotiation Error Count Panel
 ```json
 
 
@@ -941,7 +962,7 @@ awsx --vaultUrl=<afreenxxxx1309> --elementId=14933 --query="target_tls_negotiati
 **Algorithm/ Pseudo Code**
 
 **Algorithm:** 
-Target TLS Negotiation Errors Count - The Target TLS Negotiation Errors panel displays the count of TLS negotiation errors encountered by the NLB during connections with targets.
+Target TLS Negotiation Error Count - The Target TLS Negotiation Errors panel displays the count of TLS negotiation errors encountered by the NLB during connections with targets.
 
 1. Initialize a variable, tls_errors, to 0.
 2. Iterate through the connection data points.
