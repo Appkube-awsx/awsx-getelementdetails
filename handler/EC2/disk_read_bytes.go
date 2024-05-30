@@ -47,7 +47,7 @@ var AwsxEC2DiskReadBytesCommmand = &cobra.Command{
 	},
 }
 
-func DiskReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, string, error) {
+func DiskReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, []DiscReadBytesRes, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -58,11 +58,11 @@ func DiskReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec
 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
 		if err != nil {
 			log.Printf("Error parsing start time: %v", err)
-			return "", "", err
+			return "", nil, err
 		}
 		startTime = &parsedStartTime
 	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
+		defaultStartTime := time.Now().Add(-300 * time.Minute)
 		startTime = &defaultStartTime
 	}
 
@@ -70,7 +70,7 @@ func DiskReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
 			log.Printf("Error parsing end time: %v", err)
-			return "", "", err
+			return "", nil, err
 		}
 		endTime = &parsedEndTime
 	} else {
@@ -118,17 +118,16 @@ func DiskReadBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec
 	}
 
 	jsonData, err := json.Marshal(data)
-	fmt.Println("data : ", jsonData)
 	if err != nil {
 		log.Printf("error parsing data: %s", err)
-		return "", "", err
+		return "", nil, err
 	}
-	return string(jsonData), string(jsonData), nil
+	return string(jsonData), data, nil
 }
 
 type DiscReadBytesRes struct {
 	InstanceType string
-	bytes        int64
+	Bytes        int64
 }
 
 func getDiskReadBytes(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- DiscReadBytesRes) {
@@ -169,6 +168,6 @@ func getDiskReadBytes(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2Insta
 	}
 	ch <- DiscReadBytesRes{
 		InstanceType: instance.InstanceType,
-		bytes:        int64(sum),
+		Bytes:        int64(sum),
 	}
 }

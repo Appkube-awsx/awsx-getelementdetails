@@ -60,7 +60,7 @@ func DiskWriteOpsPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2
 		}
 		startTime = &parsedStartTime
 	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
+		defaultStartTime := time.Now().Add(-300 * time.Minute)
 		startTime = &defaultStartTime
 	}
 
@@ -124,7 +124,7 @@ func DiskWriteOpsPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2
 
 type Ec2DiskWriteOpsResult struct {
 	InstanceType string
-	items        interface{}
+	Items        map[time.Time]float64
 }
 
 func getWriteWriteOps(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- Ec2DiskWriteOpsResult) {
@@ -158,14 +158,14 @@ func getWriteWriteOps(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2Insta
 	if err != nil {
 		log.Printf("internal server error : %w", err)
 	}
-	dataMap := make(map[*time.Time]*float64)
+	dataMap := make(map[time.Time]float64)
 	for i := 0; i < len(result.MetricDataResults[0].Timestamps); i++ {
 		k := result.MetricDataResults[0].Timestamps[i]
 		v := result.MetricDataResults[0].Values[i]
-		dataMap[k] = v
+		dataMap[*k] = *v
 	}
 	ch <- Ec2DiskWriteOpsResult{
 		InstanceType: instance.InstanceType,
-		items:        dataMap,
+		Items:        dataMap,
 	}
 }

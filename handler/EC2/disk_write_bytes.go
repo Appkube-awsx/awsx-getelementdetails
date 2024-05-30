@@ -47,7 +47,7 @@ var AwsxEC2DiskWriteBytesCommmand = &cobra.Command{
 	},
 }
 
-func DiskWriteBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, string, error) {
+func DiskWriteBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2, cloudWatchClient *cloudwatch.CloudWatch) (string, []DiscWriteBytesRes, error) {
 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
@@ -58,7 +58,7 @@ func DiskWriteBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *e
 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
 		if err != nil {
 			log.Printf("Error parsing start time: %v", err)
-			return "", "", err
+			return "", nil, err
 		}
 		startTime = &parsedStartTime
 	} else {
@@ -70,7 +70,7 @@ func DiskWriteBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *e
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
 			log.Printf("Error parsing end time: %v", err)
-			return "", "", err
+			return "", nil, err
 		}
 		endTime = &parsedEndTime
 	} else {
@@ -118,17 +118,16 @@ func DiskWriteBytesData(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *e
 	}
 
 	jsonData, err := json.Marshal(data)
-	fmt.Println("data : ", jsonData)
 	if err != nil {
 		log.Printf("error parsing data: %s", err)
-		return "", "", err
+		return "", nil, err
 	}
-	return string(jsonData), string(jsonData), nil
+	return string(jsonData), data, nil
 }
 
 type DiscWriteBytesRes struct {
 	InstanceType string
-	bytes        int64
+	Bytes        int64
 }
 
 func getDiskWriteBytes(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- DiscWriteBytesRes) {
@@ -169,6 +168,6 @@ func getDiskWriteBytes(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2Inst
 	}
 	ch <- DiscWriteBytesRes{
 		InstanceType: instance.InstanceType,
-		bytes:        int64(sum),
+		Bytes:        int64(sum),
 	}
 }

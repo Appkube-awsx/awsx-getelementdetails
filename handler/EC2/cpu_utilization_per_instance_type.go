@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"sync"
 	"time"
 
@@ -129,7 +130,7 @@ type Ec2InstanceOutputData struct {
 
 type Ec2CpuUtilizationResult struct {
 	InstanceType string
-	items        interface{}
+	Items        map[time.Time]float64
 }
 
 func getCpuUtilization(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- Ec2CpuUtilizationResult) {
@@ -163,14 +164,14 @@ func getCpuUtilization(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2Inst
 	if err != nil {
 		log.Printf("internal server error : %w", err)
 	}
-	dataMap := make(map[*time.Time]*float64)
+	dataMap := make(map[time.Time]float64)
 	for i := 0; i < len(result.MetricDataResults[0].Timestamps); i++ {
 		k := result.MetricDataResults[0].Timestamps[i]
 		v := result.MetricDataResults[0].Values[i]
-		dataMap[k] = v
+		dataMap[*k] = math.Round(*v * 100)/100
 	}
 	ch <- Ec2CpuUtilizationResult{
 		InstanceType: instance.InstanceType,
-		items:        dataMap,
+		Items:        dataMap,
 	}
 }

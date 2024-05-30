@@ -124,7 +124,7 @@ func NetworkInPerInstanceType(cmd *cobra.Command, clientAuth *model.Auth, ec2Cli
 
 type Ec2NetworkInResult struct {
 	InstanceType string
-	items        interface{}
+	Items        map[time.Time]float64
 }
 
 func getNetworkIn(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceOutputData, startTime, endTime *time.Time, wg *sync.WaitGroup, ch chan<- Ec2NetworkInResult) {
@@ -158,14 +158,14 @@ func getNetworkIn(cloudWatchClient *cloudwatch.CloudWatch, instance Ec2InstanceO
 	if err != nil {
 		log.Printf("internal server error : %w", err)
 	}
-	dataMap := make(map[*time.Time]*float64)
+	dataMap := make(map[time.Time]float64)
 	for i := 0; i < len(result.MetricDataResults[0].Timestamps); i++ {
 		k := result.MetricDataResults[0].Timestamps[i]
 		v := result.MetricDataResults[0].Values[i]
-		dataMap[k] = v
+		dataMap[*k] = *v
 	}
 	ch <- Ec2NetworkInResult{
 		InstanceType: instance.InstanceType,
-		items:        dataMap,
+		Items:        dataMap,
 	}
 }
