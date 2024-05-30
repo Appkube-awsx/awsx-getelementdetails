@@ -161,7 +161,29 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
-			} else if queryName == "network_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+			} else if queryName == "instance_terminated_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp := EC2.GetInstanceTerminatedCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting instance terminated data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "latest_successful_events_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp := EC2.GetLatestSucessfulEventsCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting latest successful events data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			}  else if queryName == "network_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network utilization: ", err)
@@ -342,6 +364,39 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkInBytesPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network In Bytes metric data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "active_instances_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp := EC2.GetEC2ActiveInstanceCount(clientAuth)
+				if err != nil {
+					log.Println("Error getting inactive instances metric data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			}  else if queryName == "ec2_instance_summary_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp,err := EC2.GetEC2InstanceSummaryPanel( clientAuth)
+				if err != nil {
+					log.Println("Error getting inactive instances metric data: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "inactive_instances_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp := EC2.GetInactiveInstancesCountPanel(cmd,clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting inactive instances metric data: ", err)
 					return
 				}
 				if responseType == "frame" {
