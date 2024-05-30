@@ -48,7 +48,7 @@ func GetEc2CustomAlertPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWat
 		return nil, fmt.Errorf("error getting instance ID: %v", err)
 	}
 
-	results, err := comman_function.FiltercloudWatchLogs(clientAuth, startTime, endTime, logGroupName, "")
+	results, err := comman_function.GetLogsData(clientAuth, startTime, endTime, logGroupName, `fields @timestamp, requestParameters.groupId AS SecurityGroupID, if (eventName = 'AuthorizeSecurityGroupIngress' OR eventName = 'AuthorizeSecurityGroupEgress', 'Added', 'Removed') AS Action, userIdentity.sessionContext.sessionIssuer.userName AS UserName| filter eventSource = 'ec2.amazonaws.com' AND (eventName = 'AuthorizeSecurityGroupIngress' OR eventName = 'RevokeSecurityGroupIngress' OR eventName = 'AuthorizeSecurityGroupEgress' OR eventName = 'RevokeSecurityGroupEgress')| sort @timestamp desc`, cloudWatchLogs)
 	if err != nil {
 		log.Println("Error in getting custom alert data: ", err)
 		return nil, err
