@@ -464,6 +464,93 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				fmt.Println(jsonResp)
+			} else if queryName == "disk_space_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsondata, cloudwatchMetricResp, err := EC2.GetDiskUtilizationData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network Out packets: ", err)
+					return
+				}
+				if responseType == "json" {
+					fmt.Println(jsondata)
+				} else {
+					fmt.Println(cloudwatchMetricResp)
+				}
+			} else if queryName == "instance_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				instanceCounts, err := EC2.GetInstanceCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network Out packets: ", err)
+					return
+				}
+				if responseType == "json" {
+					fmt.Println(instanceCounts)
+				}
+			} else if queryName == "cpu_reservation_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetEC2CPUReservationData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network Out packets: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "instance_health_check_new" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, err := EC2.GetInstanceHealthCheckNew(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting instance health check: ", err)
+					return
+				}
+				if responseType == "json" {
+					fmt.Println(jsonResp)
+				} else {
+					fmt.Println("change response type ")
+				}
+			} else if queryName == "network_latency" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkLatencyAcrossAllInstancesPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network_latency", err)
+					return
+				}
+				if responseType == "json" {
+					fmt.Println(jsonResp)
+				} else {
+					fmt.Println(cloudwatchMetricResp)
+				}
+			} else if queryName == "auto_scaling_config_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, _, err := EC2.GetAutoScalingInfo(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting instance autoscaling count: ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "instance_backup_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, _, err := EC2.GetBackupStatus(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting instance instance_backup_status ", err)
+					return
+				}
+				fmt.Println(jsonResp)
+			} else if queryName == "network_traffic_new_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, err := EC2.GetNetworkTrafficNewPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting network inbound metric data: ", err)
+					return
+				}
+				if responseType == "json" {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "memory_utilization_New_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationNewPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory utilization new : ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "storage_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetStorageUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
