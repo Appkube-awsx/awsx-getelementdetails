@@ -89,11 +89,15 @@ func GetEKScpuUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		log.Println("Error in getting maximum: ", err)
 		return "", nil, err
 	}
-	cloudwatchMetricData["MaxUsage"] = maxUsage
-	jsonOutput := map[string]float64{
-		"CurrentUsage": *currentUsage.MetricDataResults[0].Values[0],
-		"AverageUsage": *averageUsage.MetricDataResults[0].Values[0],
-		"MaxUsage":     *maxUsage.MetricDataResults[0].Values[0],
+	jsonOutput := make(map[string]float64)
+	if len(currentUsage.MetricDataResults) > 0 && len(currentUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["CurrentUsage"] = *currentUsage.MetricDataResults[0].Values[0]
+	}
+	if len(averageUsage.MetricDataResults) > 0 && len(averageUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["AverageUsage"] = *averageUsage.MetricDataResults[0].Values[0]
+	}
+	if len(maxUsage.MetricDataResults) > 0 && len(maxUsage.MetricDataResults[0].Values) > 0 {
+		jsonOutput["MaxUsage"] = *maxUsage.MetricDataResults[0].Values[0]
 	}
 
 	jsonString, err := json.Marshal(jsonOutput)
