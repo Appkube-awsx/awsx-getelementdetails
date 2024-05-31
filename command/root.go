@@ -562,6 +562,83 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "cpu_utilization_per_type" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.CpuUtilizationPerInstanceType(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error getting cpu utilization per instance type: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "disk_read_bytes_per_type" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.DiskReadBytesData(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error getting disk read bytes per instance type: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "disk_write_bytes_per_type" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.DiskWriteBytesData(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error getting disk write bytes per instance type: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "disk_read_ops_per_type" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.DiskReadOpsPerInstanceType(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error getting disk read ops per instance type: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "disk_write_ops_per_type" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.DiskWriteOpsPerInstanceType(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error getting disk write ops per instance type: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_in_per_type" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.NetworkInPerInstanceType(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error network in per instance type: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "network_out_per_type" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.NetworkOutPerInstanceType(cmd, clientAuth, nil, nil)
+				if err != nil {
+					log.Println("Error getting network out per instance type: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_utilization_panel" && (elementType == "AWS/EKS" || elementType == "EKS") {
 				jsonResp, cloudwatchMetricResp, err := EKS.GetEKScpuUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
@@ -2700,6 +2777,13 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2ErrorRatePanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceHealthCheckCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2CpuUtilizationPerInstanceTypeCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskReadBytesCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskWriteBytesCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskReadOpsPerInstanceTypeCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2DiskWriteOpsPerInstanceTypeCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2NetworkInInstanceTypeCommmand)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEC2NetworkOutInstanceTypeCommmand)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)
