@@ -68,7 +68,7 @@ func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "DiskWriteBytes", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId,  "CWAgent", "diskio_writes", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting disk write data: ", err)
 		return "", nil, err
@@ -76,6 +76,17 @@ func GetDiskWritePanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 	cloudwatchMetricData["Disk_Writes"] = rawData
 
 	return "", cloudwatchMetricData, nil
+
+
+
+	var totalSum float64
+	for _, value := range rawData.MetricDataResults {
+		for _, datum := range value.Values {
+			totalSum += *datum
+		}
+	}
+	totalSumStr := fmt.Sprintf("{disk io reads count: %f}", totalSum)
+	return totalSumStr, cloudwatchMetricData, nil
 }
 
 func init() {
