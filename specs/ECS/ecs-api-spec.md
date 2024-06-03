@@ -23,12 +23,27 @@
   - [net\_RxInBytes\_panel](#net_rxinbytes_panel) 
   - [net\_TxInBytes\_panel](#net_txinbytes_panel)
   - [uptime_percentage_panel](#uptime_percentage_panel)
+  - [active_connection_panel](#active_connection_panel)
+  - [new_connection_panel](#new_connection_panel)
+  - [active_services_panel](#active_services_panel)
+  - [active_tasks_panel](#active_tasks_panel)
+  - [failed_task_panel](#failed_task_panel)
+  - [failed_task_panel](#failed_services_panel)
+  - [service_error_panel](#service_error_panel)
+  - [top_events_panel](#top_events_panel)
+  - [resource_created_panel](#resource_created_panel)
+  - [resource_updated_panel](#resource_updated_panel)
+  - [resource_deleted_panel](#resource_deleted_panel)
+  - [registration_events_panel](#registration_events_panel)
+  - [deregistration_events_panel](#deregistration_events_panel)
+
+
 
 - [pseudocode for matric based panels](#pseudocode-for-matric-based-panels)
 - [pseudocode for log based panels](#pseudocode-for-log-based-panels)
 - [list of subcommands and options for ECS](#list-of-subcommands-and-options-for-ecs)
 
-list of subcommands and options for EC2
+list of subcommands and options for ECS
  
 # awsx-getelementdetails
 It implements the awsx plugin getElementDetails
@@ -58,8 +73,20 @@ It implements the awsx plugin getElementDetails
 21. net_RxInBytes_panel
 22. net_TxInBytes_panel
 23. uptime_percentage_panel
-24. 
-
+24. active_connection_panel
+25. new_connection_panel
+26. active_services_panel
+27. active_tasks_panel
+28. failed_task_panel
+29. failed_services_panel
+30. service_error_panel
+31. top_events_panel
+32. resource_created_panel
+33. resource_updated_panel
+34. resource_deleted_panel
+35. registration_events_panel
+36. deregistration_events_panel
+37. deregistration_events_panel
 _
 
 **Algorithm:** 
@@ -1014,6 +1041,118 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="disk_available_p
 - disk available panel  -Fire a cloudwatch query for disk_available_panel, using metric disk_available_panel.
 
  **Pseudo Code:**  
+
+
+ # ui-analysys-and listing-methods
+
+17. net\_ReceiveInBytes\_panel
+![Alt text](ecs_screen5.png)
+
+
+## net\_RecieveInBytes\_panel
+
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="net_recieveInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_recieveInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_recieveInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_recieveInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+17 . network_ReceiveInBytes_panel
+
+	-network_ReceiveInBytes_panel
+	
+
+**Algorithm:**
+- Get ECS Network Rx In Bytes Panel - Fetches and displays network received inbytes metrics data for ECS instances.
+
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for network received inbytes using `GetECSNetworkRxInBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for network received inbytes using GetECSNetworkRxInBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
+```
+
+ # ui-analysys-and listing-methods
+
+##  net\_transmitInBytes\_panel
+
+18. net\_transmitInBytes\_panel
+![Alt text](ecs_screen5.png)
+
+
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="net_transmitInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_transmitInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_transmitInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_transmitInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+18. network_transmitInBytes_panel
+
+	-network_transmitInBytes_panel
+	
+
+**Algorithm/ Pseudo Code**
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+- Get ECS Network Rx In Bytes Panel - Fetches and displays network received inbytes metrics data for ECS instances.
+
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for network received inbytes using `GetECSNetworkRxInBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for network received inbytes using GetECSNetworkRxInBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
+```
  
  # ui-analysys-and listing-methods
 
@@ -1121,123 +1260,14 @@ If authenticated:
     Process the raw data if needed
     Display the fetched data based on responseType ("frame" or JSON)
 ```
- # ui-analysys-and listing-methods
 
-21. net\_ReceiveInBytes\_panel
-![Alt text](ecs_screen5.png)
-
-
-## net\_RecieveInBytes\_panel
-
-
-**called from subcommand**
-```shell
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="net_recieveInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-```
-
-**called from maincommand**
-```shell
-awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_recieveInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-```
-
-**Called from API**
-
-[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_recieveInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_recieveInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
-
-
-**Desired Output in json / graph format:**
-21. network_ReceiveInBytes_panel
-
-	-network_ReceiveInBytes_panel
-	
-
-**Algorithm:**
-- Get ECS Network Rx In Bytes Panel - Fetches and displays network received inbytes metrics data for ECS instances.
-
-1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
-2. Authenticate the command using `authenticate.AuthenticateCommand`.
-3. If authentication fails, log the error and display command help.
-4. If authenticated:
-    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
-    - Fetch raw data for network received inbytes using `GetECSNetworkRxInBytesPanel`.
-    - If there is an error fetching data, log the error.
-    - Display the fetched data based on `responseType` ("frame" or JSON).
-
-**Pseudo Code:**
-```go
-Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
-Get elementType, instanceId, startTime, endTime, and responseType from command flags
-Authenticate the command using AuthenticateCommand
-If authentication fails, log the error and display command help
-If authenticated:
-    Fetch raw data for network received inbytes using GetECSNetworkRxInBytesPanel
-    Process the raw data if needed
-    Display the fetched data based on responseType ("frame" or JSON)
-```
- 
- # ui-analysys-and listing-methods
-
-##  net\_transmitInBytes\_panel
-
-22. net\_transmitInBytes\_panel
-![Alt text](ecs_screen5.png)
-
-
-
-**called from subcommand**
-```shell
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="net_transmitInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-```
-
-**called from maincommand**
-```shell
-awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_transmitInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-```
-
-**Called from API**
-
-[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_transmitInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_transmitInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
-
-
-**Desired Output in json / graph format:**
-22. network_transmitInBytes_panel
-
-	-network_transmitInBytes_panel
-	
-
-**Algorithm/ Pseudo Code**
-**Algorithm/ Pseudo Code**
-
-**Algorithm:**
-- Get ECS Network Rx In Bytes Panel - Fetches and displays network received inbytes metrics data for ECS instances.
-
-1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
-2. Authenticate the command using `authenticate.AuthenticateCommand`.
-3. If authentication fails, log the error and display command help.
-4. If authenticated:
-    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
-    - Fetch raw data for network received inbytes using `GetECSNetworkRxInBytesPanel`.
-    - If there is an error fetching data, log the error.
-    - Display the fetched data based on `responseType` ("frame" or JSON).
-
-**Pseudo Code:**
-```go
-Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
-Get elementType, instanceId, startTime, endTime, and responseType from command flags
-Authenticate the command using AuthenticateCommand
-If authentication fails, log the error and display command help
-If authenticated:
-    Fetch raw data for network received inbytes using GetECSNetworkRxInBytesPanel
-    Process the raw data if needed
-    Display the fetched data based on responseType ("frame" or JSON)
-```
  
  
  # ui-analysys-and listing-methods
 
 ##  net\_RxInBytes\_panel
 
-23. net\_RxInBytes\_panel
+21. net\_RxInBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
@@ -1258,7 +1288,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_rxinbytes_pa
 
 
 **Desired Output in json / graph format:**
-23. net_rxinbytes_panel
+21. net_rxinbytes_panel
 
 	-net_rxinbytes_panel
 	
@@ -1293,7 +1323,7 @@ If authenticated:
 
 ##  net\_TxInBytes\_panel
 
-24. net\_TxInBytes\_panel
+22. net\_TxInBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
@@ -1315,7 +1345,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_txinbytes_pa
 
 
 **Desired Output in json / graph format:**
-24. network_TxInBytes_panel
+22. network_TxInBytes_panel
 
 	-network_TxInBytes_panel
 	
@@ -1350,7 +1380,7 @@ If authenticated:
 
 ##  uptime_percentage_panel
 
-25. uptime_percentage_panel
+23. uptime_percentage_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1369,7 +1399,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="uptime_percentag
 
 
 **Desired Output in json / graph format:**
-25. uptime_percentage_panel
+23. uptime_percentage_panel
 
 	-uptime_percentage_panel
 	
@@ -1405,7 +1435,7 @@ Return JSON string and time series data
 
 ##  active_connection_panel
 
-26. active_connection_panel
+24. active_connection_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1424,7 +1454,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="active_connectio
 
 
 **Desired Output in json / graph format:**
-26. active_connection_panel
+24. active_connection_panel
 
 	-active_connection_panel
 	
@@ -1457,7 +1487,7 @@ Display the processed panel
 
 ##  new_connection_panel
 
-27. new_connection_panel
+25. new_connection_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1476,7 +1506,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="new_connection_p
 
 
 **Desired Output in json / graph format:**
-27. new_connection_panel
+25. new_connection_panel
 
 	-new_connection_panel
 	
@@ -1509,7 +1539,7 @@ Return JSON string and time series data
 
 ##  active_services_panel
 
-28. active_services_panel
+26. active_services_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1528,7 +1558,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="active_services_
 
 
 **Desired Output in json / graph format:**
-28. active_services_panel
+26. active_services_panel
 
 	-active_services_panel
 	
@@ -1560,7 +1590,7 @@ Display the processed panel
 
 ##  active_tasks_panel
 
-29. active_tasks_panel
+27. active_tasks_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1579,7 +1609,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="active_tasks_pan
 
 
 **Desired Output in json / graph format:**
-29. active_tasks_panel
+27. active_tasks_panel
 
 	-active_tasks_panel
 	
@@ -1612,7 +1642,7 @@ Display the processed panel
 
 ##  failed_task_panel
 
-30. failed_task_panel
+28. failed_task_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1631,7 +1661,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="failed_task_pane
 
 
 **Desired Output in json / graph format:**
-30. failed_task_panel
+28. failed_task_panel
 
 	-failed_task_panel
 	
@@ -1668,7 +1698,7 @@ Display the processed panel
 
 ##  failed_services_panel
 
-31. failed_services_panel
+29. failed_services_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1687,7 +1717,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="failed_services_
 
 
 **Desired Output in json / graph format:**
-31. failed_services_panel
+29. failed_services_panel
 
 	-failed_services_panel
 	
@@ -1725,7 +1755,7 @@ Display the processed panel
 
 ##  service_error_panel
 
-32. service_error_panel
+30. service_error_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1744,7 +1774,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="service_error_pa
 
 
 **Desired Output in json / graph format:**
-32. service_error_panel
+30. service_error_panel
 
 	-service_error_panel
 	
@@ -1784,7 +1814,7 @@ When the command is run:
 
 ##  top_events_panel
 
-33. top_events_panel
+31. top_events_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1803,7 +1833,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="top_events_panel
 
 
 **Desired Output in json / graph format:**
-33. top_events_panel
+31. top_events_panel
 
 	-top_events_panel
 	
@@ -1835,7 +1865,7 @@ Display the processed panel
 
 ##  resource_created_panel
 
-34. resource_created_panel
+32. resource_created_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1854,7 +1884,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="resource_created
 
 
 **Desired Output in json / graph format:**
-34. resource_created_panel
+32. resource_created_panel
 
 	-resource_created_panel
 	
@@ -1887,7 +1917,7 @@ Display the retrieved resource creation events
 
 ##  resource_updated_panel
 
-35. resource_updated_panel
+33. resource_updated_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1906,7 +1936,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="resource_updated
 
 
 **Desired Output in json / graph format:**
-35. resource_updated_panel
+33. resource_updated_panel
 
 	-resource_updated_panel
 	
@@ -1938,7 +1968,7 @@ Display the retrieved resource update events
 
 ##  resource_deleted_panel
 
-36. resource_deleted_panel
+34. resource_deleted_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -1957,7 +1987,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="resource_deleted
 
 
 **Desired Output in json / graph format:**
-36. resource_deleted_panel
+34. resource_deleted_panel
 
 	-resource_deleted_panel
 	
@@ -1987,7 +2017,7 @@ Display the retrieved resource deletion events
 
 ##  registration_events_panel
 
-37. registration_events_panel
+35. registration_events_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -2006,7 +2036,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="registration_eve
 
 
 **Desired Output in json / graph format:**
-37. registration_events_panel
+35. registration_events_panel
 
 	-registration_events_panel
 	
@@ -2035,7 +2065,7 @@ Display the processed registration events logs data
 
 ##  deregistration_events_panel
 
-38. deregistration_events_panel
+36. deregistration_events_panel
 ![Alt text](ecs_screen6.png)
 
 **called from subcommand**
@@ -2054,7 +2084,7 @@ awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="deregistration_e
 
 
 **Desired Output in json / graph format:**
-39. deregistration_events_panel
+36. deregistration_events_panel
 
 	-deregistration_events_panel
 	
@@ -2081,109 +2111,48 @@ Display the processed deregistration events logs data
 
 ```
 
-# ui-analysys-and listing-methods
-
-##  deregistration_events_panel
-
-40. deregistration_events_panel
-![Alt text](ecs_screen6.png)
-
-**called from subcommand**
-```shell
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="deregistration_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-```
-
-**called from maincommand**
-```shell
-awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="deregistration_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-```
-
-**Called from API**
-
-[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=deregistration_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=deregistration_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
-
-
-**Desired Output in json / graph format:**
-40. deregistration_events_panel
-
-	-deregistration_events_panel
-	
-**Algorithm/ Pseudo Code**
-
-**Get Deregistration Events Logs Data:**
-
-1. Authenticate the user using `AuthenticateCommand`.
-2. Handle authentication failure by logging an error and showing a help message.
-3. Retrieve log group name, start time, and end time from command flags; parse times using `ParseTimes` function.
-4. Fetch deregistration events logs data using `GetLogsData`.
-5. Process query results to extract relevant fields such as event time, AWS region, cluster name, resource, and instance ID.
-6. Display the processed deregistration events logs data.
-
-**Pseudo Code:**
-
-```go
-Authenticate the user using AuthenticateCommand
-If authentication fails, log error and show help message
-Retrieve log group name, start time, and end time from command flags; parse times using ParseTimes function
-Fetch deregistration events logs data using GetLogsData
-Process query results to extract relevant fields such as event time, AWS region, cluster name, resource, and instance ID
-Display the processed deregistration events logs data
-
-```
 
 # list of subcommands and options for ECS
  
+
 | S.No | CLI Spec|  Description                          
 |------|----------------|----------------------|
-| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_utilization_panel"  | This will get the specific EC2 instance cpu utilization panel data in hybrid structure |
-| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="memory_utilization_panel" | This will get the specific EC2 instance memory utilization panel data in hybrid structure|
-| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="storage_utilization_panel"  | This will get the specific EC2 instance storage utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_utilizaion_graph_panel"  | This will get the specific EC2 instance cpu utilizaion graph panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_reservation_panel"  | This will get the specific EC2 instance cpu reservation panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_usage_sys_panel"  | This will get the specific EC2 instance total cpu usage system panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_usage_nice_panel"  | This will get the specific EC2 instance cpu usage nice panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="memory_utilization_graph_panel"  | This will get the specific EC2 instance memory utilization graph panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="memory_reservation_panel"  | This will get the specific EC2 instance memory reservation panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="container_memory_usage_panel"  | This will get the specific EC2 container memory usage panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="available_memory_overtime_panel"  | This will get the specific EC2 available memory overtime panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="volume_readbytes_panel"  | This will get the specific EC2 volume readbytes panel data in hybrid structure | 
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="volume_writebytes_panel"  | This will get the specific EC2 instance volume writebytes panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="input_output_bytes_panel"  | This will get the specific EC2 instance input output bytes panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="disk_available_panel"  | This will get the specific EC2 instance disk available panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="net_RecieveInBytes_panel"  | This will get the specific EC2 instance net RecieveInBytes panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="net_transmitinbytes_panel"  | This will get the specific EC2 instance net transmitinbytes panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="container_net_received_inbytes_panel"  | This will get the specific EC2 container net received inbytes panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="container_net_transmit_inbytes_panel"  | This will get the specific EC2 container_net_transmit_inbytes_panel panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
-
+| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="cpu_utilization_panel"  | This will get the specific ECS  cpu utilization panel data in hybrid structure |
+| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="memory_utilization_panel" | This will get the specific ECS  memory utilization panel data in hybrid structure|
+| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="storage_utilization_panel"  | This will get the specific ECS  storage utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="network_utilization_panel"  | This will get the specific ECS  network utilization panel data in hybrid structure |
+| 5    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="cpu_utilizaion_graph_panel"  | This will get the specific ECS  cpu utilizaion graph panel data in hybrid structure |
+| 6    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="cpu_reservation_panel"  | This will get the specific ECS  cpu reservation panel data in hybrid structure |
+| 7    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="cpu_usage_sys_panel"  | This will get the specific ECS  total cpu usage system panel data in hybrid structure |
+| 8    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="cpu_usage_nice_panel"  | This will get the specific ECS  cpu usage nice panel data in hybrid structure |
+| 9    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="memory_utilization_graph_panel"  | This will get the specific ECS  memory utilization graph panel data in hybrid structure |
+| 10    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="memory_reservation_panel"  | This will get the specific ECS  memory reservation panel data in hybrid structure |
+| 11    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="container_memory_usage_panel"  | This will get the specific ECS container memory usage panel data in hybrid structure |
+| 13    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="available_memory_overtime_panel"  | This will get the specific ECS available memory overtime panel data in hybrid structure |
+| 14   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="volume_readbytes_panel"  | This will get the specific ECS volume readbytes panel data in hybrid structure | 
+| 15   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="volume_writebytes_panel"  | This will get the specific ECS  volume writebytes panel data in hybrid structure |
+| 16   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="input_output_bytes_panel"  | This will get the specific ECS  input output bytes panel data in hybrid structure |
+| 17   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="disk_available_panel"  | This will get the specific ECS  disk available panel data in hybrid structure |
+| 18   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="net_RecieveInBytes_panel"  | This will get the specific ECS  net RecieveInBytes panel data in hybrid structure |
+| 19   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="net_transmitinbytes_panel"  | This will get the specific ECS  net transmitinbytes panel data in hybrid structure |
+| 20   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="container_net_received_inbytes_panel"  | This will get the specific ECS container net received inbytes panel data in hybrid structure |
+| 21   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="container_net_transmit_inbytes_panel"  | This will get the specific ECS container net transmit inbytes panel panel data in hybrid structure |
+| 22   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="net_rxinbytes_panel"  | This will get the specific ECS net rxinbytes panel data in hybrid structure |
+| 23   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="net_txinbytes_panel"  | This will get the specific ECS net txinbytes panel data in hybrid structure |
+| 24   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="uptime_percentage_panel"  | This will get the specific ECS uptime percentage panel data in hybrid structure |
+| 25   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="active_connection_panel"  | This will get the specific ECS  active connection panel data in hybrid structure |
+| 26   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="new_connection_panel"  | This will get the specific ECS  new connection panel data in hybrid structure |
+| 27   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="active_services_panel"  | This will get the specific ECS  active services panel data in hybrid structure |
+| 28   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="active_tasks_panel"  | This will get the specific ECS  active tasks panel data in hybrid structure |
+| 29   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="failed_task_panel"  | This will get the specific ECS  failed task panel data in hybrid structure |
+| 30   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="failed_services_panel"  | This will get the specific ECS  failed services panel data in hybrid structure |
+| 31   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="service_error_panel"  | This will get the specific ECS  service error panel data in hybrid structure |
+| 32   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="top_events_panel"  | This will get the specific ECS  top events panel data in hybrid structure |
+| 33   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="resource_created_panel"  | This will get the specific ECS  resource created panel data in hybrid structure |
+| 34   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="resource_updated_panel"  | This will get the specific ECS  resource updated panel data in hybrid structure |
+| 35   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="resource_deleted_panel"  | This will get the specific ECS  resource deleted panel data in hybrid structure |
+| 36   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="registration_events_panel"  | This will get the specific ECS  registration events panel data in hybrid structure |
+| 37   | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=ECS --query="deregistration_events_panel"  | This will get the specific ECS  deregistration events panel data in hybrid structure |
 
 
 
