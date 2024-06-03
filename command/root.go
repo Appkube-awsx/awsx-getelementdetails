@@ -261,6 +261,17 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "active_instances_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp:= EC2.GetEC2ActiveInstanceCount(clientAuth)
+				if err != nil {
+					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else if queryName == "cpu_usage_user_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
 				jsonResp, cloudwatchMetricResp, err := EC2.GetCPUUsageUserPanel(cmd, clientAuth, nil)
 				if err != nil {
