@@ -13,6 +13,7 @@ import (
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/NLB"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/RDS"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/S3"
+	"github.com/Appkube-awsx/awsx-getelementdetails/handler/States"
 
 	"github.com/spf13/cobra"
 )
@@ -254,6 +255,61 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationGraphPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "active_instances_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp:= EC2.GetEC2ActiveInstanceCount(clientAuth)
+				if err != nil {
+					log.Println("Error getting network utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			}else if queryName == "inactive_instances_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp := EC2.GetInactiveInstancesCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting inactive instances: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "ec2_instance_summary_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetEC2InstanceSummaryPanel(clientAuth)
+				if err != nil {
+					log.Println("Error getting inactive instances: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "latest_successful_events_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetEC2InstanceSummaryPanel(clientAuth)
+				if err != nil {
+					log.Println("Error getting latest successful events: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "instance_terminated_count_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp := EC2.GetInstanceTerminatedCountPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting latest successful events: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -2797,6 +2853,61 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := NLB.GetSSLTLSNegotiationDataData(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting read iops: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "activity_failed_panel" && (elementType == "States" || elementType == "AWS/States") {
+				jsonResp, cloudwatchMetricResp := States.GetActivityFailedPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting activity failed: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "lambda_function_failed_panel" && (elementType == "States" || elementType == "AWS/States") {
+				jsonResp, cloudwatchMetricResp, err := States.GetStepLambdaFunctionFailed(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda function failed: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "activity_failed_timed_out_panel" && (elementType == "States" || elementType == "AWS/States") {
+				jsonResp, cloudwatchMetricResp := States.GetActivityFailedTimedOutPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting activity failed timed out: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "execution_failed_panel" && (elementType == "States" || elementType == "AWS/States") {
+				jsonResp, cloudwatchMetricResp, err := States.GetStepExecutionFailed(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting execution failed: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "lambda_function_timed_out_panel" && (elementType == "States" || elementType == "AWS/States") {
+				jsonResp, cloudwatchMetricResp, err := States.GetStepLambdaFunctionTimedOut(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting lambda function timed out: ", err)
 					return
 				}
 				if responseType == "frame" {
