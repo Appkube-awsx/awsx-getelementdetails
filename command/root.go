@@ -581,7 +581,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 					return
 				}
 				if responseType == "json" {
-					fmt.Println(jsonResp)
+					fmt.Printf(jsonResp)
 				} else {
 					fmt.Println("change response type ")
 				}

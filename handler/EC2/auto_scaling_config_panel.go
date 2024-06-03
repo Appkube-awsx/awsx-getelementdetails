@@ -1,6 +1,7 @@
 package EC2
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -87,8 +88,9 @@ func GetAutoScalingInfo(cmd *cobra.Command, clientAuth *model.Auth, autoScalingC
 		LaunchConfig: len(launchconfigcount.LaunchConfigurations),
 	}
 
-	instances := []AutoScalingCounts{instanceData}
-	return fmt.Sprintf(" Launch Configurations: %d configured", instanceData.LaunchConfig), instances, nil
+	//instances := []AutoScalingCounts{instanceData}
+	jsonResp, _ := json.Marshal(instanceData)
+	return string(jsonResp), nil, err
 }
 
 func init() {

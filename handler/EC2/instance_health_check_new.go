@@ -1,6 +1,7 @@
 package EC2
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -14,12 +15,8 @@ import (
 
 // HealthCheck struct to hold instance health data
 type HealthCheck struct {
-	HealthyInstancesCount   int
-	UnhealthyInstancesCount int
-}
-
-func (hc HealthCheck) String() string {
-	return fmt.Sprintf("Healthy instances count: %d\nUnhealthy instances count: %d", hc.HealthyInstancesCount, hc.UnhealthyInstancesCount)
+	HealthyInstancesCount   int `json:"HealthyInstancesCount"`
+	UnhealthyInstancesCount int `json:"UnhealthyInstancesCount"`
 }
 
 var AwsxEc2InstanceHealthCheckNewCmd = &cobra.Command{
@@ -39,17 +36,27 @@ var AwsxEc2InstanceHealthCheckNewCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
 			healthCheck, err := GetInstanceHealthCheckNew(cmd, clientAuth, nil)
 			if err != nil {
-				log.Println("Error getting instance health check data: ", err)
+				log.Println("Error getting network traffic data: ", err)
 				return
 			}
-			fmt.Println(healthCheck)
+			if responseType == "frame" {
+				fmt.Println("This cli is for only json output")
+			} else {
+				jsonResp, err := json.Marshal(&healthCheck)
+				if err != nil {
+					log.Println("Error marshalling network traffic data: ", err)
+					return
+				}
+				fmt.Println(string(jsonResp))
+			}
 		}
 	},
 }
 
-func GetInstanceHealthCheckNew(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2) (*HealthCheck, error) {
+func GetInstanceHealthCheckNew(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2) (string, error) {
 	if ec2Client == nil {
 		ec2Client = awsclient.GetClient(*clientAuth, awsclient.EC2_CLIENT).(*ec2.EC2)
 	}
@@ -65,7 +72,7 @@ func GetInstanceHealthCheckNew(cmd *cobra.Command, clientAuth *model.Auth, ec2Cl
 
 		resp, err := ec2Client.DescribeInstanceStatus(params)
 		if err != nil {
-			return nil, fmt.Errorf("failed to describe instance status: %v", err)
+			return "", fmt.Errorf("failed to describe instance status: %v", err)
 		}
 		//fmt.Println(resp)
 		allInstanceStatuses = append(allInstanceStatuses, resp.InstanceStatuses...)
@@ -84,7 +91,8 @@ func GetInstanceHealthCheckNew(cmd *cobra.Command, clientAuth *model.Auth, ec2Cl
 			healthCheck.UnhealthyInstancesCount++
 		}
 	}
-	return healthCheck, nil
+	jsonResp, _ := json.Marshal(healthCheck)
+	return string(jsonResp), nil
 }
 
 func init() {
