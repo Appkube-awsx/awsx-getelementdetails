@@ -12,6 +12,8 @@ import (
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/Lambda"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/NLB"
 	"github.com/Appkube-awsx/awsx-getelementdetails/handler/RDS"
+	"github.com/Appkube-awsx/awsx-getelementdetails/handler/S3"
+
 	"github.com/spf13/cobra"
 )
 
@@ -143,6 +145,83 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationPanel(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "total_cpu_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetCpuUtilizationAcrossAllInstancesPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "total_network_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetNetworkUtilizationAcrossAllInstancesPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "total_memory_utilization_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetMemoryUtilizationForAllInstancesPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "instance_availalbility_zones_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetInstanceAvailabilityZonesData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error in getting instance availalbility zones: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "instance_availability_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.InstanceAvailability(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error in getting instance availalbility zones: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "instance_connectivity_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetConnectivityData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error in getting instance availalbility zones: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "auto_scaling_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
+				jsonResp, cloudwatchMetricResp, err := EC2.GetAutoScalingGroupsDetails(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting autoscaling groups details: ", err)
 					return
 				}
 				if responseType == "frame" {
@@ -2562,6 +2641,28 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				} else {
 					fmt.Println(jsonResp)
 				}
+			} else if queryName == "latency_panel" && (elementType == "S3" || elementType == "AWS/S3") {
+				jsonResp, cloudwatchMetricResp, err := S3.GetLatencyPanel(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
+			} else if queryName == "data_transfer_panel" && (elementType == "S3" || elementType == "AWS/S3") {
+				jsonResp, cloudwatchMetricResp, err := S3.GetDataTransferData(cmd, clientAuth, nil)
+				if err != nil {
+					log.Println("Error getting memory utilization: ", err)
+					return
+				}
+				if responseType == "frame" {
+					fmt.Println(cloudwatchMetricResp)
+				} else {
+					fmt.Println(jsonResp)
+				}
 			} else {
 				fmt.Println("query not found")
 			}
@@ -2613,6 +2714,13 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceStatusCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2ErrorRatePanelCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2InstanceHealthCheckCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2CpuUtilizationAcrossAllInstanceCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2NetworkUtilizationAcrossAllInstanceCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxEc2MemoryUtilizationForAllInstancesCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxInstanceAvailabilityCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxInstanceAvailabilityZoneCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(EC2.AwsxAutoScalingGroupsCmd)
+
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSAllocatableCpuCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuLimitsCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(EKS.AwsxEKSCpuRequestsCmd)
@@ -2708,6 +2816,8 @@ func init() {
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBTCPClientResetCountCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBTCPElbResetCountCmd)
 	AwsxCloudWatchMetricsCmd.AddCommand(NLB.AwsxNLBNewFlowTCPCountCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(S3.AwsxS3LatencyCmd)
+	AwsxCloudWatchMetricsCmd.AddCommand(S3.AwsxS3DataTransferCmd)
 
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
 	AwsxCloudWatchMetricsCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
