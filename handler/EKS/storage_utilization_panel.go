@@ -13,9 +13,9 @@ import (
 )
 
 type StorageUtilizationResult struct {
-	RootVolumeUsage float64 `json:"rootVolumeUsage"`
-	EBSVolume1Usage float64 `json:"ebsVolume1Usage"`
-	EBSVolume2Usage float64 `json:"ebsVolume2Usage"`
+	RootVolumeUtilization float64 `json:"RootVolumeUsage"`
+	EBS1VolumeUtilization float64 `json:"EBSVolume1Usage"`
+	EBS2VolumeUtilization float64 `json:"EBSVolume2Usage"`
 }
 
 var AwsxEKSStorageUtilizationCmd = &cobra.Command{
@@ -60,7 +60,10 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	if err != nil {
 		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
-
+	instanceId, err = comman_function.GetCmdbData(cmd)
+	if err != nil {
+		return "", nil, fmt.Errorf("error getting instance ID: %v", err)
+	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Root Volume Usage
@@ -69,39 +72,45 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in getting root volume usage: ", err)
 		return "", nil, err
 	}
-	rootVolumeUsageValue := *rootVolumeUsage.MetricDataResults[0].Values[0]
-	rootVolumeUsageStr := strconv.FormatFloat(rootVolumeUsageValue, 'f', 2, 64)
+	cloudwatchMetricData["RootVolumeUtilization"] = rootVolumeUsage
 
 	// Get EBS Volume 1 Usage
-	ebsVolume1Usage, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
+	ebs1VolumeUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting EBS volume 1 usage: ", err)
+		log.Println("Error in getting EBS1 volume  usage: ", err)
 		return "", nil, err
 	}
-	ebsVolume1Percentage := (*ebsVolume1Usage.MetricDataResults[0].Values[0] / 10000000.0) // Replace 100.0 with the total space for EBS Volume 1
-	ebsVolume1PercentageStr := strconv.FormatFloat(ebsVolume1Percentage, 'f', 2, 64)
+	cloudwatchMetricData["EBS1VolumeUtilization"] = ebs1VolumeUsage
 
 	// Get EBS Volume 2 Usage
-	ebsVolume2Usage, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
+	ebs2VolumeUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "ContainerInsights", "node_filesystem_inodes", startTime, endTime, "Average", "ClusterName", cloudWatchClient)
 	if err != nil {
-		log.Println("Error in getting EBS volume 2 usage: ", err)
+		log.Println("Error in getting EBS2 volume  usage: ", err)
 		return "", nil, err
 	}
-	ebsVolume2Percentage := (*ebsVolume2Usage.MetricDataResults[0].Values[0] / 10999999.0) // Replace 200.0 with the total space for EBS Volume 2
-	ebsVolume2PercentageStr := strconv.FormatFloat(ebsVolume2Percentage, 'f', 2, 64)
+	cloudwatchMetricData["EBS2VolumeUtilization"] = ebs2VolumeUsage
+	// Calculate average of all three volumes
+	rootVolumeAvg := calculateAverage(rootVolumeUsage)
+	ebs1VolumeAvg := calculateAverage(ebs1VolumeUsage) / 2 // Divide by 2
+	ebs2VolumeAvg := calculateAverage(ebs2VolumeUsage) / 2 // Divide by 2
+
+	// Format average utilizations to have two decimal places
+	rootVolumeAvgStr := strconv.FormatFloat(rootVolumeAvg, 'f', 2, 64)
+	ebs1VolumeAvgStr := strconv.FormatFloat(ebs1VolumeAvg, 'f', 2, 64)
+	ebs2VolumeAvgStr := strconv.FormatFloat(ebs2VolumeAvg, 'f', 2, 64)
 
 	// Convert formatted strings back to float64
-	rootVolumeUsageFloat, err := strconv.ParseFloat(rootVolumeUsageStr, 64)
+	rootVolumeAvgFloat, err := strconv.ParseFloat(rootVolumeAvgStr, 64)
 	if err != nil {
 		log.Println("Error converting string to float64: ", err)
 		return "", nil, err
 	}
-	ebsVolume1PercentageFloat, err := strconv.ParseFloat(ebsVolume1PercentageStr, 64)
+	ebs1VolumeAvgFloat, err := strconv.ParseFloat(ebs1VolumeAvgStr, 64)
 	if err != nil {
 		log.Println("Error converting string to float64: ", err)
 		return "", nil, err
 	}
-	ebsVolume2PercentageFloat, err := strconv.ParseFloat(ebsVolume2PercentageStr, 64)
+	ebs2VolumeAvgFloat, err := strconv.ParseFloat(ebs2VolumeAvgStr, 64)
 	if err != nil {
 		log.Println("Error converting string to float64: ", err)
 		return "", nil, err
@@ -109,9 +118,9 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 
 	// Create JSON output
 	jsonOutput := StorageUtilizationResult{
-		RootVolumeUsage: rootVolumeUsageFloat,
-		EBSVolume1Usage: ebsVolume1PercentageFloat,
-		EBSVolume2Usage: ebsVolume2PercentageFloat,
+		RootVolumeUtilization: rootVolumeAvgFloat,
+		EBS1VolumeUtilization: ebs1VolumeAvgFloat,
+		EBS2VolumeUtilization: ebs2VolumeAvgFloat,
 	}
 
 	jsonString, err := json.Marshal(jsonOutput)
@@ -121,22 +130,17 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	}
 	return string(jsonString), cloudwatchMetricData, nil
 }
-
+func calculateAverage(result *cloudwatch.GetMetricDataOutput) float64 {
+	sum := 0.0
+	if len(result.MetricDataResults) > 0 && len(result.MetricDataResults[0].Values) > 0 {
+		for _, value := range result.MetricDataResults[0].Values {
+			sum += *value
+		}
+		return sum / float64(len(result.MetricDataResults[0].Values))
+	}
+	return 0
+}
 func init() {
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSStorageUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEKSStorageUtilizationCmd)
+	
 }

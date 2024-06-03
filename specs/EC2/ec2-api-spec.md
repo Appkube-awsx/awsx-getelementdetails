@@ -106,7 +106,7 @@ It implements the awsx plugin getElementDetails
 3. **Define function to fetch metrics data:**
    - Get parameters and parse times from command flags.
    - Get additional data (e.g., log group name).
-   - Construct and execute CloudWatch query.
+   - Construct an input for CloudWatch metrics and bring data using the AWS SDK for Go.
    - Process and return results.
 4. **Initialize command flags.**
 
@@ -446,8 +446,6 @@ awsx --vaultUrl=<afreenxxxx1309> --elementId=14923 --query="cpu_usage_user" --el
 go run awsx-getelementdetails.go  --vaultUrl=<afreenxxxx1309> --elementId=14923 --query="cpu_usage_idle" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 ```
 
- 
-
 **called from maincommand**
 ```shell
 awsx --vaultUrl=<afreenxxxx1309> --elementId=14923 --query="cpu_usage_idle" --elementType="EC2" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
@@ -552,8 +550,6 @@ awsx --vaultUrl=<afreenxxxx1309> --elementId=14923 --query="cpu_usage_sys" --ele
   }
 }
 ```
-
-
 
  
 # ui-analysys-and listing-methods

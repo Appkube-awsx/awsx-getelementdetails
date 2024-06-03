@@ -11,16 +11,15 @@ import (
 	"log"
 )
 
-type NetworkResultMB struct {
+type NetworkResults struct {
 	InboundTraffic  float64 `json:"InboundTraffic"`
 	OutboundTraffic float64 `json:"OutboundTraffic"`
 	DataTransferred float64 `json:"DataTransferred"`
 }
 
-// Function to convert bytes to megabytes
-func bytesToMegabytes(bytes float64) float64 {
-	return bytes / (1024 * 1024)
-}
+const (
+	bytesToMegabytes = 1024 * 1024
+)
 
 var AwsxEKSNetworkUtilizationCmd = &cobra.Command{
 	Use:   "network_utilization_panel",
@@ -77,13 +76,7 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
 	}
-	// Convert inbound traffic to megabytes
-	var inboundTrafficMegabytes float64
-	if len(inboundTraffic.MetricDataResults) > 0 && len(inboundTraffic.MetricDataResults[0].Values) > 0 {
-		inboundTrafficMegabytes = bytesToMegabytes(*inboundTraffic.MetricDataResults[0].Values[0])
-	} else {
-		log.Println("No data available for inbound traffic")
-	}
+	inboundTrafficMegabytes := *inboundTraffic.MetricDataResults[0].Values[0] / bytesToMegabytes
 	cloudwatchMetricData["InboundTraffic"] = createMetricDataOutput(inboundTrafficMegabytes)
 
 	// Get Outbound Traffic
@@ -92,32 +85,16 @@ func GetNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
 	}
-	// Convert outbound traffic to megabytes
-	var outboundTrafficMegabytes float64
-	if len(outboundTraffic.MetricDataResults) > 0 && len(outboundTraffic.MetricDataResults[0].Values) > 0 {
-		outboundTrafficMegabytes = bytesToMegabytes(*outboundTraffic.MetricDataResults[0].Values[0])
-	} else {
-		log.Println("No data available for outbound traffic")
-	}
+	outboundTrafficMegabytes := *outboundTraffic.MetricDataResults[0].Values[0] / bytesToMegabytes
 	cloudwatchMetricData["OutboundTraffic"] = outboundTraffic
 
-	var dataTransferred float64
-	if len(inboundTraffic.MetricDataResults) > 0 && len(inboundTraffic.MetricDataResults[0].Values) > 0 &&
-		len(outboundTraffic.MetricDataResults) > 0 && len(outboundTraffic.MetricDataResults[0].Values) > 0 {
-		dataTransferred = *inboundTraffic.MetricDataResults[0].Values[0] + *outboundTraffic.MetricDataResults[0].Values[0]
-	} else {
-		log.Println("Not enough data available to calculate data transferred")
-		dataTransferred = 0
-	}
+	dataTransferred := inboundTrafficMegabytes + outboundTrafficMegabytes
 	cloudwatchMetricData["DataTransferred"] = createMetricDataOutput(dataTransferred)
 
-	// Convert values to MB
-	dataTransferredMB := bytesToMegabytes(dataTransferred)
-
-	jsonOutput := NetworkResultMB{
+	jsonOutput := NetworkResults{
 		InboundTraffic:  inboundTrafficMegabytes,
 		OutboundTraffic: outboundTrafficMegabytes,
-		DataTransferred: dataTransferredMB,
+		DataTransferred: dataTransferred,
 	}
 
 	jsonString, err := json.Marshal(jsonOutput)
@@ -140,20 +117,5 @@ func createMetricDataOutput(value float64) *cloudwatch.GetMetricDataOutput {
 }
 
 func init() {
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("query", "", "query")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEKSNetworkUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEKSNetworkUtilizationCmd)
 }

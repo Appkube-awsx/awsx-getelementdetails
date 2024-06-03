@@ -1,7 +1,7 @@
 package EC2
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
 	"log"
 
@@ -48,6 +48,7 @@ var AwsxEc2DiskReadCmd = &cobra.Command{
 
 func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
+	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
 
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
@@ -63,23 +64,32 @@ func GetDiskReadPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Fetch raw data
-	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/"+elementType, "DiskReadBytes", startTime, endTime, "Average", "InstanceId", cloudWatchClient)
+	rawData, err := comman_function.GetMetricData(clientAuth, instanceId, "CWAgent", "diskio_reads", startTime, endTime, "Sum", "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting disk read data: ", err)
 		return "", nil, err
 	}
 	cloudwatchMetricData["Disk_Reads"] = rawData
-	jsonOutput := make(map[string]float64)
-	if len(rawData.MetricDataResults) > 0 && len(rawData.MetricDataResults[0].Values) > 0 {
-		jsonOutput["Disk_Reads"] = *rawData.MetricDataResults[0].Values[0]
-	}
-	jsonString, err := json.Marshal(jsonOutput)
+	//jsonOutput := make(map[string]float64)
+	//if len(rawData.MetricDataResults) > 0 && len(rawData.MetricDataResults[0].Values) > 0 {
+		//jsonOutput["Disk_Reads"] = *rawData.MetricDataResults[0].Values[0]
+		//return "", cloudwatchMetricData, nil
+		//jsonString, err := json.Marshal(jsonOutput)
 	if err != nil {
 		log.Println("Error in marshalling json in string: ", err)
 		return "", nil, err
 	}
 
-	return string(jsonString), cloudwatchMetricData, nil
+	//return string(jsonString), cloudwatchMetricData, nil
+	var totalSum float64
+	for _, value := range rawData.MetricDataResults {
+		for _, datum := range value.Values {
+			totalSum += *datum
+		}
+	}
+	totalSumStr := fmt.Sprintf("{disk io reads count: %f}", totalSum)
+	return totalSumStr, cloudwatchMetricData, nil
+
 }
 
 func init() {

@@ -3,8 +3,8 @@ module github.com/Appkube-awsx/awsx-getelementdetails
 go 1.19
 
 require (
-	github.com/Appkube-awsx/awsx-common v1.3.9
-	github.com/aws/aws-sdk-go v1.51.0
+	github.com/Appkube-awsx/awsx-common v1.4.1
+	github.com/aws/aws-sdk-go v1.53.10
 	github.com/spf13/cobra v1.7.0
 )
 

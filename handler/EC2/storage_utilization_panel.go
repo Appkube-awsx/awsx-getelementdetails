@@ -5,14 +5,10 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
-	"github.com/Appkube-awsx/awsx-common/awsclient"
-	"github.com/Appkube-awsx/awsx-common/cmdb"
-	"github.com/Appkube-awsx/awsx-common/config"
 	"github.com/Appkube-awsx/awsx-common/model"
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
 )
@@ -58,67 +54,29 @@ var AwsxEc2StorageUtilizationCmd = &cobra.Command{
 }
 
 func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]*cloudwatch.GetMetricDataOutput, error) {
-	elementId, _ := cmd.PersistentFlags().GetString("elementId")
+	
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
-	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
+	fmt.Println(elementType)
 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-
-	if elementId != "" {
-		log.Println("getting cloud-element data from cmdb")
-		apiUrl := cmdbApiUrl
-		if cmdbApiUrl == "" {
-			log.Println("using default cmdb url")
-			apiUrl = config.CmdbUrl
-		}
-		log.Println("cmdb url: " + apiUrl)
-		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	
 		if err != nil {
-			return "", nil, err
+			return "", nil, fmt.Errorf("error parsing time: %v", err)
 		}
-		instanceId = cmdbData.InstanceId
-
-	}
-
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
+		instanceId, err = comman_function.GetCmdbData(cmd)
 		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
+			return "", nil, fmt.Errorf("error getting instance ID: %v", err)
 		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-15 * time.Minute)
-		startTime = &defaultStartTime
-	}
+	
 
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
+	
+			
+
+	
+	
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	// Get Root Volume Utilization
-	rootVolumeUsage, err := GetStorageUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "disk_used_percent", cloudWatchClient)
+	rootVolumeUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/EC2","disk_used_percent", startTime, endTime, "Average", "InstanceId",cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting Root Volume Utilization: ", err)
 		return "", nil, err
@@ -126,7 +84,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData["RootVolumeUtilization"] = rootVolumeUsage
 
 	// Get EBS1 Volume Utilization
-	ebs1VolumeUsage, err := GetStorageUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "disk_used_percent", cloudWatchClient)
+	ebs1VolumeUsage, err := comman_function.GetMetricData(clientAuth, instanceId,"AWS/EC2" ,"disk_used_percent", startTime, endTime, "Average",  "InstanceId", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS1 Volume Utilization: ", err)
 		return "", nil, err
@@ -134,7 +92,7 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 	cloudwatchMetricData["EBS1VolumeUtilization"] = ebs1VolumeUsage
 
 	// Get EBS2 Volume Utilization
-	ebs2VolumeUsage, err := GetStorageUtilizationMetricData(clientAuth, instanceId, elementType, startTime, endTime, "Average", "disk_used_percent", cloudWatchClient)
+	ebs2VolumeUsage, err := comman_function.GetMetricData(clientAuth, instanceId, "AWS/EC2" , "disk_used_percent", startTime, endTime, "Average","InstanceId" , cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting EBS2 Volume Utilization: ", err)
 		return "", nil, err
@@ -185,47 +143,6 @@ func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, clou
 }
 
 
-func GetStorageUtilizationMetricData(clientAuth *model.Auth, instanceID, elementType string, startTime, endTime *time.Time, statistic, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
-	log.Printf("Getting metric data for instance %s in namespace %s from %v to %v", instanceID, elementType, startTime, endTime)
-
-	elmType := "CWAgent"
-	// if elementType == "EC2" {
-	// 	elmType = "AWS/" + elementType
-	// }
-	input := &cloudwatch.GetMetricDataInput{
-		EndTime:   endTime,
-		StartTime: startTime,
-		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-			{
-				Id: aws.String("m1"),
-				MetricStat: &cloudwatch.MetricStat{
-					Metric: &cloudwatch.Metric{
-						Dimensions: []*cloudwatch.Dimension{
-							{
-								Name:  aws.String("InstanceId"),
-								Value: aws.String(instanceID),
-							},
-						},
-						MetricName: aws.String(metricName),
-						Namespace:  aws.String(elmType),
-					},
-					Period: aws.Int64(300),
-					Stat:   aws.String(statistic),
-				},
-			},
-		},
-	}
-	if cloudWatchClient == nil {
-		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-	}
-
-	result, err := cloudWatchClient.GetMetricData(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
 
 func calculateAverage(result *cloudwatch.GetMetricDataOutput) float64 {
 	sum := 0.0
@@ -239,230 +156,6 @@ func calculateAverage(result *cloudwatch.GetMetricDataOutput) float64 {
 }
 
 func init() {
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("query", "", "query")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxEc2StorageUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxEc2StorageUtilizationCmd)
 }
 
-// package EC2
-
-// import (
-// 	"encoding/json"
-// 	"fmt"
-// 	"log"
-// 	"time"
-
-// 	"github.com/Appkube-awsx/awsx-common/authenticate"
-// 	"github.com/Appkube-awsx/awsx-common/awsclient"
-// 	"github.com/Appkube-awsx/awsx-common/cmdb"
-// 	"github.com/Appkube-awsx/awsx-common/config"
-// 	"github.com/Appkube-awsx/awsx-common/model"
-// 	"github.com/aws/aws-sdk-go/aws"
-// 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-// 	"github.com/spf13/cobra"
-// )
-
-// type StorageResult struct {
-// 	RootVolumeUtilization float64 `json:"RootVolumeUtilization"`
-// 	EBS1VolumeUtilization float64 `json:"EBS1VolumeUtilization"`
-// 	EBS2VolumeUtilization float64 `json:"EBS2VolumeUtilization"`
-// }
-
-// const (
-// 	bytesToGigabytes = 1024 * 1024 * 1024
-// )
-
-// var StorageUtilizationCmd = &cobra.Command{
-// 	Use:   "storage_utilization_panel",
-// 	Short: "get storage utilization metrics data",
-// 	Long:  `command to get storage utilization metrics data`,
-
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		fmt.Println("running storage utilization panel")
-// 		var authFlag, clientAuth, err = authenticate.AuthenticateCommand(cmd)
-// 		if err != nil {
-// 			log.Printf("Error during authentication: %v\n", err)
-// 			err := cmd.Help()
-// 			if err != nil {
-// 				return
-// 			}
-// 			return
-// 		}
-
-// 		if authFlag {
-// 			jsonResp, err := GetStorageUtilizationPanel(cmd, clientAuth, nil)
-// 			if err != nil {
-// 				log.Println("Error getting storage utilization: ", err)
-// 				return
-// 			}
-// 			fmt.Println(jsonResp)
-// 		}
-// 	},
-// }
-
-// func GetStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, error) {
-// 	// Initialize CloudWatch client if not provided
-// 	if cloudWatchClient == nil {
-// 		cloudWatchClient = awsclient.GetClient(*clientAuth, awsclient.CLOUDWATCH).(*cloudwatch.CloudWatch)
-// 	}
-// 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
-// 	// elementType, _ := cmd.PersistentFlags().GetString("elementType")
-// 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-// 	instanceId, _ := cmd.PersistentFlags().GetString("instanceId")
-
-// 	if elementId != "" {
-// 		log.Println("getting cloud-element data from cmdb")
-// 		apiUrl := cmdbApiUrl
-// 		if cmdbApiUrl == "" {
-// 			log.Println("using default cmdb url")
-// 			apiUrl = config.CmdbUrl
-// 		}
-// 		log.Println("cmdb url: " + apiUrl)
-// 		cmdbData, err := cmdb.GetCloudElementData(apiUrl, elementId)
-// 		if err != nil {
-// 			return "", nil
-// 		}
-// 		instanceId = cmdbData.InstanceId
-
-// 	}
-
-// 	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-// 	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-// 	var startTime, endTime *time.Time
-
-// 	// Parse start time if provided
-// 	if startTimeStr != "" {
-// 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-// 		if err != nil {
-// 			log.Printf("Error parsing start time: %v", err)
-// 			err := cmd.Help()
-// 			if err != nil {
-// 				return "", err
-// 			}
-// 			return "", err
-// 		}
-// 		startTime = &parsedStartTime
-// 	}
-
-// 	// Parse end time if provided
-// 	if endTimeStr != "" {
-// 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-// 		if err != nil {
-// 			log.Printf("Error parsing end time: %v", err)
-// 			err := cmd.Help()
-// 			if err != nil {
-// 				return "", err
-// 			}
-// 			return "", err
-// 		}
-// 		endTime = &parsedEndTime
-// 	}
-
-// 	// If start time is not provided, use last 15 minutes
-// 	if startTime == nil {
-// 		defaultStartTime := time.Now().Add(-15 * time.Minute)
-// 		startTime = &defaultStartTime
-// 	}
-
-// 	// If end time is not provided, use current time
-// 	if endTime == nil {
-// 		defaultEndTime := time.Now()
-// 		endTime = &defaultEndTime
-// 	}
-
-// 	// If start time is after end time, return null
-// 	if startTime.After(*endTime) {
-// 		log.Println("Start time is after end time")
-// 		return "null", nil
-// 	}
-
-// 	// Get metrics for root volume utilization
-// 	rootVolumeUtilization, err := GetStorageUtilizationMetricData(clientAuth, instanceId, "disk_used", startTime, endTime, cloudWatchClient)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	// Get metrics for EBS volume 1 utilization
-// 	ebs1VolumeUtilization, err := GetStorageUtilizationMetricData(clientAuth, instanceId, "VolumeBytesUsed", startTime, endTime, cloudWatchClient)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	// Get metrics for EBS volume 2 utilization
-// 	ebs2VolumeUtilization, err := GetStorageUtilizationMetricData(clientAuth, instanceId, "VolumeBytesUsed", startTime, endTime, cloudWatchClient)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	// Calculate percentages for utilization
-// 	rootVolumeUtilizationPercent := (rootVolumeUtilization / bytesToGigabytes) * 100
-// 	ebs1VolumeUtilizationPercent := (ebs1VolumeUtilization / bytesToGigabytes) * 100
-// 	ebs2VolumeUtilizationPercent := (ebs2VolumeUtilization / bytesToGigabytes) * 100
-
-// 	// Create JSON output
-// 	jsonOutput := StorageResult{
-// 		RootVolumeUtilization: rootVolumeUtilizationPercent,
-// 		EBS1VolumeUtilization: ebs1VolumeUtilizationPercent,
-// 		EBS2VolumeUtilization: ebs2VolumeUtilizationPercent,
-// 	}
-
-// 	jsonString, err := json.Marshal(jsonOutput)
-// 	if err != nil {
-// 		log.Println("Error in marshalling json in string: ", err)
-// 		return "", err
-// 	}
-
-// 	return string(jsonString), nil
-// }
-
-// func GetStorageUtilizationMetricData(clientAuth *model.Auth, instanceId string, metricName string, startTime, endTime *time.Time, cloudWatchClient *cloudwatch.CloudWatch) (float64, error) {
-// 	// Define input parameters for the metric query
-// 	input := &cloudwatch.GetMetricDataInput{
-// 		StartTime: startTime,
-// 		EndTime:   endTime,
-// 		MetricDataQueries: []*cloudwatch.MetricDataQuery{
-// 			{
-// 				Id: aws.String("m1"),
-// 				MetricStat: &cloudwatch.MetricStat{
-// 					Metric: &cloudwatch.Metric{
-// 						MetricName: aws.String(metricName),
-// 						Namespace:  aws.String("CWAgent"), // Adjust namespace if necessary
-// 					},
-// 					Period: aws.Int64(300),
-// 					Stat:   aws.String("Average"),
-// 				},
-// 			},
-// 		},
-// 	}
-
-// 	// Make the API call to CloudWatch to get the metric data
-// 	result, err := cloudWatchClient.GetMetricData(input)
-// 	if err != nil {
-// 		return 0, err
-// 	}
-
-// 	// Extract the metric value
-// 	if len(result.MetricDataResults) > 0 && len(result.MetricDataResults[0].Values) > 0 {
-// 		return *result.MetricDataResults[0].Values[0], nil
-// 	}
-
-// 	return 0, fmt.Errorf("no metric data available for %s", metricName)
-// }
-
-// func init() {
-// 	// Initialize flags or command options if needed
-// }

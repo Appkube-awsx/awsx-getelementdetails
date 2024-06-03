@@ -1,7 +1,13 @@
 github.com/Appkube-awsx/awsx-common v1.3.9 h1:WgZBpkF7JHurv6qSou2/06TYpIPGMgLCzgMcA6+AFZw=
 github.com/Appkube-awsx/awsx-common v1.3.9/go.mod h1:UAkkTaLOByfWgYiUGiryj7qz5yK2tTrrhBT1Da3X1ZY=
+github.com/Appkube-awsx/awsx-common v1.4.0 h1:k5/RxZ89HzSfpyiyteRYvlj2myoV5fH6X7NaAjI+Xpg=
+github.com/Appkube-awsx/awsx-common v1.4.0/go.mod h1:UAkkTaLOByfWgYiUGiryj7qz5yK2tTrrhBT1Da3X1ZY=
+github.com/Appkube-awsx/awsx-common v1.4.1 h1:F5BWT3cIepgc2QzFRsX+qHiGAcrHBGXLjDNhNVTfAuA=
+github.com/Appkube-awsx/awsx-common v1.4.1/go.mod h1:L3CWEoADcVPTgfD5FcRqvJ4Gqgk7t3kTfrV5Txm13Tg=
 github.com/aws/aws-sdk-go v1.51.0 h1:EA6GlEYMT3ouCO+v+oTWzKB/vcoHD2T9H9qulRx3lPg=
 github.com/aws/aws-sdk-go v1.51.0/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
+github.com/aws/aws-sdk-go v1.53.10 h1:3enP5l5WtezT9Ql+XZqs56JBf5YUd/FEzTCg///OIGY=
+github.com/aws/aws-sdk-go v1.53.10/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

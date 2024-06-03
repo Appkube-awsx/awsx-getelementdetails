@@ -11,19 +11,21 @@
   - [memory\_utilization\_graph\_panel](#memory_utilization_graph_panel)
   - [memory\_reservation\_panel](#memory_reservation_panel)
   - [container\_memory\_usage\_panel](#container_memory_usage_panel)
-  - [memory\_overtime\_panel](#memory_overtime_panel)
+  - [available_memory_overtime_panel](#available_memory_overtime_panel)
   - [volume\_readBytes\_panel](#volume_readbytes_panel)
   - [volume\_writeBytes\_panel](#volume_writebytes_panel)
   - [I/O\_bytes\_panel](#input_output_bytes_panel)
   - [disk\_available\_panel](#disk_available_panel) 
-  - [net\_inBytes\_panel](#net_inbytes_panel)
-  - [net\_outBytes\_panel](#net_outbytes_panel)
-  - [net\_ReceiveInBytes\_panel](#net_receiveinbytes_panel)
+  - [net\_ReceiveInBytes\_panel](#net_RecieveInBytes_panel)
   - [net\_TransmitInbytes\_panel](#net_transmitinbytes_panel)
+  - [container_net_received_inbytes_panel](#container_net_received_inbytes_panel)
+  - [container_net_transmit_inbytes_panel](#container_net_transmit_inbytes_panel)
   - [net\_RxInBytes\_panel](#net_rxinbytes_panel) 
   - [net\_TxInBytes\_panel](#net_txinbytes_panel)
-  
- 
+  - [uptime_percentage_panel](#uptime_percentage_panel)
+
+- [pseudocode for matric based panels](#pseudocode-for-matric-based-panels)
+- [pseudocode for log based panels](#pseudocode-for-log-based-panels)
 - [list of subcommands and options for ECS](#list-of-subcommands-and-options-for-ecs)
 
 list of subcommands and options for EC2
@@ -49,54 +51,183 @@ It implements the awsx plugin getElementDetails
 14. volume_writeBytes_panel
 15. I/O_Bytes_panel
 16. disk_available_panel
-17. net_inBytes_panel
-18. net_outBytes_panel
-19. net_ReceiveInBytes_panel
-20. net_transmitInBytes_panel
+17. net_ReceiveInBytes_panel
+18. net_transmitInBytes_panel
+19. container_net_received_inbytes_panel
+20. container_net_transmit_inbytes_panel
 21. net_RxInBytes_panel
 22. net_TxInBytes_panel
+23. uptime_percentage_panel
+24. 
 
 _
+
+**Algorithm:** 
+## Algorithm for metric based panels
+
+1. **Define a command to fetch metrics.**
+2. **On command execution:**
+   - Authenticate the command.
+   - Call function to fetch metrics data.
+   - Print metrics data.
+3. **Define function to fetch metrics data:**
+   - Get parameters and parse times from command flags.
+   - Get additional data (e.g., log group name).
+   - Construct an input for CloudWatch metrics and bring data using the AWS SDK for Go.
+   - Process and return results.
+4. **Initialize command flags.**
+
+## Algorithm for log based panels
+1. **Define a command to fetch logs data.**
+2. **On command execution:**
+   - Authenticate the command.
+   - Call function to fetch logs data.
+   - Print logs data.
+3. **Define function to fetch logs data:**
+    - Get log group name from command flags.
+    - Parse start and end times.
+    - Get log group name from CMDB data.
+    - Construct and execute CloudWatch query.
+    - Process and return results.
+4. **Initialize command flags.**
+_
+# pseudocode for matric based panels
+```
+Define command to fetch metrics:
+
+On command run:
+    Authenticate the command
+    If authentication fails:
+        Print error and return
+    Get responseType from command flags
+    Retrieve metrics using GetMetricsPanel function
+    If error occurs:
+        Print error and return
+    Format and print the response based on responseType
+
+Function GetMetricsPanel(command, clientAuth, cloudWatchClient):
+    Input: cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch
+    Output: string, map[string]*cloudwatch.GetMetricDataOutput, error
+    Get elementType and instanceId from command flags
+    Parse startTime and endTime from command flags
+    If error in parsing times:
+        Return error
+    Get instanceId using CMDB data
+    If error in getting instanceId:
+        Return error
+    Initialize metricData map
+    Get metric data and store in metricData if available
+    Create jsonOutput map with metricData values
+    Marshal jsonOutput to JSON string
+    If error:
+        Return error
+    Return JSON string and metricData
+
+Initialize command flags
+
+```
+# pseudocode-for-log-based-panels
+
+```
+Define command to fetch cloudwatch logs:
+
+On command run:
+    Authenticate the command
+    If authentication fails:
+        Print error and return
+    Get responseType from command flags
+    Retrieve metrics using function
+    If error occurs:
+        Print error and return
+    Format and print the response based on responseType
+
+Function to fetch panel data:
+    Input: cmd (*cobra.Command), clientAuth (*model.Auth), cloudWatchLogs (*cloudwatchlogs.CloudWatchLogs)
+    Output: results ([]*cloudwatchlogs.GetQueryResultsOutput), error
+
+    Get the log group name from command flags
+    Parse the start and end times from command flags
+    If an error occurs during parsing times:
+        Return nil for results and the error
+
+    Get the log group name from CMDB data
+    If an error occurs during fetching CMDB data:
+        Return nil for results and the error
+
+    Construct the CloudWatch query and fetch data
+    If an error occurs during fetching data:
+        Return nil for results and the error
+
+    Process the fetched results
+    Return the processed results and nil for error
+
+Initialize command flags
+
+```
+
 # ui-analysys-and listing-methods
 
 1. cpu_utilization_panel
 ![Alt text](ecs_screen1.png)
 
-## cpu_utiization_panel
+## cpu_utilization_panel
 
 
 **called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="cpu_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
 
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
 **Desired Output in json / graph format:**
 1. CPU utilization
+```json
 {
-	CurrentUsage:25%,
-	AverageUsage:30%,
-	MaxUsage:40%
+	"CurrentUsage":"25",
+	"AverageUsage":"30",
+	"MaxUsage":"40"
 }
-
+```
 
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- CPU utilization panel - Write a custom metric for cpu utilization, where we shall write a program for current, avg and max.
+**Algorithm:**
+- Get ECS CPU Utilization Panel - Fetches and displays CPU usage statistics for ECS instances.
 
- **Pseudo Code:**  
- 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType` from command flags.
+    - Call `GetECScpuUtilizationPanel` to fetch CPU utilization data.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize current_cpu_usage, average_cpu_usage, max_cpu_usage to 0
+For each ECS instance metric data point:
+    If metric is "current":
+        Update current_cpu_usage with the value
+    If metric is "average":
+        Update average_cpu_usage with the value
+    If metric is "max":
+        Update max_cpu_usage with the value
+Display current_cpu_usage, average_cpu_usage, max_cpu_usage
+```
  
 # ui-analysys-and listing-methods
 
@@ -107,37 +238,56 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="memory_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="memory_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="memory_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=memory_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=memory_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=memory_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
 **Desired Output in json / graph format:**
 2.  Memory utilization
+```json
 {
-    CurrentUsage:15GB,
-    AverageUsage:25GB,
-	MaxUsage:50GB
+    "CurrentUsage":"15",
+    "AverageUsage":"25",
+	"MaxUsage":"50"
 }
-
-
+```
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- MemoryUtilization - Write a custom metric for memory utilization, where we shall write a program for current, avg and max.
+**Algorithm:**
+- Get ECS Memory Utilization Panel - Fetches and displays memory usage statistics for ECS instances.
 
- **Pseudo Code:** 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType` from command flags.
+    - Call `GetMemoryUtilizationPanel` to fetch memory utilization data.
+    - If there is an error fetching data, log the error and print "null".
+    - Display the fetched data based on `responseType` ("frame" or JSON).
 
+**Pseudo Code:**
+```go
+Initialize current_memory_usage, average_memory_usage, max_memory_usage to 0
+For each ECS instance metric data point:
+    If metric is "current":
+        Update current_memory_usage with the value
+    If metric is "average":
+        Update average_memory_usage with the value
+    If metric is "max":
+        Update max_memory_usage with the value
+Display current_memory_usage, average_memory_usage, max_memory_usage
+```
  
  
  # ui-analysys-and listing-methods
@@ -149,35 +299,59 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
 
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
 **Desired Output in json / graph format:**
 3.  Storage utilization
+```json
 {
-    RootVolumeUsage:25GB,
-    EBSVolume1Usage:30GB,
-	EBSVolume2Usage:40GB
+    "RootVolumeUsage":"25",
+    "EBSVolume1Usage":"30",
+	"EBSVolume2Usage":"40"
 }
+```
 
 
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- Storage Utilization panel - Write a custom metric for storage utilization, where we shall write a program for root volume usage and ebs disks usage.
+**Algorithm:**
+- Get ECS Storage Utilization Panel - Fetches and displays storage usage statistics for ECS instances.
 
- **Pseudo Code:**  
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType` from command flags.
+    - Call `GetStorageUtilizationPanel` to fetch storage utilization data.
+    - If there is an error fetching data, log the error and return.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize root_volume_usage, ebs_volume1_usage, ebs_volume2_usage to 0
+For each ECS instance metric data point:
+    If metric is "root volume":
+        Update root_volume_usage with the value
+    If metric is "EBS volume 1":
+        Update ebs_volume1_usage with the value
+    If metric is "EBS volume 2":
+        Update ebs_volume2_usage with the value
+Display root_volume_usage, ebs_volume1_usage, ebs_volume2_usage
+```
  
  
 
@@ -189,36 +363,55 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 ## network_utiization_panel
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="storage_utilization_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=storage_utilization_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
 4.Network utilization
+```json
 {
-    Inbound traffic:500Mbps,
-    Outbound traffic:200Mbps,
-	Data Transferred:10GB
+    "Inbound traffic":"500",
+    "Outbound traffic":"200",
+	"Data Transferred":"10"
 }
-
+```
 
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- Network utilization panel - Write a custom metric for Network utilization, where we shall write a program for root volume usage and ebs disks usage.
+**Algorithm:**
+- Get ECS Network Utilization Panel - Fetches and displays network utilization statistics for ECS instances.
 
- **Pseudo Code:**
- 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType` from command flags.
+    - Call `GetNetworkUtilizationPanel` to fetch network utilization data.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize inbound_traffic, outbound_traffic, data_transferred to 0
+For each ECS instance metric data point:
+    If metric is "inbound":
+        Update inbound_traffic with the value
+    If metric is "outbound":
+        Update outbound_traffic with the value
+Calculate data_transferred as sum of inbound_traffic and outbound_traffic
+Display inbound_traffic, outbound_traffic, data_transferred
+```
  
  # ui-analysys-and listing-methods
 
@@ -230,17 +423,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 **called from subcommand**
 
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="cpu_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
@@ -249,15 +443,31 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 	-CPUUtilization
 
-
-
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- CPU utilization graph  -Fire a cloudwatch query for cpu_utilization_graph_panel, using metric CPUUtilization.
+**Algorithm:**
+- Get ECS CPU Utilization Graph Panel - Fetches and displays CPU utilization graph statistics for ECS instances.
 
- **Pseudo Code:** 
- 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType` from command flags.
+    - Call `GetCpuUtilizationGraphPanel` to fetch CPU utilization graph data.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get element type and instance ID from command flags
+Parse start and end time using comman_function.ParseTimes
+Get instance ID using comman_function.GetCmdbData
+Get raw data for CPU utilization using comman_function.GetMetricData
+Store the raw data in cloudwatchMetricData with key "CPU Utilization"
+Display cloudwatchMetricData
+```
+
  # ui-analysys-and listing-methods
 
 
@@ -269,20 +479,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="cpu_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_reservation_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
-
-
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_reservation_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_reservation_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 **Desired Output in json / graph format:**
 6. CPU reservation panel
@@ -292,12 +500,29 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- CPU reservation  -Fire a cloudwatch query for cpu_reservation_panel, using metric CPUReservation.
+**Algorithm:**
+- Get ECS CPU Reserved Panel - Fetches and displays CPU reserved metrics data for ECS instances.
 
- **Pseudo Code:** 
- 
- # ui-analysys-and listing-methods
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType` from command flags.
+    - Call `GetCPUReservationData` to fetch CPU reserved data.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get element type and instance ID from command flags
+Parse start and end time using comman_function.ParseTimes
+Get instance ID using comman_function.GetCmdbData
+Get raw data for CPU reservation using comman_function.GetMetricData
+Store the raw data in cloudwatchMetricData with key "CPU_Reservation"
+Display cloudwatchMetricData
+```
+# ui-analysys-and listing-methods
 
 ## cpu_usage_sys_panel
 
@@ -306,18 +531,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
  
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_usage_system_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="cpu_usage_system_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_usage_system_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_usage_system_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_usage_system_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_usage_system_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
@@ -342,18 +567,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="cpu_usage_nice_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="cpu_usage_nice_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="cpu_usage_nice_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=cpu_usage_nice_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_usage_nice_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=cpu_usage_nice_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
@@ -380,18 +605,19 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="memory_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="memory_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="memory_utilization_graph_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=memory_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=memory_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=memory_utilization_graph_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
@@ -402,13 +628,30 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 	-MemoryUtilizaion_graph_panel
 
 
-
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- Memory utilization graph panel  -Fire a cloudwatch query for memory_utilization_graph_panel, using metric MemoryUtilization_graph_panel.
+**Algorithm:**
+- Get ECS Memory Utilization Graph Panel - Fetches and displays memory utilization graph metrics data for ECS instances.
 
- **Pseudo Code:** 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType` from command flags.
+    - Call `GetMemoryUtilizationGraphPanel` to fetch memory utilization graph data.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get instance ID and element type from command flags
+Parse start and end time using comman_function.ParseTimes
+Get instance ID using comman_function.GetCmdbData
+Get raw data for memory utilization using comman_function.GetMetricData
+Store the raw data in cloudwatchMetricData with key "Memory utilization"
+Display cloudwatchMetricData
+```
  
  
  # ui-analysys-and listing-methods
@@ -420,18 +663,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="memory_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="memory_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="memory_reservation_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=memory_reservation_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=memory_reservation_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=memory_reservation_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
@@ -440,36 +683,51 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 	-MemoryReservation_panel
 
-
-
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- Memory reservation panel  -Fire a cloudwatch query for memory_reservation_panel, using metric memory_resevation_panel.
+**Algorithm:**
+- Get ECS Memory Reserved Panel - Fetches and displays memory reserved metrics data for ECS instances.
 
- **Pseudo Code:** 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType` from command flags.
+    - Call `GetMemoryReservationData` to fetch memory reserved data.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get instance ID, element type, start time, and end time from command flags
+Parse start and end time using comman_function.ParseTimes
+Get instance ID using comman_function.GetCmdbData
+Get raw data for memory reserved using comman_function.GetMetricData
+Store the raw data in cloudwatchMetricData with key "Memory_Reservation"
+Display cloudwatchMetricData
+```
  
- # ui-analysys-and listing-methods
-
-##  container_memory_usage_panel
+# ui-analysys-and listing-methods
+## container_memory_usage_panel
 
 11. container_memory_usage_panel
 ![Alt text](ecs_screen3.png)
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="container_memory_usage_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="container_memory_usage_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="container_memory_usage_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=container_memory_usage_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=container_memory_usage_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=container_memory_usage_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
@@ -479,37 +737,53 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 	-mem_used_panel
 
 
-
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- container Memory used panel  -Fire a cloudwatch query for memory_usage_panel, using metric container memory_usage_panel.
+**Algorithm:**
+- Get ECS Container Memory Usage Panel - Fetches and displays container memory usage metrics data for ECS instances.
 
- **Pseudo Code:** 
- 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType` from command flags.
+    - Call `GetContainerMemoryUsageData` to fetch container memory usage data.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get instance ID, element type, start time, and end time from command flags
+Parse start and end time using comman_function.ParseTimes
+Get instance ID using comman_function.GetCmdbData
+Get raw data for container memory usage using comman_function.GetMetricData
+Store the raw data in cloudwatchMetricData with key "Container_memory_usage"
+Display cloudwatchMetricData
+```
  
  # ui-analysys-and listing-methods
 
 ##  available_memory_overtime_panel
 
-12. available_available_memory_overtime_panel
+12. available_memory_overtime_panel
 ![Alt text](ecs_screen3.png)
 
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="available_memory_overtime_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="available_memory_overtime_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="available_memory_overtime_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=available_memory_overtime_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=available_memory_overtime_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=available_memory_overtime_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
@@ -519,13 +793,36 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 	-available memory_overtime_panel
 
 
-
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- Available Memory_overtime panel  -Fire a cloudwatch query for available memory_overtime_panel, using metric memory_overtime_panel.
+**Algorithm:**
+- Get ECS Available Memory Over Time Panel - Fetches and displays available memory over time metrics data for ECS instances.
 
- **Pseudo Code:**  
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementId`, `elementType`, `cmdbApiUrl`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for available memory over time using `GetAvailableMemoryOverTimeData`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementId, elementType, cmdbApiUrl, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Parse start and end time if provided
+    Fetch raw data for available memory over time using GetAvailableMemoryOverTimeData
+    Process the raw data using processAvailableMemoryOverTimeRawData
+    Calculate available memory using calculateAvailableMemory
+    Initialize availableMemoryOverTimeResult
+    Populate TimeSeries field of availableMemoryOverTimeResult with timestamp and available memory
+    Convert the result to JSON
+    Display the fetched data based on responseType ("frame" or JSON)
+```
 
  
 # ui-analysys-and listing-methods
@@ -536,18 +833,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 ![Alt text](ecs_screen4.png)
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="volume_readBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="volume_readBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="volume_readBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=volume_readBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=volume_readBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=volume_readBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
@@ -557,38 +854,53 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 	-volume_readBytes_panel
 
 
-
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- volume readBytes panel  -Fire a cloudwatch query for volume_readBytes_panel, using metric volume_readBytes_panel.
+**Algorithm:**
+- Get ECS Read Bytes Panel - Fetches and displays volume read bytes metrics data for ECS instances.
 
- **Pseudo Code:**  
- 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for volume read bytes using `GetECSReadBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
 
- # ui-analysys-and listing-methods
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for volume read bytes using GetECSReadBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
+```
 
- ##  volume_writebytes_panel
+# ui-analysys-and listing-methods
+
+##  volume_writebytes_panel
 
 14. volume_writeBytes_panel
 ![Alt text](ecs_screen4.png)
 
 
-
-
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="volume_writeBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="volume_writeBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="volume_writeBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=volume_writeBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=volume_writeBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=volume_writeBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
@@ -597,13 +909,31 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 	-volume_writebytes_panel
 
 
-
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- volume writeBytes panel  -Fire a cloudwatch query for volume_writeBytes_panel, using metric volume_writeBytes_panel.
+**Algorithm:**
+- Get ECS Write Bytes Panel - Fetches and displays volume write bytes metrics data for ECS instances.
 
- **Pseudo Code:**  
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for volume write bytes using `GetECSWriteBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for volume write bytes using GetECSWriteBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
+```
  
  
  # ui-analysys-and listing-methods
@@ -618,18 +948,18 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="input_output_bytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="input_output_bytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="input_output_bytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=input_output_bytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=input_output_bytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=input_output_bytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 
@@ -657,23 +987,19 @@ http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=90
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="disk_available_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="disk_available_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="disk_available_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
-
-**Called from API**
-
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=disk_available_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenxxxx1309>&crossAccountRoleArn=<afreenxxxx1309>&elementType=AWS/EC2&instanceID=i-05e4e6757f13da657&query=disk_available_panel
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=disk_available_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=disk_available_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
 
 
 **Desired Output in json / graph format:**
@@ -689,246 +1015,1174 @@ http://localhost:7000/awsx-api/getQueryOutput?zone=us-east-1&externalId=<afreenx
 
  **Pseudo Code:**  
  
- 
-# ui-analysys-and listing-methods
+ # ui-analysys-and listing-methods
 
-##  net_inBytes_panel
-
-17. net\_inBytes\_panel
+19. container_net_received_inbytes_panel
 ![Alt text](ecs_screen5.png)
 
 
+##  container_net_received_inbytes_panel
+
+
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_inBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="container_net_received_inbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
-awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_inBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="container_net_received_inbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_inBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
-
-
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=container_net_received_inbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=container_net_received_inbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
-17. network_inBytes_panel
+19. container_net_received_inbytes_panel
 
-	-network_in_panel
+	-container_net_received_inbytes_panel
 	
-
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- network_inBytes panel  -Fire a cloudwatch query for network_inBytes_panel, using metric NetworkBytesIn.
+**Algorithm:**
+- Get ECS Container Net Rx In Bytes Panel - Fetches and displays container network received inbytes metrics data for ECS instances.
 
- **Pseudo Code:**  
- 
- 
- 
- # ui-analysys-and listing-methods
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for container network received inbytes using `GetECSContainerNetRxInBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
 
-##  net_outBytes_panel
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for container network received inbytes using GetECSContainerNetRxInBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
 
-18. net_outBytes_panel
+20. container_net_transmit_inbytes_panel
 ![Alt text](ecs_screen5.png)
+```
 
+## container_net_transmit_inbytes_panel
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_outBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="container_net_transmit_inbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
-awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_outBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="container_net_transmit_inbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_outBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=container_net_transmit_inbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=container_net_transmit_inbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
-18. network_outBytes_panel
+20. container_net_transmit_inbytes_panel
 
-	-NetworkBytesOut
+	-container_net_transmit_inbytes_panel
 	
-
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- network_outBytes panel  -Fire a cloudwatch query for network_outBytes_panel, using metric NetworkBytesOut.
+**Algorithm:**
+- Get ECS Container Net Tx In Bytes Panel - Fetches and displays container network transmit inbytes metrics data for ECS instances.
 
- **Pseudo Code:**  
- 
- 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for container network transmit inbytes using `GetECSContainerNetTxInBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for container network transmit inbytes using GetECSContainerNetTxInBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
+```
  # ui-analysys-and listing-methods
 
-19. net\_ReceiveInBytes\_panel
+21. net\_ReceiveInBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
-##  net\_RecieveInBytes\_panel
+## net\_RecieveInBytes\_panel
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_recieveInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="net_recieveInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_recieveInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_recieveInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_recieveInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_recieveInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
-19. network_ReceiveInBytes_panel
+21. network_ReceiveInBytes_panel
 
 	-network_ReceiveInBytes_panel
 	
 
-**Algorithm/ Pseudo Code**
+**Algorithm:**
+- Get ECS Network Rx In Bytes Panel - Fetches and displays network received inbytes metrics data for ECS instances.
 
-**Algorithm:** 
-- network_ReceiveInBytes panel  -Fire a cloudwatch query for network_ReceiveInBytes_panel, using metric network_ReceiveInBytes_panel.
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for network received inbytes using `GetECSNetworkRxInBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
 
- **Pseudo Code:**  
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for network received inbytes using GetECSNetworkRxInBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
+```
  
  # ui-analysys-and listing-methods
 
 ##  net\_transmitInBytes\_panel
 
-20. net\_transmitInBytes\_panel
+22. net\_transmitInBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_transmitInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="net_transmitInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_transmitInBytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_transmitInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_transmitInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_transmitInBytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
-20. network_transmitInBytes_panel
+22. network_transmitInBytes_panel
 
 	-network_transmitInBytes_panel
 	
 
 **Algorithm/ Pseudo Code**
+**Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- network_transmitInBytes panel  -Fire a cloudwatch query for network_transmitInBytes_panel, using metric NetworkBytesIn_panel.
+**Algorithm:**
+- Get ECS Network Rx In Bytes Panel - Fetches and displays network received inbytes metrics data for ECS instances.
 
- **Pseudo Code:**  
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for network received inbytes using `GetECSNetworkRxInBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for network received inbytes using GetECSNetworkRxInBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
+```
  
  
  # ui-analysys-and listing-methods
 
 ##  net\_RxInBytes\_panel
 
-21. net\_RxInBytes\_panel
+23. net\_RxInBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
 
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_rxinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="net_rxinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_rxinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_rxinbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_rxinbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_rxinbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
-21. network_transmitInBytes_panel
+23. net_rxinbytes_panel
 
-	-network_transmitInBytes_panel
+	-net_rxinbytes_panel
 	
 
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- network_RxInBytes panel  -Fire a cloudwatch query for network_RxInBytes_panel, using metric NetworkBytesIn_panel.
+**Algorithm:**
+- Get ECS Network Rx In Bytes Panel - Fetches and displays network received inbytes metrics data for ECS instances.
 
- **Pseudo Code:**  
- 
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for network received inbytes using `GetECSNetworkRxInBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for network received inbytes using GetECSNetworkRxInBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
+```
+
  # ui-analysys-and listing-methods
 
 ##  net\_TxInBytes\_panel
 
-22. net\_TxInBytes\_panel
+24. net\_TxInBytes\_panel
 ![Alt text](ecs_screen5.png)
 
 
 
 
-
 **called from subcommand**
-
-go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=900001 --query="net_txinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="net_txinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
 
 **called from maincommand**
-
+```shell
 awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="net_txinbytes_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
-
+```
 
 **Called from API**
 
-http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=900001&elementType=ECS&query=net_txinbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_txinbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=net_txinbytes_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
 **Desired Output in json / graph format:**
-22. network_TxInBytes_panel
+24. network_TxInBytes_panel
 
 	-network_TxInBytes_panel
 	
 
 **Algorithm/ Pseudo Code**
 
-**Algorithm:** 
-- network_TxInBytes panel  -Fire a cloudwatch query for network_TxInBytes_panel, using metric NetworkBytesIn_panel.
+**Algorithm:**
+- Get ECS Network Tx In Bytes Panel - Fetches and displays network transmitted inbytes metrics data for ECS instances.
 
- **Pseudo Code:**  
+1. Initialize `authFlag`, `clientAuth`, and `err` for authentication.
+2. Authenticate the command using `authenticate.AuthenticateCommand`.
+3. If authentication fails, log the error and display command help.
+4. If authenticated:
+    - Get `responseType`, `elementType`, `instanceId`, `startTime`, and `endTime` from command flags.
+    - Fetch raw data for network transmitted inbytes using `GetECSNetworkTxInBytesPanel`.
+    - If there is an error fetching data, log the error.
+    - Display the fetched data based on `responseType` ("frame" or JSON).
+
+**Pseudo Code:**
+```go
+Initialize cloudwatchMetricData as map[string]*cloudwatch.GetMetricDataOutput
+Get elementType, instanceId, startTime, endTime, and responseType from command flags
+Authenticate the command using AuthenticateCommand
+If authentication fails, log the error and display command help
+If authenticated:
+    Fetch raw data for network transmitted inbytes using GetECSNetworkTxInBytesPanel
+    Process the raw data if needed
+    Display the fetched data based on responseType ("frame" or JSON)
+```
+
+# ui-analysys-and listing-methods
+
+##  uptime_percentage_panel
+
+25. uptime_percentage_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="uptime_percentage_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="uptime_percentage_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=uptime_percentage_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=uptime_percentage_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
 
 
- 
+**Desired Output in json / graph format:**
+25. uptime_percentage_panel
+
+	-uptime_percentage_panel
+	
+
+**Algorithm/ Pseudo Code**
+**Algorithm:**
+- Get ECS Uptime Panel - Fetches and displays uptime metrics data for ECS.
+
+1. Authenticate using `authenticate.AuthenticateCommand`.
+2. If authentication fails, log error and show help message.
+3. Get cluster name, start time, and end time from flags; use current time if not provided.
+4. Fetch raw task and service count data for the given time range.
+5. Calculate uptime percentage.
+6. Prepare time series data.
+7. Marshal data into JSON string.
+8. Return JSON string and time series data.
+
+**Pseudo Code:**
+```go
+Authenticate using AuthenticateCommand
+If authentication fails, log error and show help message
+Get cluster name, start time, and end time from flags; use current time if not provided
+Fetch raw task and service count data for the given time range
+Calculate uptime percentage
+Prepare time series data
+Marshal data into JSON string
+Return JSON string and time series data
+```
+
+
+
+# ui-analysys-and listing-methods
+
+##  active_connection_panel
+
+26. active_connection_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="active_connection_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="active_connection_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=active_connection_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=active_connection_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+26. active_connection_panel
+
+	-active_connection_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+
+- Get ECS Active Connection Panel:
+
+1. Authenticate user using `authenticate.AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; handle parsing errors.
+4. Fetch ECS active connection events using `comman_function.GetLogsData`.
+5. Process and filter results for complete queries.
+6. Display the processed panel.
+
+**Pseudo Code:**
+
+```go
+Authenticate user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; handle parsing errors
+Fetch ECS active connection events using GetLogsData
+Process and filter results for complete queries
+Display the processed panel
+```
+
+# ui-analysys-and listing-methods
+
+##  new_connection_panel
+
+27. new_connection_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="new_connection_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="new_connection_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=new_connection_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=new_connection_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+27. new_connection_panel
+
+	-new_connection_panel
+	
+
+**Algorithm/ Pseudo Code**
+**Algorithm:**
+- Get ECS Uptime Panel - Fetches and displays uptime metrics data for ECS.
+
+1. Authenticate using `authenticate.AuthenticateCommand`.
+2. If authentication fails, log error and show help message.
+3. Get cluster name, start time, and end time from flags; use current time if not provided.
+4. Fetch raw task and service count data for the given time range.
+5. Calculate uptime percentage.
+6. Prepare time series data.
+7. Marshal data into JSON string.
+8. Return JSON string and time series data.
+
+**Pseudo Code:**
+```go
+Authenticate using AuthenticateCommand
+If authentication fails, log error and show help message
+Get cluster name, start time, and end time from flags; use current time if not provided
+Fetch raw task and service count data for the given time range
+Calculate uptime percentage
+Prepare time series data
+Marshal data into JSON string
+Return JSON string and time series data
+```
+# ui-analysys-and listing-methods
+
+##  active_services_panel
+
+28. active_services_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="active_services_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="active_services_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=active_services_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=active_services_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+28. active_services_panel
+
+	-active_services_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+
+- Get ECS Active Service Panel:
+
+1. Authenticate user using `authenticate.AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; handle parsing errors.
+4. Fetch ECS active service events using `comman_function.GetLogsData`.
+5. Process and filter results for complete queries.
+6. Display the processed panel.
+
+**Pseudo Code:**
+
+```go
+Authenticate user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; handle parsing errors
+Fetch ECS active service events using GetLogsData
+Process and filter results for complete queries
+Display the processed panel
+```
+# ui-analysys-and listing-methods
+
+##  active_tasks_panel
+
+29. active_tasks_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="active_tasks_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="active_tasks_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=active_tasks_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=active_tasks_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+29. active_tasks_panel
+
+	-active_tasks_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+
+- Get ECS Active Task Panel:
+
+1. Authenticate user using `authenticate.AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; handle parsing errors.
+4. Fetch ECS active task events using `FilterActiveTask`.
+5. Process and filter results for complete queries.
+6. Display the processed panel.
+
+**Pseudo Code:**
+
+```go
+Authenticate user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; handle parsing errors
+Fetch ECS active task events using FilterActiveTask
+Process and filter results for complete queries
+Display the processed panel
+
+```
+# ui-analysys-and listing-methods
+
+##  failed_task_panel
+
+30. failed_task_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="failed_task_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="failed_task_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=failed_task_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=failed_task_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+30. failed_task_panel
+
+	-failed_task_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+
+- Get ECS Failed Task Panel:
+
+1. Authenticate user using `authenticate.AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, element ID, CMDB API URL, start time, and end time from command flags.
+4. If element ID is provided, fetch log group name from CMDB using `cmdb.GetCloudElementData`.
+5. Parse start time and end time; use default values if not provided.
+6. Fetch ECS failed task events using `FilterFailedTasks`.
+7. Process and filter results for complete queries.
+8. Display the processed panel.
+
+**Pseudo Code:**
+
+```go
+Authenticate user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, element ID, CMDB API URL, start time, and end time from command flags
+If element ID is provided, fetch log group name from CMDB using cmdb.GetCloudElementData
+Parse start time and end time; use default values if not provided
+Fetch ECS failed task events using FilterFailedTasks
+Process and filter results for complete queries
+Display the processed panel
+
+```
+# ui-analysys-and listing-methods
+
+##  failed_services_panel
+
+31. failed_services_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="failed_services_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="failed_services_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=failed_services_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=failed_services_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+31. failed_services_panel
+
+	-failed_services_panel
+	
+
+## Algorithm/ Pseudo Code
+
+### Algorithm:
+
+#### Get ECS Failed Service Panel:
+
+1. Authenticate the user using `authenticate.AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, element ID, CMDB API URL, start time, and end time from command flags.
+4. If an element ID is provided, fetch the log group name from CMDB using `cmdb.GetCloudElementData`.
+5. Parse the start time and end time; use default values if not provided.
+6. Fetch ECS failed service events using `FilterFailedService`.
+7. Process and filter results for complete queries.
+8. Display the processed panel.
+
+### Pseudo Code:
+
+```go
+Authenticate user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, element ID, CMDB API URL, start time, and end time from command flags
+If element ID is provided, fetch log group name from CMDB using cmdb.GetCloudElementData
+Parse start time and end time; use default values if not provided
+Fetch ECS failed service events using FilterFailedService
+Process and filter results for complete queries
+Display the processed panel
+
+
+```
+# ui-analysys-and listing-methods
+
+##  service_error_panel
+
+32. service_error_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="service_error_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="service_error_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=service_error_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=service_error_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+32. service_error_panel
+
+	-service_error_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Algorithm:**
+
+**List AWS ECS Service Errors:**
+
+1. Define the `ServiceError` struct to represent service error details.
+2. Implement `ListServiceErrors` function to return a list of `ServiceError` instances.
+3. Create the `AwsxEcsServiceErrorCmd` command using `cobra`.
+4. Add flags for start time and end time to `AwsxEcsServiceErrorCmd`.
+5. Execute the `ListServiceErrors` function when the command is run, and handle any errors.
+
+**Pseudo Code:**
+
+```go
+Define ServiceError struct to represent service error details
+
+Implement ListServiceErrors function:
+    Create a list of ServiceError instances with sample data
+    Return the list
+
+Create AwsxEcsServiceErrorCmd command using cobra
+
+Add flags for start time and end time to AwsxEcsServiceErrorCmd
+
+When the command is run:
+    Call ListServiceErrors function
+    If an error occurs, handle it appropriately
+
+```
+
+# ui-analysys-and listing-methods
+
+##  top_events_panel
+
+33. top_events_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="top_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="top_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=top_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=top_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+33. top_events_panel
+
+	-top_events_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**List AWS ECS Top Events:**
+
+1. Authenticate the user using `AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; parse times using `ParseTimes` function.
+4. Fetch top event metrics data using `GetLogsData`.
+5. Process query results to extract event names and counts using `ProcessQueryResults`.
+6. Display the processed panel.
+
+**Pseudo Code:**
+
+```go
+Authenticate the user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; parse times using ParseTimes function
+Fetch top event metrics data using GetLogsData
+Process query results to extract event names and counts using ProcessQueryResults
+Display the processed panel
+
+```
+
+# ui-analysys-and listing-methods
+
+##  resource_created_panel
+
+34. resource_created_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="resource_created_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="resource_created_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=resource_created_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=resource_created_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+34. resource_created_panel
+
+	-resource_created_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Get ECS Resource Creation Events:**
+
+1. Authenticate the user using `AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; parse times using `ParseTimes` function.
+4. Fetch ECS resource creation events using `GetLogsData`.
+5. Process query results to extract event names and counts for resource creation events.
+6. Display the retrieved resource creation events.
+
+**Pseudo Code:**
+
+```go
+Authenticate the user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; parse times using ParseTimes function
+Fetch ECS resource creation events using GetLogsData
+Process query results to extract event names and counts for resource creation events
+Display the retrieved resource creation events
+
+
+```
+
+# ui-analysys-and listing-methods
+
+##  resource_updated_panel
+
+35. resource_updated_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="resource_updated_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="resource_updated_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=resource_updated_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=resource_updated_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+35. resource_updated_panel
+
+	-resource_updated_panel
+	
+
+**Algorithm/ Pseudo Code**
+
+**Get ECS Resource Update Events:**
+
+1. Authenticate the user using `AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; parse times using `ParseTimes` function.
+4. Fetch ECS resource update events using `GetLogsData`.
+5. Process query results to extract event names and counts for resource update events.
+6. Display the retrieved resource update events.
+
+**Pseudo Code:**
+
+```go
+Authenticate the user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; parse times using ParseTimes function
+Fetch ECS resource update events using GetLogsData
+Process query results to extract event names and counts for resource update events
+Display the retrieved resource update events
+
+```
+
+# ui-analysys-and listing-methods
+
+##  resource_deleted_panel
+
+36. resource_deleted_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="resource_deleted_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="resource_deleted_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=resource_deleted_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=resource_deleted_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+36. resource_deleted_panel
+
+	-resource_deleted_panel
+	
+**Algorithm/ Pseudo Code**
+
+**Get ECS Resource Deletion Events:**
+
+1. Authenticate the user using `AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; parse times using `ParseTimes` function.
+4. Fetch ECS resource deletion events using `GetLogsData`.
+5. Process query results to extract event names and counts for resource deletion events.
+6. Display the retrieved resource deletion events.
+
+**Pseudo Code:**
+
+```go
+Authenticate the user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; parse times using ParseTimes function
+Fetch ECS resource deletion events using GetLogsData
+Process query results to extract event names and counts for resource deletion events
+Display the retrieved resource deletion events
+
+```
+# ui-analysys-and listing-methods
+
+##  registration_events_panel
+
+37. registration_events_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="registration_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="registration_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=registration_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=registration_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+37. registration_events_panel
+
+	-registration_events_panel
+	
+**Algorithm/ Pseudo Code**
+
+**Get Registration Events Logs Data:**
+
+1. Authenticate the user using `AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; parse times using `ParseTimes` function.
+4. Fetch registration events logs data using `GetLogsData`.
+5. Process query results to extract relevant fields such as event time, AWS region, cluster name, resource, and instance ID.
+6. Display the processed registration events logs data.
+
+**Pseudo Code:**
+
+```go
+Authenticate the user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; parse times using ParseTimes function
+Fetch registration events logs data using GetLogsData
+Process query results to extract relevant fields such as event time, AWS region, cluster name, resource, and instance ID
+Display the processed registration events logs data
+```
+# ui-analysys-and listing-methods
+
+##  deregistration_events_panel
+
+38. deregistration_events_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="deregistration_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="deregistration_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=deregistration_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=deregistration_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+39. deregistration_events_panel
+
+	-deregistration_events_panel
+	
+**Algorithm/ Pseudo Code**
+
+**Get Deregistration Events Logs Data:**
+
+1. Authenticate the user using `AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; parse times using `ParseTimes` function.
+4. Fetch deregistration events logs data using `GetLogsData`.
+5. Process query results to extract relevant fields such as event time, AWS region, cluster name, resource, and instance ID.
+6. Display the processed deregistration events logs data.
+
+**Pseudo Code:**
+
+```go
+Authenticate the user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; parse times using ParseTimes function
+Fetch deregistration events logs data using GetLogsData
+Process query results to extract relevant fields such as event time, AWS region, cluster name, resource, and instance ID
+Display the processed deregistration events logs data
+
+```
+
+# ui-analysys-and listing-methods
+
+##  deregistration_events_panel
+
+40. deregistration_events_panel
+![Alt text](ecs_screen6.png)
+
+**called from subcommand**
+```shell
+go run awsx-getelementdetails.go  --vaultUrl=<afreenXXXXXXX1309> --elementId=101 --query="deregistration_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**called from maincommand**
+```shell
+awsx --vaultUrl=<afreenXXXXXXX1309> --elementId=90001  --query="deregistration_events_panel" --elementType="ECS" --responseType=json --startTime=2023-12-01T00:00:00Z --endTime=2023-12-02T23:59:59Z
+```
+
+**Called from API**
+
+[http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=deregistration_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z](http://localhost:7000/awsx-api/getQueryOutput?vaultUrl=<afreenXXXX>&elementId=101&elementType=ECS&query=deregistration_events_panel&responseType=json&startTime=2023-12-01T00:00:00Z&endTime=2023-12-02T23:59:59Z)
+
+
+**Desired Output in json / graph format:**
+40. deregistration_events_panel
+
+	-deregistration_events_panel
+	
+**Algorithm/ Pseudo Code**
+
+**Get Deregistration Events Logs Data:**
+
+1. Authenticate the user using `AuthenticateCommand`.
+2. Handle authentication failure by logging an error and showing a help message.
+3. Retrieve log group name, start time, and end time from command flags; parse times using `ParseTimes` function.
+4. Fetch deregistration events logs data using `GetLogsData`.
+5. Process query results to extract relevant fields such as event time, AWS region, cluster name, resource, and instance ID.
+6. Display the processed deregistration events logs data.
+
+**Pseudo Code:**
+
+```go
+Authenticate the user using AuthenticateCommand
+If authentication fails, log error and show help message
+Retrieve log group name, start time, and end time from command flags; parse times using ParseTimes function
+Fetch deregistration events logs data using GetLogsData
+Process query results to extract relevant fields such as event time, AWS region, cluster name, resource, and instance ID
+Display the processed deregistration events logs data
+
+```
+
 # list of subcommands and options for ECS
  
 | S.No | CLI Spec|  Description                          
 |------|----------------|----------------------|
-| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900001" --elementType=EC2 --query="cpu_utilization_panel"  | This will get the specific EC2 instance cpu utilization panel data in hybrid structure |
-| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900001" --elementType=EC2 --query="memory_utilization_panel" | This will get the specific EC2 instance memory utilization panel data in hybrid structure|
-| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900001" --elementType=EC2 --query="storage_utilization_panel"  | This will get the specific EC2 instance storage utilization panel data in hybrid structure |
-| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="900001" --elementType=EC2 --query="network_utilization_panel"  | This will get th1e specific EC2 instance network utilization panel data in hybrid structure |
+| 1    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_utilization_panel"  | This will get the specific EC2 instance cpu utilization panel data in hybrid structure |
+| 2    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="memory_utilization_panel" | This will get the specific EC2 instance memory utilization panel data in hybrid structure|
+| 3    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="storage_utilization_panel"  | This will get the specific EC2 instance storage utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_utilizaion_graph_panel"  | This will get the specific EC2 instance cpu utilizaion graph panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_reservation_panel"  | This will get the specific EC2 instance cpu reservation panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_usage_sys_panel"  | This will get the specific EC2 instance total cpu usage system panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="cpu_usage_nice_panel"  | This will get the specific EC2 instance cpu usage nice panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="memory_utilization_graph_panel"  | This will get the specific EC2 instance memory utilization graph panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="memory_reservation_panel"  | This will get the specific EC2 instance memory reservation panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="container_memory_usage_panel"  | This will get the specific EC2 container memory usage panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="available_memory_overtime_panel"  | This will get the specific EC2 available memory overtime panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="volume_readbytes_panel"  | This will get the specific EC2 volume readbytes panel data in hybrid structure | 
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="volume_writebytes_panel"  | This will get the specific EC2 instance volume writebytes panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="input_output_bytes_panel"  | This will get the specific EC2 instance input output bytes panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="disk_available_panel"  | This will get the specific EC2 instance disk available panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="net_RecieveInBytes_panel"  | This will get the specific EC2 instance net RecieveInBytes panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="net_transmitinbytes_panel"  | This will get the specific EC2 instance net transmitinbytes panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="container_net_received_inbytes_panel"  | This will get the specific EC2 container net received inbytes panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="container_net_transmit_inbytes_panel"  | This will get the specific EC2 container_net_transmit_inbytes_panel panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
+| 4    | awsx --vaultURL=vault.synectiks.net getElementDetails --elementId="101" --elementType=EC2 --query="network_utilization_panel"  | This will get the specific EC2 instance network utilization panel data in hybrid structure |
 
 
 
