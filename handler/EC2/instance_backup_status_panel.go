@@ -1,6 +1,7 @@
 package EC2
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -16,10 +17,6 @@ import (
 type InstanceBackupStatus struct {
 	SuccessfulBackups int `json:"SuccessfulBackups"`
 	MissedBackups     int `json:"MissedBackups"`
-}
-
-func (hc InstanceBackupStatus) String() string {
-	return fmt.Sprintf("SuccessfulBackups: %d\nMissedBackups: %d", hc.SuccessfulBackups, hc.MissedBackups)
 }
 
 var instanceBackupstatusPanelCmd = &cobra.Command{
@@ -54,7 +51,7 @@ var instanceBackupstatusPanelCmd = &cobra.Command{
 	},
 }
 
-func GetBackupStatus(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2) (*InstanceBackupStatus, error) {
+func GetBackupStatus(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2) (string, error) {
 
 	if ec2Client == nil {
 		ec2Client = awsclient.GetClient(*clientAuth, awsclient.EC2_CLIENT).(*ec2.EC2)
@@ -62,7 +59,7 @@ func GetBackupStatus(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.
 	allSnapshotsInput := &ec2.DescribeSnapshotsInput{}
 	allSnapshotsResult, err := ec2Client.DescribeSnapshots(allSnapshotsInput)
 	if err != nil {
-		return nil, fmt.Errorf("failed to describe all snapshots: %v", err)
+		return "", fmt.Errorf("failed to describe all snapshots: %v", err)
 	}
 
 	// Count completed snapshots
@@ -76,7 +73,7 @@ func GetBackupStatus(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.
 	}
 	completedSnapshotsResult, err := ec2Client.DescribeSnapshots(completedSnapshotsInput)
 	if err != nil {
-		return nil, fmt.Errorf("failed to describe completed snapshots: %v", err)
+		return "", fmt.Errorf("failed to describe completed snapshots: %v", err)
 	}
 
 	totalSnapshotsCount := len(allSnapshotsResult.Snapshots)
@@ -89,8 +86,8 @@ func GetBackupStatus(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.
 	}
 
 	//strData, nil := json.Marshal(data)
-
-	return data, nil
+	jsonResp, _ := json.Marshal(data)
+	return string(jsonResp), nil
 }
 
 func init() {

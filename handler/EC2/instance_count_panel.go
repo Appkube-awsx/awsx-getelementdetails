@@ -1,6 +1,7 @@
 package EC2
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -17,10 +18,6 @@ import (
 type InstanceCounts struct {
 	RunningInstances int
 	StoppedInstances int
-}
-
-func (hc InstanceCounts) String() string {
-	return fmt.Sprintf("RunningInstances: %d\nStoppedInstances: %d", hc.RunningInstances, hc.StoppedInstances)
 }
 
 var AwsxEc2InstanceCountCmd = &cobra.Command{
@@ -40,18 +37,23 @@ var AwsxEc2InstanceCountCmd = &cobra.Command{
 			return
 		}
 		if authFlag {
-			counts, err := GetInstanceCountPanel(cmd, clientAuth, nil)
+			responseType, _ := cmd.PersistentFlags().GetString("responseType")
+			jsonResp, err := GetInstanceCountPanel(cmd, clientAuth, nil)
 			if err != nil {
 				log.Println("Error getting instance count data: ", err)
 				return
 			}
-			// Print the structured data
-			fmt.Printf("Running instances count: %d\nStopped instances count: %d\n", counts.RunningInstances, counts.StoppedInstances)
+			if responseType == "frame" {
+				fmt.Println(jsonResp)
+			} else {
+				fmt.Println(jsonResp)
+			}
+
 		}
 	},
 }
 
-func GetInstanceCountPanel(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2) (*InstanceCounts, error) {
+func GetInstanceCountPanel(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *ec2.EC2) (string, error) {
 	if ec2Client == nil {
 		ec2Client = awsclient.GetClient(*clientAuth, awsclient.EC2_CLIENT).(*ec2.EC2)
 	}
@@ -70,7 +72,7 @@ func GetInstanceCountPanel(cmd *cobra.Command, clientAuth *model.Auth, ec2Client
 
 	runningResp, err := ec2Client.DescribeInstances(runningParams)
 	if err != nil {
-		return nil, fmt.Errorf("failed to describe running instances: %v", err)
+		return "", fmt.Errorf("failed to describe running instances: %v", err)
 	}
 
 	instanceCounts.RunningInstances = len(runningResp.Reservations)
@@ -82,12 +84,12 @@ func GetInstanceCountPanel(cmd *cobra.Command, clientAuth *model.Auth, ec2Client
 
 	stoppedResp, err := ec2Client.DescribeInstances(stoppedParams)
 	if err != nil {
-		return nil, fmt.Errorf("failed to describe stopped instances: %v", err)
+		return "", fmt.Errorf("failed to describe stopped instances: %v", err)
 	}
 
 	instanceCounts.StoppedInstances = len(stoppedResp.Reservations)
-
-	return instanceCounts, nil
+	jsonResp, _ := json.Marshal(instanceCounts)
+	return string(jsonResp), nil
 }
 
 func init() {
