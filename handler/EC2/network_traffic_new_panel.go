@@ -21,6 +21,10 @@ type NetworkTrafficALL struct {
 	OutboundTraffic float64 `json:"outbound_traffic"`
 }
 
+func (hc NetworkTrafficALL) String() string {
+	return fmt.Sprintf("InboundTraffic: %f\nOutboundTraffic: %f", hc.InboundTraffic, hc.OutboundTraffic)
+}
+
 var AwsxEC2NetworkTrafficCmdAllinstances = &cobra.Command{
 	Use:   "network_traffic_new_panel",
 	Short: "Get network traffic metrics data",
@@ -58,7 +62,7 @@ var AwsxEC2NetworkTrafficCmdAllinstances = &cobra.Command{
 	},
 }
 
-func GetNetworkTrafficNewPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, error) {
+func GetNetworkTrafficNewPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (*NetworkTrafficALL, error) {
 	elementId, _ := cmd.PersistentFlags().GetString("elementId")
 	elementType, _ := cmd.PersistentFlags().GetString("elementType")
 	cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
@@ -81,7 +85,7 @@ func GetNetworkTrafficNewPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
 		if err != nil {
 			log.Printf("Error parsing start time: %v", err)
-			return "", err
+			return nil, err
 		}
 		startTime = &parsedStartTime
 	} else {
@@ -93,7 +97,7 @@ func GetNetworkTrafficNewPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
 		if err != nil {
 			log.Printf("Error parsing end time: %v", err)
-			return "", err
+			return nil, err
 		}
 		endTime = &parsedEndTime
 	} else {
@@ -107,13 +111,13 @@ func GetNetworkTrafficNewPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	rawInboundData, err := GetAllNetworkMetricData(clientAuth, elementType, startTime, endTime, "NetworkIn", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting network inbound data: ", err)
-		return "", err
+		return nil, err
 	}
 
 	rawOutboundData, err := GetAllNetworkMetricData(clientAuth, elementType, startTime, endTime, "NetworkOut", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting network outbound data: ", err)
-		return "", err
+		return nil, err
 	}
 
 	// Process raw inbound data
@@ -128,8 +132,8 @@ func GetNetworkTrafficNewPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		InboundTraffic:  inboundTraffic,
 		OutboundTraffic: outboundTraffic,
 	}
-	jsondata, err := json.Marshal(networkTraffic)
-	return string(jsondata), nil
+	//jsondata, err := json.Marshal(networkTraffic)
+	return &networkTraffic, nil
 }
 
 func GetAllNetworkMetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {

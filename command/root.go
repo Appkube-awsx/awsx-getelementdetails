@@ -604,7 +604,7 @@ var AwsxCloudWatchMetricsCmd = &cobra.Command{
 				}
 				fmt.Println(jsonResp)
 			} else if queryName == "instance_backup_status_panel" && (elementType == "EC2" || elementType == "AWS/EC2") {
-				jsonResp, _, err := EC2.GetBackupStatus(cmd, clientAuth, nil)
+				jsonResp, err := EC2.GetBackupStatus(cmd, clientAuth, nil)
 				if err != nil {
 					log.Println("Error getting instance instance_backup_status ", err)
 					return
