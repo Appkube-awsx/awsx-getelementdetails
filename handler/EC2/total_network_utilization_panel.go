@@ -59,7 +59,7 @@ func GetNetworkUtilizationAcrossAllInstancesPanel(cmd *cobra.Command, clientAuth
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
 	// Get Inbound Traffic
-	inboundTraffic, err := GetTotalNetworkUtilizationMetricData(clientAuth, elementType, startTime, endTime, "Average", "NetworkIn", cloudWatchClient)
+	inboundTraffic, err := GetTotalNetworkUtilizationData(clientAuth, elementType, startTime, endTime, "Average", "NetworkIn", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting inbound traffic: ", err)
 		return "", nil, err
@@ -69,7 +69,7 @@ func GetNetworkUtilizationAcrossAllInstancesPanel(cmd *cobra.Command, clientAuth
 	}
 
 	// Get Outbound Traffic
-	outboundTraffic, err := GetTotalNetworkUtilizationMetricData(clientAuth, elementType, startTime, endTime, "Average", "NetworkOut", cloudWatchClient)
+	outboundTraffic, err := GetTotalNetworkUtilizationData(clientAuth, elementType, startTime, endTime, "Average", "NetworkOut", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting outbound traffic: ", err)
 		return "", nil, err
@@ -99,7 +99,7 @@ func GetNetworkUtilizationAcrossAllInstancesPanel(cmd *cobra.Command, clientAuth
 	return string(jsonString), cloudwatchMetricData, nil
 }
 
-func GetTotalNetworkUtilizationMetricData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, statistic string, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
+func GetTotalNetworkUtilizationData(clientAuth *model.Auth, elementType string, startTime, endTime *time.Time, statistic string, metricName string, cloudWatchClient *cloudwatch.CloudWatch) (*cloudwatch.GetMetricDataOutput, error) {
 	log.Printf("Getting metric data in namespace %s from %v to %v", elementType, startTime, endTime)
 	elmType := "AWS/EC2"
 	if elementType == "EC2" {
