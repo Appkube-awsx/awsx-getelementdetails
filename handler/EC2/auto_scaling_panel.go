@@ -6,10 +6,10 @@ import (
 	"log"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
+	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
 	comman_function "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/spf13/cobra"
 )
@@ -59,16 +59,10 @@ var AwsxAutoScalingGroupsCmd = &cobra.Command{
 }
 
 func GetAutoScalingGroupsDetails(cmd *cobra.Command, clientAuth *model.Auth, autoScalingClient *autoscaling.AutoScaling) (string, []*AutoScalingGroupDetails, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1"), // Specify the region
-	})
-	if err != nil {
-		return "", nil, fmt.Errorf("error creating AWS session: %v", err)
-	}
-	if autoScalingClient == nil {
-		autoScalingClient = autoscaling.New(sess)
-	}
 
+	if autoScalingClient == nil {
+		autoScalingClient = awsclient.GetClient(*clientAuth, awsclient.AUTOSCALING_CLIENT).(*autoscaling.AutoScaling)
+	}
 	autoScalingGroupsInput := &autoscaling.DescribeAutoScalingGroupsInput{}
 	autoScalingGroupsOutput, err := autoScalingClient.DescribeAutoScalingGroups(autoScalingGroupsInput)
 	if err != nil {
