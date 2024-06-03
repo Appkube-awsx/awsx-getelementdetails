@@ -48,9 +48,9 @@ var autoScalingConfigPanelCmd = &cobra.Command{
 	},
 }
 
-func GetAutoScalingInfo(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *autoscaling.AutoScaling) (string, []AutoScalingCounts, error) {
-	if ec2Client == nil {
-		ec2Client = awsclient.GetClient(*clientAuth, awsclient.EC2_CLIENT).(*autoscaling.AutoScaling)
+func GetAutoScalingInfo(cmd *cobra.Command, clientAuth *model.Auth, autoScalingClient *autoscaling.AutoScaling) (string, []AutoScalingCounts, error) {
+	if autoScalingClient == nil {
+		autoScalingClient = awsclient.GetClient(*clientAuth, awsclient.AUTOSCALING_CLIENT).(*autoscaling.AutoScaling)
 	}
 	// sess := session.Must(session.NewSession(&aws.Config{
 	// 	Region: aws.String("us-east-1"), // Specify your AWS region
@@ -68,7 +68,7 @@ func GetAutoScalingInfo(cmd *cobra.Command, clientAuth *model.Auth, ec2Client *a
 	// if err != nil {
 	// 	fmt.Println("Error marshalling result:", err)
 	// }
-	launchconfigcount, err := ec2Client.DescribeLaunchConfigurations(launchconfigInput)
+	launchconfigcount, err := autoScalingClient.DescribeLaunchConfigurations(launchconfigInput)
 	if err != nil {
 		log.Println("Error describing launch configurations:", err)
 		return "", nil, err
