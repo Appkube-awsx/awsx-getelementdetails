@@ -8,6 +8,7 @@ import (
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 
 	// "github.com/Appkube-awsx/awsx-common/cmdb"
 	"github.com/Appkube-awsx/awsx-common/config"
@@ -83,56 +84,12 @@ func GetRDSNetworkUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, c
 
 	}
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
-	// Parse end time if provided
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	}
-
-	// If start time is not provided, use last 15 minutes
-	if startTime == nil {
-		defaultStartTime := time.Now().Add(-15 * time.Minute)
-		startTime = &defaultStartTime
-	}
-
-	// If end time is not provided, use current time
-	if endTime == nil {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	// If start time is after end time, return null
-	if startTime.After(*endTime) {
-		log.Println("Start time is after end time")
-		return "null", nil, nil
-	}
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
@@ -240,20 +197,5 @@ func createMetricDataOutput(value float64) *cloudwatch.GetMetricDataOutput {
 	}
 }
 func init() {
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSNetworkUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSNetworkUtilizationCmd)
 }

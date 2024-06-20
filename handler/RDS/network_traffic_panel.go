@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
@@ -75,32 +76,10 @@ func GetRDSNetworkTrafficPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 		log.Println("cmdb url: " + apiUrl)
 	}
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	var startTime, endTime *time.Time
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
-	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
@@ -196,20 +175,5 @@ func processedRawData(result *cloudwatch.GetMetricDataOutput) []struct {
 }
 
 func init() {
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSNetworkTrafficCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSNetworkTrafficCmd)
 }

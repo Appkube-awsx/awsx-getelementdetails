@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/config"
@@ -69,32 +69,9 @@ func GetRDSReplicationSlotDiskUsagePanel(cmd *cobra.Command, clientAuth *model.A
 		log.Println("cmdb url: " + apiUrl)
 	}
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	var startTime, endTime *time.Time
-
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
-	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing time: %v", err)
 	}
 
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
@@ -168,21 +145,6 @@ func processedRawReplicationSlotDiskUsageData(result *cloudwatch.GetMetricDataOu
 }
 
 func init() {
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSReplicationSlotDiskUsageCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSReplicationSlotDiskUsageCmd)
 }
 

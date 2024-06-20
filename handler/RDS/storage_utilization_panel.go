@@ -79,42 +79,9 @@ func GetRDSStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, c
 
 	}
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-15 * time.Minute)
-		startTime = &defaultStartTime
-	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			err := cmd.Help()
-			if err != nil {
-				return "", nil, err
-			}
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing time: %v", err)
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	// Get Root Volume Utilization
@@ -209,20 +176,5 @@ func round(val float64, places int) float64 {
 }
 
 func init() {
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSStorageUtilizationCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSStorageUtilizationCmd)
 }

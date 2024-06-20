@@ -6,7 +6,7 @@ import (
 	"log"
 	"sort"
 	"time"
-
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/config"
@@ -59,8 +59,6 @@ func GetRDSLatencyAnalysisData(cmd *cobra.Command, clientAuth *model.Auth, cloud
     elementId, _ := cmd.PersistentFlags().GetString("elementId")
     elementType, _ := cmd.PersistentFlags().GetString("elementType")
     cmdbApiUrl, _ := cmd.PersistentFlags().GetString("cmdbApiUrl")
-    startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-    endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
 
     if elementId != "" {
         log.Println("getting cloud-element data from cmdb")
@@ -72,31 +70,11 @@ func GetRDSLatencyAnalysisData(cmd *cobra.Command, clientAuth *model.Auth, cloud
         log.Println("cmdb url: " + apiUrl)
     }
 
-    var startTime, endTime *time.Time
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
-    if startTimeStr != "" {
-        parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-        if err != nil {
-            log.Printf("Error parsing start time: %v", err)
-            return "", nil, err
-        }
-        startTime = &parsedStartTime
-    } else {
-        defaultStartTime := time.Now().Add(-5 * time.Minute)
-        startTime = &defaultStartTime
-    }
-
-    if endTimeStr != "" {
-        parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-        if err != nil {
-            log.Printf("Error parsing end time: %v", err)
-            return "", nil, err
-        }
-        endTime = &parsedEndTime
-    } else {
-        defaultEndTime := time.Now()
-        endTime = &defaultEndTime
-    }
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
+	}
 
     log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
@@ -209,21 +187,5 @@ func processRawLatencyData(result *cloudwatch.GetMetricDataOutput) []TimeSeriesD
 
 
 func init() {
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSLatencyAnalysisCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSLatencyAnalysisCmd)
 }
-

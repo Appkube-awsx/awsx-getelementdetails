@@ -54,12 +54,6 @@ var AwsxRecentEventLogsCmd = &cobra.Command{
 func GetRecentEventLogsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchLogs *cloudwatchlogs.CloudWatchLogs) ([]*cloudwatchlogs.GetQueryResultsOutput, error) {
 	logGroupName, _ := cmd.PersistentFlags().GetString("logGroupName")
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
-
-	
-
-	
-
-	
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing time: %v", err)
 	}
