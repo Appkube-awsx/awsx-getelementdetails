@@ -4,6 +4,7 @@ import (
 	// "encoding/json"
 	// "fmt"
 	// "log"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 
 	"github.com/spf13/cobra"
 )
@@ -58,7 +59,5 @@ func ListScheduleOverview() ([]ScheduleOverview, error) {
 }
 
 func init() {
-	// Add flags for query and element type
-	ListScheduleOverviewCmd.Flags().String("query", "", "Query name")
-	ListScheduleOverviewCmd.Flags().String("elementType", "", "Element type")
+	comman_function.InitAwsCmdFlags(ListScheduleOverviewCmd)
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
@@ -47,37 +47,10 @@ var AwsxRDSUptimeCmd = &cobra.Command{
 
 func GetRDSUptimeData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClient *cloudwatch.CloudWatch) (string, map[string]string, error) {
 	DBInstanceIdentifier := "postgresql"
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-
-	var startTime, endTime *time.Time
-
-	// Parse start time if provided
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing time: %v", err)
 	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
-	}
-
-	// Debug prints
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 
 	// Fetch raw data
@@ -145,6 +118,5 @@ func GetDatabaseConnectionsMetricValues(clientAuth *model.Auth, startTime, endTi
 }
 
 func init() {
-	AwsxRDSUptimeCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSUptimeCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxRDSUptimeCmd)
 }

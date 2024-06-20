@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/config"
@@ -75,32 +75,10 @@ func GetRDSIopsPanel(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClien
 		log.Println("cmdb url: " + apiUrl)
 	}
 
-	startTimeStr, _ := cmd.PersistentFlags().GetString("startTime")
-	endTimeStr, _ := cmd.PersistentFlags().GetString("endTime")
-	var startTime, endTime *time.Time
+	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
-	if startTimeStr != "" {
-		parsedStartTime, err := time.Parse(time.RFC3339, startTimeStr)
-		if err != nil {
-			log.Printf("Error parsing start time: %v", err)
-			return "", "", nil, err
-		}
-		startTime = &parsedStartTime
-	} else {
-		defaultStartTime := time.Now().Add(-5 * time.Minute)
-		startTime = &defaultStartTime
-	}
-
-	if endTimeStr != "" {
-		parsedEndTime, err := time.Parse(time.RFC3339, endTimeStr)
-		if err != nil {
-			log.Printf("Error parsing end time: %v", err)
-			return "", "", nil, err
-		}
-		endTime = &parsedEndTime
-	} else {
-		defaultEndTime := time.Now()
-		endTime = &defaultEndTime
+	if err != nil {
+		return "", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
@@ -195,20 +173,5 @@ func processedTheRawData(result *cloudwatch.GetMetricDataOutput) []struct {
 }
 
 func init() {
-	AwsxRDSIopsCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxRDSIopsCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxRDSIopsCmd.PersistentFlags().String("query", "", "query")
-	AwsxRDSIopsCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxRDSIopsCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxRDSIopsCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxRDSIopsCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxRDSIopsCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxRDSIopsCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxRDSIopsCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxRDSIopsCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxRDSIopsCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxRDSIopsCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxRDSIopsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxRDSIopsCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxRDSIopsCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
+	comman_function.InitAwsCmdFlags(AwsxRDSIopsCmd)
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/spf13/cobra"
 )
@@ -127,27 +127,5 @@ func GetDBInstanceHealthCheck() ([]InstanceHealthCheckData, error) {
 }
 
 func init() {
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("rootvolumeId", "", "root volume id")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("ebsvolume1Id", "", "ebs volume 1 id")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("ebsvolume2Id", "", "ebs volume 2 id")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("accountId", "", "aws account number")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("ServiceName", "", "Service Name")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("clusterName", "", "cluster name")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("query", "", "query")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("endTime", "", "endcl time")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxDBInstanceHealthCheckCmd.PersistentFlags().String("logGroupName", "", "log group name")
+	comman_function.InitAwsCmdFlags(AwsxDBInstanceHealthCheckCmd)
 }
