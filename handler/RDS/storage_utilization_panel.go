@@ -6,7 +6,7 @@ import (
 	"log"
 	"math"
 	"time"
-
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/cmdb"
@@ -81,7 +81,7 @@ func GetRDSStorageUtilizationPanel(cmd *cobra.Command, clientAuth *model.Auth, c
 
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing time: %v", err)
+		return "",nil, fmt.Errorf("Error parsing time: %v", err)
 	}
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 	// Get Root Volume Utilization

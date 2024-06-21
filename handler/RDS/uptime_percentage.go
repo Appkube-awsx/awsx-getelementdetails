@@ -49,7 +49,7 @@ func GetRDSUptimeData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchClie
 	DBInstanceIdentifier := "postgresql"
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing time: %v", err)
+		return "", nil, fmt.Errorf("Error parsing time: %v", err)
 	}
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
 

@@ -79,7 +79,7 @@ func GetRDSNetworkTrafficPanel(cmd *cobra.Command, clientAuth *model.Auth, cloud
 	startTime, endTime, err := comman_function.ParseTimes(cmd)
 
 	if err != nil {
-		return "", nil, fmt.Errorf("error parsing time: %v", err)
+		return "","", nil, fmt.Errorf("error parsing time: %v", err)
 	}
 
 	log.Printf("StartTime: %v, EndTime: %v", startTime, endTime)
