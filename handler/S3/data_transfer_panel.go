@@ -9,7 +9,7 @@ import (
 	"github.com/Appkube-awsx/awsx-common/authenticate"
 	"github.com/Appkube-awsx/awsx-common/awsclient"
 	"github.com/Appkube-awsx/awsx-common/model"
-	comman_function "github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
+	"github.com/Appkube-awsx/awsx-getelementdetails/comman-function"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/spf13/cobra"
@@ -66,7 +66,7 @@ func GetDataTransferData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 
 	cloudwatchMetricData := map[string]*cloudwatch.GetMetricDataOutput{}
 
-	BytesUploadedData, err := GetS3MetricData(clientAuth, bucketName, "AWS/"+elementType, "BytesUploaded", startTime, endTime, "Average", "BucketName", cloudWatchClient)
+	BytesUploadedData, err := GetS3MetricData(clientAuth, bucketName, "AWS/"+elementType, "BytesUploaded", startTime, endTime, "Sum", "BucketName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting BytesUploaded data: ", err)
 		return "", nil, err
@@ -79,7 +79,7 @@ func GetDataTransferData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchC
 		log.Println("No data available for BytesUploadedData")
 	}
 
-	BytesDownloadedData, err := GetS3MetricData(clientAuth, bucketName, "AWS/"+elementType, "BytesDownloaded", startTime, endTime, "Average", "BucketName", cloudWatchClient)
+	BytesDownloadedData, err := GetS3MetricData(clientAuth, bucketName, "AWS/"+elementType, "BytesDownloaded", startTime, endTime, "Sum", "BucketName", cloudWatchClient)
 	if err != nil {
 		log.Println("Error in getting cpu usage idle data: ", err)
 		return "", nil, err
