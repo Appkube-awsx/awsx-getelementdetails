@@ -100,8 +100,5 @@ func ProcessQueryResult(results []*cloudwatchlogs.GetQueryResultsOutput) []*clou
 }
 
 func init() {
-	AwsxApiErrorLogsCmd.PersistentFlags().String("logGroupName", "", "log group name")
-	AwsxApiErrorLogsCmd.PersistentFlags().String("functionName", "", "Lambda function name")
-	AwsxApiErrorLogsCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxApiErrorLogsCmd.PersistentFlags().String("endTime", "", "end time")
+	comman_function.InitAwsCmdFlags(AwsxApiErrorLogsCmd)
 }

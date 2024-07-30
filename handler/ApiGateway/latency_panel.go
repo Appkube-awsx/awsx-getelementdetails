@@ -100,21 +100,5 @@ func GetApiLatencyData(cmd *cobra.Command, clientAuth *model.Auth, cloudWatchCli
 // }
 
 func init() {
-	AwsxApiLatencyCmd.PersistentFlags().String("elementId", "", "element id")
-	AwsxApiLatencyCmd.PersistentFlags().String("elementType", "", "element type")
-	AwsxApiLatencyCmd.PersistentFlags().String("query", "", "query")
-	AwsxApiLatencyCmd.PersistentFlags().String("cmdbApiUrl", "", "cmdb api")
-	AwsxApiLatencyCmd.PersistentFlags().String("vaultUrl", "", "vault end point")
-	AwsxApiLatencyCmd.PersistentFlags().String("vaultToken", "", "vault token")
-	AwsxApiLatencyCmd.PersistentFlags().String("zone", "", "aws region")
-	AwsxApiLatencyCmd.PersistentFlags().String("accessKey", "", "aws access key")
-	AwsxApiLatencyCmd.PersistentFlags().String("secretKey", "", "aws secret key")
-	AwsxApiLatencyCmd.PersistentFlags().String("crossAccountRoleArn", "", "aws cross account role arn")
-	AwsxApiLatencyCmd.PersistentFlags().String("externalId", "", "aws external id")
-	AwsxApiLatencyCmd.PersistentFlags().String("cloudWatchQueries", "", "aws cloudwatch metric queries")
-	AwsxApiLatencyCmd.PersistentFlags().String("instanceId", "", "instance id")
-	AwsxApiLatencyCmd.PersistentFlags().String("startTime", "", "start time")
-	AwsxApiLatencyCmd.PersistentFlags().String("endTime", "", "end time")
-	AwsxApiLatencyCmd.PersistentFlags().String("responseType", "", "response type. json/frame")
-	AwsxApiLatencyCmd.PersistentFlags().String("ApiName", "", "api name")
+	comman_function.InitAwsCmdFlags(AwsxApiLatencyCmd)
 }
